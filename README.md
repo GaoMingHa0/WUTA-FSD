@@ -1,7 +1,3 @@
-<p align="center">
-<img src="resource/img/BITFSD_logo.png">
-</p>
-
 # WUTA-FSD
 
 武汉理工大学无人驾驶方程式赛车自动驾驶算法栈。
