@@ -1,0 +1,9 @@
+line_detector_node:
+  ros__parameters:
+    # Minimum total cone count before attempting PCA line fit
+    min_cones: 4
+
+    # Extra distance added beyond the furthest cone projection [m]
+    # Ensures the generated path reaches the finish line even if the
+    # last cones stop a little short of it
+    endpoint_buffer: 3.0

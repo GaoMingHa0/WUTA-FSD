@@ -1,0 +1,11 @@
+skidpad_detector_node:
+  ros__parameters:
+    # Minimum cones in each cluster before attempting circle fit
+    min_cones_per_circle: 4
+
+    # FSG standard skidpad inner radius (centre to inner cone row) [m]
+    # Track spec: inner diameter 18.25m → radius 9.125m
+    expected_radius: 9.125
+
+    # Accept fit if |fitted_r - expected_radius| <= radius_tolerance [m]
+    radius_tolerance: 2.5

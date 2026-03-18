@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rclcpp/rclcpp.hpp>
+#include <geometry_msgs/msg/pose_array.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <autoware_msgs/msg/lane.hpp>
 
@@ -12,14 +13,18 @@ namespace path_generator
 /**
  * Path Generator Node
  *
- * Subscribes to MissionState and routes to the correct path generation mode:
+ * Routes to the correct path-generation mode based on MissionState:
  *
- *  TRACKDRIVE  → forwards centerline from boundary_detector (Delaunay)
- *  SKIDPAD     → generates figure-8 path (predefined geometry)
- *  ACCELERATION → generates straight-line path to finish
+ *  TRACKDRIVE   → forwards /planning/centerline from boundary_detector (Delaunay)
  *
- * All modes output to /planning/final_waypoints (autoware_msgs::Lane),
- * which is directly consumed by the controller.
+ *  SKIDPAD      → figure-8 using circle centres from skidpad_detector.
+ *                 Falls back to pose-based estimation if detector not yet ready.
+ *
+ *  ACCELERATION → straight waypoints from current pose to the endpoint detected
+ *                 by line_detector (PCA on cone map).
+ *                 Falls back to fixed acceleration_length_ if detector not ready.
+ *
+ * All modes output /planning/final_waypoints (autoware_msgs::Lane).
  */
 class PathGeneratorNode : public rclcpp::Node
 {
@@ -29,10 +34,12 @@ public:
 private:
   // Callbacks
   void onMissionState(const wuta_msgs::msg::MissionState::SharedPtr msg);
-  void onCenterline(const autoware_msgs::msg::Lane::SharedPtr msg);    // from boundary_detector
+  void onCenterline(const autoware_msgs::msg::Lane::SharedPtr msg);
   void onPose(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
+  void onSkidpadCircles(const geometry_msgs::msg::PoseArray::SharedPtr msg);
+  void onAccelerationLine(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
 
-  // Mode-specific path generators
+  // Path generators
   autoware_msgs::msg::Lane generateSkidpadPath() const;
   autoware_msgs::msg::Lane generateAccelerationPath() const;
 
@@ -42,23 +49,31 @@ private:
   geometry_msgs::msg::PoseStamped current_pose_;
   bool pose_ready_{false};
 
-  // Parameters
-  // Trackdrive
-  double trackdrive_velocity_{7.0};    // m/s
+  // Detector outputs (optional — fall back to pose-based if absent)
+  geometry_msgs::msg::PoseArray skidpad_circles_;   // [0]=right, [1]=left
+  bool skidpad_circles_ready_{false};
 
-  // Skidpad (FSG standard: two circles, r=9.125m, center offset=±9.125m from start)
-  double skidpad_radius_{9.125};       // m
-  double skidpad_velocity_{5.0};       // m/s
-  int    skidpad_points_{72};          // waypoints per circle (every 5 deg)
+  geometry_msgs::msg::PoseStamped acceleration_endpoint_;
+  bool acceleration_line_ready_{false};
 
-  // Acceleration (75m straight)
-  double acceleration_length_{75.0};   // m
-  double acceleration_velocity_{15.0}; // m/s
+  // Parameters — Trackdrive
+  double trackdrive_velocity_{7.0};
+
+  // Parameters — Skidpad
+  double skidpad_radius_{9.125};
+  double skidpad_velocity_{5.0};
+  int    skidpad_points_{72};
+
+  // Parameters — Acceleration
+  double acceleration_length_{75.0};   // fallback length [m]
+  double acceleration_velocity_{15.0};
 
   // Subscribers
-  rclcpp::Subscription<wuta_msgs::msg::MissionState>::SharedPtr mission_sub_;
-  rclcpp::Subscription<autoware_msgs::msg::Lane>::SharedPtr centerline_sub_;
-  rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_sub_;
+  rclcpp::Subscription<wuta_msgs::msg::MissionState>::SharedPtr       mission_sub_;
+  rclcpp::Subscription<autoware_msgs::msg::Lane>::SharedPtr           centerline_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr    pose_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::PoseArray>::SharedPtr      skidpad_circles_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr    accel_line_sub_;
 
   // Publisher
   rclcpp::Publisher<autoware_msgs::msg::Lane>::SharedPtr waypoints_pub_;
