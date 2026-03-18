@@ -1,0 +1,34 @@
+lidar_detection_node:
+  ros__parameters:
+    # Backend: "traditional" or "dl"
+    detector_type: "traditional"
+
+    # Topic names
+    input_topic:  "/hesai/pandar"           # Hesai 128-line LiDAR raw point cloud
+    output_topic: "/perception/lidar/cones" # ConeArray output
+
+    # --- Traditional detector parameters ---
+
+    # Ground removal
+    use_ransac: true
+    ground_z_threshold: -0.8        # m, used when use_ransac=false
+    ransac_distance_threshold: 0.2  # m
+
+    # Voxel downsampling
+    voxel_leaf_size: 0.1            # m
+
+    # Euclidean clustering
+    cluster_tolerance: 0.4          # m
+    min_cluster_size: 3
+    max_cluster_size: 200
+
+    # Cone shape filter
+    max_cone_width: 0.5             # m
+    max_cone_height: 0.6            # m
+    min_cone_height: 0.1            # m
+
+    # Detection range
+    max_detection_range: 20.0       # m
+
+    # --- DL detector parameters (used when detector_type: "dl") ---
+    # model_path: "/path/to/model.bin"

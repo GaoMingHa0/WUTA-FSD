@@ -1,0 +1,19 @@
+cone_map_builder:
+  ros__parameters:
+    # Cone merging: cones closer than this are considered the same physical cone
+    merge_distance: 0.5         # m
+
+    # Only publish cones seen at least this many times (noise filter)
+    min_hit_count: 2
+
+    # Loop closure detection
+    loop_closure_distance: 3.0  # m — distance back to start position
+    min_cones_for_closure: 10   # Minimum confirmed cones before checking closure
+    start_skip_distance: 5.0    # m — don't check closure until we've moved this far
+
+    # Color heuristic: blue=left, yellow=right based on vehicle heading
+    # Set false if camera detection will provide colors downstream
+    assign_colors: true
+
+    # Path to save cone map YAML when loop is closed
+    map_save_path: "/tmp/wuta_cone_map.yaml"

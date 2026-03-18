@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>cone_map_builder</name>
+  <version>1.0.0</version>
+  <description>cone_map_builder package for WUTA-FSD ROS2 stack</description>
+  <maintainer email="wuta@todo.com">WUTA</maintainer>
+  <license>MIT</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>geometry_msgs</depend>
+  <depend>visualization_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>wuta_msgs</depend>
+  <depend>libyaml-cpp-dev</depend>
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

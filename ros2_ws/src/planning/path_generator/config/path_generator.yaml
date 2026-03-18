@@ -1,0 +1,13 @@
+path_generator_node:
+  ros__parameters:
+    # TRACKDRIVE
+    trackdrive_velocity: 7.0       # m/s
+
+    # SKIDPAD (FSG standard geometry)
+    skidpad_radius: 9.125          # m
+    skidpad_velocity: 5.0          # m/s
+    skidpad_points: 72             # waypoints per circle (every 5 deg)
+
+    # ACCELERATION
+    acceleration_length: 75.0      # m
+    acceleration_velocity: 15.0    # m/s

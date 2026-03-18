@@ -1,0 +1,110 @@
+#pragma once
+
+const double PI=3.1415926;
+const double EPS = 1.0E-8;
+
+class GlobalVariables {
+public:
+    static GlobalVariables* getinstance(){
+        if(instance == nullptr){
+            instance = new GlobalVariables();
+        }
+        return instance;
+    }
+    int GetMaxDepth(){
+        return MaxDepth;
+    }
+    int GetDepthStep(){
+        return DepthStep;
+    }
+    int GetMinDepth(){
+        return MinDepth;
+    }
+    double GetTriMaxLen(){
+        return TriMaxLen;
+    }
+    double GetTriMinLen(){
+        return TriMinLen;
+    }
+    double GetMinAngleTheshold(){
+        return MinAngleTheshold;
+    }
+    double GetMaxAngleTheshold(){
+        return MaxAngleTheshold;
+    }
+    double GetIsFindStartPoint(){
+        return IsFindStartPoint;
+    }
+    double GetCenterWeight(){
+        return CenterWeight;
+    }
+    double GetDepthWeight(){
+        return DepthWeight;
+    }
+    double GetDtwWeight(){
+        return DtwWeight;
+    }
+    double GetWidthWeigth(){
+        return WidthWeigth;
+    }
+    double GetLengthWeight(){
+        return LengthWeight;
+    }
+    double GetAngleWeight(){
+        return AngleWeight;
+    }
+    double GetAngleStandardDeviationWeight(){
+        return AngleStandardDeviationWeight;
+    }
+    double GetLengthStandardDeviationWeight(){
+        return LengthStandardDeviationWeight;
+    }
+    double GetAngleThreshold(){
+        return AngleThreshold;
+    }
+    int GetSplineSize(){
+        return SplineSize;
+    }
+private:
+    static GlobalVariables* instance;
+    GlobalVariables();
+    //最大搜索深度
+    int MaxDepth;
+    int DepthStep;
+    //最小搜索深度
+    int MinDepth;
+    //三角形最长边阈值
+    double TriMaxLen;
+    //三角形最短边阈值
+    double TriMinLen;
+    //三角形最小角阈值
+    double MinAngleTheshold;
+    //三角形最大角阈值
+    double MaxAngleTheshold;
+
+    //路径搜索，评价函数权重
+    //路径搜索到起点时，得分
+    double IsFindStartPoint;
+    //搜索的路径点，路径点周围是否包含2个三角形，权重
+    double CenterWeight;
+    //搜索深度权重
+    double DepthWeight;
+    //dtw权重
+    double DtwWeight;
+    //宽度权重
+    double WidthWeigth;
+    //长度权重
+    double LengthWeight;
+    //角度权重
+    double AngleWeight; //0.1
+    //角度标准差权重
+    double AngleStandardDeviationWeight;
+    //长度标准差权重
+    double LengthStandardDeviationWeight;
+
+    //分支限界法，角度阈值
+    double AngleThreshold;
+
+    //三次样条插值，插入数量
+    int SplineSize;
+};

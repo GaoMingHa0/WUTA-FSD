@@ -1,0 +1,30 @@
+kiss_icp_node:
+  ros__parameters:
+    # Frame IDs
+    base_frame: "base_link"
+    lidar_odom_frame: "odom"
+    publish_odom_tf: true
+    invert_odom_tf: false
+
+    # Covariance for EKF fusion (robot_localization)
+    position_covariance: 0.05
+    orientation_covariance: 0.05
+
+    # Hesai 128-line: max range 200m, but for FSD track 20-30m is enough
+    data:
+      deskew: true          # Motion compensation (important at high speed)
+      max_range: 50.0       # m — reduce to filter far noise on race track
+      min_range: 1.5        # m — avoid self-detection on car body
+
+    mapping:
+      voxel_size: 0.5       # m — smaller = finer map, more CPU; 0.5 suits cone-scale features
+      max_points_per_voxel: 20
+
+    adaptive_threshold:
+      initial_threshold: 2.0
+      min_motion_th: 0.1
+
+    registration:
+      max_num_iterations: 500
+      convergence_criterion: 0.0001
+      max_num_threads: 0    # 0 = auto detect

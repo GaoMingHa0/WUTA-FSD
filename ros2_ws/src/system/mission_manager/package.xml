@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>mission_manager</name>
+  <version>1.0.0</version>
+  <description>Mission state machine for WUTA-FSD: manages mode transitions between EXPLORE and RACE</description>
+  <maintainer email="wuta@todo.com">WUTA</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>wuta_msgs</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

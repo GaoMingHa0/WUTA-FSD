@@ -1,0 +1,14 @@
+controller_node:
+  ros__parameters:
+    # Vehicle parameters
+    wheel_base: 1.53        # m — rear to front axle
+    lf: 0.8                 # m — CoM to front axle
+    max_steer_angle: 25.0   # degrees
+
+    # Pure Pursuit lookahead
+    ld_ratio: 2.0           # lookahead = velocity × ratio
+    min_lookahead: 2.0      # m — clamp at low speed
+    max_lookahead: 20.0     # m — clamp at high speed
+
+    # Control loop
+    control_rate_hz: 50

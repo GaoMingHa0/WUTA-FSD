@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>controller</name>
+  <version>1.0.0</version>
+  <description>controller package for WUTA-FSD ROS2 stack</description>
+  <maintainer email="wuta@todo.com">WUTA</maintainer>
+  <license>MIT</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>geometry_msgs</depend>
+  <depend>visualization_msgs</depend>
+  <depend>autoware_msgs</depend>
+  <depend>wuta_msgs</depend>
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

@@ -1,0 +1,4 @@
+boundary_detector_node:
+  ros__parameters:
+    lookahead_distance: 15.0   # m — cones within this range used for Delaunay
+    desired_velocity: 7.0      # m/s — waypoint velocity (overridden by path_generator)

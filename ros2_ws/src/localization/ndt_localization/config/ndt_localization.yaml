@@ -1,0 +1,19 @@
+ndt_localization:
+  ros__parameters:
+    # Path to prior map (saved by map_saver after EXPLORE lap)
+    map_path: "/tmp/wuta_lidar_map.pcd"
+
+    # NDT parameters — TODO: tune on real vehicle with Hesai 128-line
+    ndt_resolution: 1.0       # m — voxel size of NDT map (larger = faster, less precise)
+    step_size: 0.1            # Newton step size
+    transform_epsilon: 0.01   # convergence criterion
+    max_iterations: 30
+
+    # Input scan downsampling (before NDT, speeds up matching)
+    scan_voxel_size: 0.5      # m
+
+map_saver:
+  ros__parameters:
+    map_save_path: "/tmp/wuta_lidar_map.pcd"
+    voxel_size: 0.2           # m — final map downsampling
+    accumulate_dist: 0.5      # m — min distance between accumulated scans
