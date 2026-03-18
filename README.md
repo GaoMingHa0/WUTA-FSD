@@ -1,91 +1,154 @@
-<p align="center"> 
+<p align="center">
 <img src="resource/img/BITFSD_logo.png">
 </p>
 
+# WUTA-FSD
 
-# fsd_algorithm
+武汉理工大学无人驾驶方程式赛车自动驾驶算法栈。
 
-This repository is devoted to share the autonomous code of Beijing Institute of Technology Driverless Racing Team. Some simple version code of an autonomous FS race car and some helpful tools are included.
+> **当前分支 `wuta0318`**：适配**地平线征程 J6 域控制器**的 ROS2 重构版本。
+> 原 ROS1 版本保留在 `master` 分支。
 
-The use of **Ubuntu 18.04 and ROS Melodic** is assumed everywhere on this repository.
+---
 
+## 硬件平台
 
+| 设备 | 型号 |
+|------|------|
+| 域控制器 | 地平线征程 J6（128 TOPS BPU，CPU 137K DMIPS） |
+| 激光雷达 | 禾赛 128线 |
+| 组合导航 | 华测 CG-410（GNSS + IMU） |
+| 相机 | 待定（接口已预留） |
 
-# Repository organisation
+---
 
-The repository consists of `ros` and `tools`,` ros` is organised in several top level packages/directories. The top level should adhere to the following subdivision of functionality(a more detailed description can be found in the folders themselves):
+## 系统架构
 
-**perception/** - folder for perception packages
+```
+传感器层
+  禾赛128线 ──→ lidar_detection  ──→ ConeArray
+  相机(预留) ──→ camera_detection ──→ ConeArray  ──→ detection_fusion
 
-**estimation/** - folder for estimation packages
+定位层（双模式）
+  EXPLORE: KISS-ICP + EKF(CG-410) ──┐
+  RACE:    NDT 地图匹配            ──┴──→ /localization/pose
 
-**planning/** - folder for planning packages
+建图层
+  ConeArray + pose ──→ cone_map_builder ──→ ConeMap（loop closure检测）
 
-**control/** - folder for control packagess
+规划层
+  ConeMap ──→ boundary_detector(Delaunay) ──→ path_generator ──→ Lane
+  三模式：trackdrive / skidpad / acceleration
 
-**interface_fssim/** - folder for communicating with simulator
+控制层
+  Lane + pose ──→ controller(Pure Pursuit) ──→ Command → VCU
 
-# Usage
-
-```bash
-# First, clone the repository and move the algorithm package to your workspace
-git clone https://github.com/bitfsd/fsd_algorithm.git
-cp -r fsd_algorithm/ros "your_workspace_name_1"/src
-
-# Install dependencies
-cd ~/"your_workspace_name_1"/src/ros/control/controller/script
-sudo apt-get install python-catkin-tools
-sudo bash install_cppad.bash
-sudo bash install_ipopt.bash
-
-# Compile
-cd ~/"your_workspace_name_1"
-catkin build
-
-# Second, clone the simulator and move the package to your second workspace
-git clone https://github.com/bitfsd/fssim.git
-cp -r fssim "your_workspace_name_2"/src
-
-# Install dependencies
-cd ~/"your_workspace_name_2"/src/fssim
-source update_dependencies.sh
-sudo bash Download_model.sh
-
-# Compile
-cd ~/"your_workspace_name_2"
-catkin build
-
-# Third, run simulation
-cd "your_workspace_name_2"
-source devel/setup.bash
-roslaunch fssim auto_fssim.launch
-
-# and run fssim_interface
-cd "your_workspace_name_1"
-source devel/setup.bash
-roslaunch fssim_interface fssim_interface only_interface.launch
-
-# Finally, run the fsd algorithm
-cd "your_workspace_name_1"
-source devel/setup.bash
-roslaunch fsd_common_meta trackdrive.launch
-# roslaunch fsd_common_meta skidpad.launch
-# roslaunch fsd_Common_meta acceleration.launch
+系统管理
+  mission_manager：状态机，IDLE→EXPLORE→RACE→FINISH
 ```
 
+---
 
+## 目录结构
 
-# Open source roadmap
+```
+WUTA-FSD/
+├── REFACTOR.md              # 详细重构计划和进度
+├── ros2_ws/
+│   └── src/
+│       ├── common/
+│       │   ├── wuta_msgs/           # 自定义消息定义
+│       │   └── wuta_tools/          # 工具库
+│       ├── perception/
+│       │   ├── lidar_detection/     # LiDAR锥桶检测（PCL/DL双后端）
+│       │   ├── camera_detection/    # 相机检测（预留）
+│       │   └── detection_fusion/    # 多源融合（预留）
+│       ├── localization/
+│       │   ├── kiss-icp/            # [submodule] KISS-ICP
+│       │   ├── robot_localization/  # [submodule] EKF/UKF融合
+│       │   ├── kiss_icp_wrapper/    # 禾赛128线参数配置
+│       │   ├── localization_manager/# 双模式切换，统一输出/localization/pose
+│       │   └── ndt_localization/    # NDT地图匹配 + 地图保存
+│       ├── mapping/
+│       │   └── cone_map_builder/    # 锥桶地图构建，loop closure检测
+│       ├── planning/
+│       │   ├── boundary_detector/   # Delaunay三角剖分中心线提取
+│       │   └── path_generator/      # 三模式路径生成
+│       ├── control/
+│       │   └── controller/          # Pure Pursuit横纵向控制
+│       └── system/
+│           └── mission_manager/     # 任务状态机（含车检接口预留）
+└── ros/                     # 原ROS1代码（见master分支）
+```
 
-Our goal is to provide a simple implementation of the competition. For ease of use, most ros node use the ros standard message type to send/recieve.  
+---
 
-We will continue to open source our autonomous code, when this part is stable and simple enough.
+## 快速开始
 
-# Dataset and training
+### 依赖安装
 
-Please visit this page for more details: [bitfsd/FSACOCO](https://github.com/bitfsd/FSACOCO)  
+```bash
+# ROS2 Humble
+sudo apt install ros-humble-pcl-ros ros-humble-tf2-ros \
+  ros-humble-robot-localization ros-humble-autoware-msgs
 
-# DarkNet ROS
+# 初始化 submodules
+git submodule update --init --recursive
+```
 
-Please visit this page for more details: [bitfsd/darknet_ros](https://github.com/bitfsd/darknet_ros) 
+### 编译
 
+```bash
+cd ros2_ws
+colcon build --symlink-install
+source install/setup.bash
+```
+
+### 运行
+
+```bash
+# 启动定位
+ros2 launch localization_manager localization.launch.py
+
+# 启动感知
+ros2 run lidar_detection lidar_detection_node \
+  --ros-args --params-file src/perception/lidar_detection/config/lidar_detection.yaml
+
+# 启动任务管理（设置比赛模式）
+ros2 run mission_manager mission_manager_node \
+  --ros-args -p mission_mode:=trackdrive
+
+# 启动规划
+ros2 run boundary_detector boundary_detector_node
+ros2 run path_generator path_generator_node
+
+# 启动控制
+ros2 run controller controller_node \
+  --ros-args --params-file src/control/controller/config/controller.yaml
+```
+
+### 切换任务模式
+
+```bash
+# 运行时切换（IDLE/READY状态下有效）
+ros2 topic pub /system/mission_mode_cmd std_msgs/msg/String "data: 'skidpad'"
+ros2 topic pub /system/mission_mode_cmd std_msgs/msg/String "data: 'acceleration'"
+ros2 topic pub /system/mission_mode_cmd std_msgs/msg/String "data: 'trackdrive'"
+```
+
+---
+
+## 开发进度
+
+| 模块 | 状态 |
+|------|------|
+| 消息定义 + workspace结构 | ✅ |
+| LiDAR锥桶检测（PCL，DL接口预留） | ✅ |
+| KISS-ICP + EKF 定位 | ✅ |
+| 锥桶地图构建 + loop closure | ✅ |
+| Delaunay规划 + 三模式路径生成 | ✅ |
+| Pure Pursuit 控制器 | ✅ |
+| NDT 地图匹配（框架完成） | ⚙️ 待实车标定 |
+| 相机感知 + 融合 | ⏳ 待相机型号确认 |
+
+详细进度和待确认事项见 [REFACTOR.md](REFACTOR.md)。
