@@ -1,0 +1,1 @@
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/common/autoware_msgs/msg/Command.msg

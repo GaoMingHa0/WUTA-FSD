@@ -1,0 +1,16 @@
+[0.067s] Invoking command in '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/mission_manager': CMAKE_PREFIX_PATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/detection_fusion:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/camera_detection:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/autoware_msgs:/opt/ros/humble /home/wuta/.local/bin/cmake --build /home/wuta/WUTA/WUTA-FSD/ros2_ws/build/mission_manager -- -j12 -l12
+[0.354s] [100%] Built target mission_manager_node
+[0.365s] Invoked command in '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/mission_manager' returned '0': CMAKE_PREFIX_PATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/detection_fusion:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/camera_detection:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/autoware_msgs:/opt/ros/humble /home/wuta/.local/bin/cmake --build /home/wuta/WUTA/WUTA-FSD/ros2_ws/build/mission_manager -- -j12 -l12
+[0.378s] Invoking command in '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/mission_manager': CMAKE_PREFIX_PATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/detection_fusion:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/camera_detection:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/autoware_msgs:/opt/ros/humble /home/wuta/.local/bin/cmake --install /home/wuta/WUTA/WUTA-FSD/ros2_ws/build/mission_manager
+[0.688s] -- Install configuration: ""
+[0.689s] -- Execute custom install script
+[0.690s] -- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/mission_manager/lib/mission_manager/mission_manager_node
+[0.714s] CMake Error at ament_cmake_symlink_install/ament_cmake_symlink_install.cmake:105 (message):
+[0.715s]   ament_cmake_symlink_install_directory() can't find
+[0.715s]   '/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/system/mission_manager/config/'
+[0.715s] Call Stack (most recent call first):
+[0.715s]   ament_cmake_symlink_install/ament_cmake_symlink_install.cmake:322 (ament_cmake_symlink_install_directory)
+[0.715s]   cmake_install.cmake:46 (include)
+[0.715s] 
+[0.715s] 
+[0.732s] Invoked command in '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/mission_manager' returned '1': CMAKE_PREFIX_PATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/detection_fusion:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/camera_detection:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/autoware_msgs:/opt/ros/humble /home/wuta/.local/bin/cmake --install /home/wuta/WUTA/WUTA-FSD/ros2_ws/build/mission_manager

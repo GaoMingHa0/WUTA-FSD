@@ -1,0 +1,42 @@
+[  6%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Path.cpp.o
+[ 12%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/GlobalVariables.cpp.o
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/GlobalVariables.cpp:1:10: fatal error: hpl/hpl_param.hpp: No such file or directory
+    1 | #include "hpl/hpl_param.hpp"
+      |          ^~~~~~~~~~~~~~~~~~~
+compilation terminated.
+gmake[2]: *** [CMakeFiles/pathplanning.dir/build.make:135: CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/GlobalVariables.cpp.o] Error 1
+gmake[2]: *** Waiting for unfinished jobs....
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp: In constructor ‘Path::Path()’:
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp:20:36: error: ‘class GlobalVariables’ has no member named ‘GetStartPointRedundancy’
+   20 |     startPointRedundancy = single->GetStartPointRedundancy();
+      |                                    ^~~~~~~~~~~~~~~~~~~~~~~
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp: In member function ‘void Path::SetDirectionVector(double)’:
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp:103:16: error: ‘cos’ was not declared in this scope
+  103 |     double x = cos(yaw);
+      |                ^~~
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp:104:16: error: ‘sin’ was not declared in this scope
+  104 |     double y = sin(yaw);
+      |                ^~~
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp: In member function ‘void Path::Init()’:
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp:110:9: error: ‘assert’ was not declared in this scope
+  110 |         assert(!isSetPoints);
+      |         ^~~~~~
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp:8:1: note: ‘assert’ is defined in header ‘<cassert>’; did you forget to ‘#include <cassert>’?
+    7 | #include "pathplanning/GlobalVariables.h"
+  +++ |+#include <cassert>
+    8 | 
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp:114:9: error: ‘assert’ was not declared in this scope
+  114 |         assert(!isSetStartPoint);
+      |         ^~~~~~
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp:114:9: note: ‘assert’ is defined in header ‘<cassert>’; did you forget to ‘#include <cassert>’?
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp:118:9: error: ‘assert’ was not declared in this scope
+  118 |         assert(!isSetDirectionVector);
+      |         ^~~~~~
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp:118:9: note: ‘assert’ is defined in header ‘<cassert>’; did you forget to ‘#include <cassert>’?
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp:122:9: error: ‘assert’ was not declared in this scope
+  122 |         assert(!isSetPathSearchStartPoint);
+      |         ^~~~~~
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp:122:9: note: ‘assert’ is defined in header ‘<cassert>’; did you forget to ‘#include <cassert>’?
+gmake[2]: *** [CMakeFiles/pathplanning.dir/build.make:177: CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Path.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:156: CMakeFiles/pathplanning.dir/all] Error 2
+gmake: *** [Makefile:146: all] Error 2

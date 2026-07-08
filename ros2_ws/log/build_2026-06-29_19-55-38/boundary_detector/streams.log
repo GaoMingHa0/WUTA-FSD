@@ -1,0 +1,87 @@
+[0.069s] Invoking command in '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/boundary_detector': AMENT_PREFIX_PATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/wuta/.local/bin/cmake --build /home/wuta/WUTA/WUTA-FSD/ros2_ws/build/boundary_detector -- -j12 -l12
+[0.237s] CMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+[0.237s]   Compatibility with CMake < 3.10 will be removed from a future version of
+[0.238s]   CMake.
+[0.238s] 
+[0.238s]   Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+[0.238s]   to tell CMake that the project requires at least <min> but has been updated
+[0.238s]   to work with policies introduced by <max> or earlier.
+[0.238s] 
+[0.238s] 
+[0.255s] -- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+[0.639s] -- Override CMake install command with custom implementation using symlinks instead of copying resources
+[0.639s] -- Found rclcpp: 16.0.19 (/opt/ros/humble/share/rclcpp/cmake)
+[0.640s] -- Found rosidl_generator_c: 3.1.8 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[0.640s] -- Found rosidl_adapter: 3.1.8 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[0.653s] -- Found rosidl_generator_cpp: 3.1.8 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[0.667s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[0.672s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[0.723s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[0.724s] -- Found rmw_fastrtps_cpp: 6.2.10 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[0.837s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[0.897s] -- Found geometry_msgs: 4.9.1 (/opt/ros/humble/share/geometry_msgs/cmake)
+[0.911s] -- Found visualization_msgs: 4.9.1 (/opt/ros/humble/share/visualization_msgs/cmake)
+[0.956s] -- Found wuta_msgs: 1.0.0 (/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake)
+[0.974s] -- Found autoware_msgs: 0.1.0 (/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/autoware_msgs/share/autoware_msgs/cmake)
+[1.051s] -- Configuring done (0.8s)
+[1.067s] -- Generating done (0.0s)
+[1.094s] -- Build files have been written to: /home/wuta/WUTA/WUTA-FSD/ros2_ws/build/boundary_detector
+[1.121s] [  6%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/BowyerWatson.cpp.o
+[1.121s] [ 12%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/DelaunayTriangle.cpp.o
+[1.121s] [ 18%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Divide.cpp.o
+[1.122s] [ 25%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Evaluation.cpp.o
+[1.123s] [ 37%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/GlobalVariables.cpp.o
+[1.123s] [ 37%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Line.cpp.o
+[1.126s] [ 43%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/MidPoint.cpp.o
+[1.126s] [ 50%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/PathSearch.cpp.o
+[1.126s] [ 56%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Path.cpp.o
+[1.126s] [ 62%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Point2d.cpp.o
+[1.128s] [ 68%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Tool.cpp.o
+[1.134s] [ 75%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Triangle.cpp.o
+[1.148s] [ 81%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Vect.cpp.o
+[2.323s] [ 87%] Linking CXX static library libpathplanning.a
+[2.356s] [ 87%] Built target pathplanning
+[2.366s] [ 93%] Building CXX object CMakeFiles/boundary_detector_node.dir/src/boundary_detector_node.cpp.o
+[4.366s] In file included from /home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/include/boundary_detector/boundary_detector_node.hpp:11,
+[4.366s]                  from /home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/src/boundary_detector_node.cpp:1:
+[4.366s] /home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/include/pathplanning/PathSearch.h:11:17: error: ‘Point2d’ was not declared in this scope
+[4.367s]    11 |     std::vector<Point2d> points;
+[4.367s]       |                 ^~~~~~~
+[4.367s] /home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/include/pathplanning/PathSearch.h:11:24: error: template argument 1 is invalid
+[4.367s]    11 |     std::vector<Point2d> points;
+[4.367s]       |                        ^
+[4.367s] /home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/include/pathplanning/PathSearch.h:11:24: error: template argument 2 is invalid
+[4.370s] /home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/include/pathplanning/PathSearch.h:12:33: error: ‘Triangle’ was not declared in this scope
+[4.370s]    12 |     std::vector<std::shared_ptr<Triangle>> triangles;
+[4.370s]       |                                 ^~~~~~~~
+[4.370s] /home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/include/pathplanning/PathSearch.h:12:33: error: template argument 1 is invalid
+[4.371s] /home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/include/pathplanning/PathSearch.h:12:41: error: template argument 1 is invalid
+[4.371s]    12 |     std::vector<std::shared_ptr<Triangle>> triangles;
+[4.371s]       |                                         ^~
+[4.371s] /home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/include/pathplanning/PathSearch.h:12:41: error: template argument 2 is invalid
+[4.380s] /home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/include/pathplanning/PathSearch.h:37:32: error: ‘Point2d’ was not declared in this scope
+[4.380s]    37 |     void SetPoints(std::vector<Point2d> points_arg);
+[4.380s]       |                                ^~~~~~~
+[4.381s] /home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/include/pathplanning/PathSearch.h:37:39: error: template argument 1 is invalid
+[4.381s]    37 |     void SetPoints(std::vector<Point2d> points_arg);
+[4.381s]       |                                       ^
+[4.381s] /home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/include/pathplanning/PathSearch.h:37:39: error: template argument 2 is invalid
+[4.523s] /home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/src/boundary_detector_node.cpp: In member function ‘autoware_msgs::msg::Lane boundary_detector::BoundaryDetectorNode::computeCenterline(const std::vector<Point2d>&)’:
+[4.523s] /home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/src/boundary_detector_node.cpp:110:26: error: cannot convert ‘const std::vector<Point2d>’ to ‘int’
+[4.523s]   110 |   path_search_.SetPoints(points);
+[4.523s]       |                          ^~~~~~
+[4.523s]       |                          |
+[4.523s]       |                          const std::vector<Point2d>
+[4.523s] /home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/include/pathplanning/PathSearch.h:37:41: note:   initializing argument 1 of ‘void PathSearch::SetPoints(int)’
+[4.523s]    37 |     void SetPoints(std::vector<Point2d> points_arg);
+[4.523s]       |                    ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~
+[4.523s] /home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/src/boundary_detector_node.cpp:127:59: error: invalid use of incomplete type ‘class Vect’
+[4.524s]   127 |   path_search_.SetFormer(Vect(std::cos(yaw), std::sin(yaw)));
+[4.524s]       |                                                           ^
+[4.524s] /home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/include/pathplanning/PathSearch.h:5:7: note: forward declaration of ‘class Vect’
+[4.524s]     5 | class Vect;
+[4.524s]       |       ^~~~
+[8.271s] gmake[2]: *** [CMakeFiles/boundary_detector_node.dir/build.make:79: CMakeFiles/boundary_detector_node.dir/src/boundary_detector_node.cpp.o] Error 1
+[8.271s] gmake[1]: *** [CMakeFiles/Makefile2:188: CMakeFiles/boundary_detector_node.dir/all] Error 2
+[8.271s] gmake: *** [Makefile:146: all] Error 2
+[8.273s] Invoked command in '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/boundary_detector' returned '2': AMENT_PREFIX_PATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/wuta/.local/bin/cmake --build /home/wuta/WUTA/WUTA-FSD/ros2_ws/build/boundary_detector -- -j12 -l12

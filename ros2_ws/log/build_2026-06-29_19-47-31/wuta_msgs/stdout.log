@@ -1,0 +1,81 @@
+[  1%] Generating C code for ROS interfaces
+[  3%] Generating C++ code for ROS interfaces
+[  5%] Generating Rust code for ROS interfaces
+[  5%] Built target ament_cmake_python_symlink_wuta_msgs
+running egg_info
+creating wuta_msgs.egg-info
+writing wuta_msgs.egg-info/PKG-INFO
+writing dependency_links to wuta_msgs.egg-info/dependency_links.txt
+writing top-level names to wuta_msgs.egg-info/top_level.txt
+writing manifest file 'wuta_msgs.egg-info/SOURCES.txt'
+reading manifest file 'wuta_msgs.egg-info/SOURCES.txt'
+writing manifest file 'wuta_msgs.egg-info/SOURCES.txt'
+[  5%] Built target ament_cmake_python_build_wuta_msgs_egg
+[  5%] Built target wuta_msgs__rs
+[  5%] Built target wuta_msgs__cpp
+[  8%] Generating C++ introspection for ROS interfaces
+[  8%] Generating C++ type support for eProsima Fast-RTPS
+[ 10%] Generating C++ type support dispatch for ROS interfaces
+[ 14%] Building C object CMakeFiles/wuta_msgs__rosidl_generator_c.dir/rosidl_generator_c/wuta_msgs/msg/detail/cone__functions.c.o
+[ 14%] Building C object CMakeFiles/wuta_msgs__rosidl_generator_c.dir/rosidl_generator_c/wuta_msgs/msg/detail/cone_array__functions.c.o
+[ 16%] Building C object CMakeFiles/wuta_msgs__rosidl_generator_c.dir/rosidl_generator_c/wuta_msgs/msg/detail/cone_map__functions.c.o
+[ 17%] Building C object CMakeFiles/wuta_msgs__rosidl_generator_c.dir/rosidl_generator_c/wuta_msgs/msg/detail/mission_state__functions.c.o
+[ 19%] Linking C shared library libwuta_msgs__rosidl_generator_c.so
+[ 19%] Built target wuta_msgs__rosidl_generator_c
+[ 21%] Generating C type support for eProsima Fast-RTPS
+[ 25%] Generating C introspection for ROS interfaces
+[ 25%] Generating C type support dispatch for ROS interfaces
+[ 28%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/wuta_msgs/msg/cone_array__type_support.cpp.o
+[ 28%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/wuta_msgs/msg/cone__type_support.cpp.o
+[ 30%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/wuta_msgs/msg/cone_map__type_support.cpp.o
+[ 32%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/wuta_msgs/msg/mission_state__type_support.cpp.o
+[ 33%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/wuta_msgs/msg/detail/cone__type_support.cpp.o
+[ 35%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/wuta_msgs/msg/detail/cone_array__type_support.cpp.o
+[ 37%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/wuta_msgs/msg/detail/cone_map__type_support.cpp.o
+[ 39%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/wuta_msgs/msg/detail/mission_state__type_support.cpp.o
+[ 41%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/wuta_msgs/msg/detail/dds_fastrtps/cone__type_support.cpp.o
+[ 42%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/wuta_msgs/msg/cone__type_support.cpp.o
+[ 44%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/wuta_msgs/msg/cone_array__type_support.cpp.o
+[ 46%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/wuta_msgs/msg/cone_map__type_support.cpp.o
+[ 48%] Building C object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/wuta_msgs/msg/detail/cone__type_support.c.o
+[ 50%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/wuta_msgs/msg/mission_state__type_support.cpp.o
+[ 51%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/wuta_msgs/msg/detail/cone__type_support_c.cpp.o
+[ 53%] Building C object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/wuta_msgs/msg/detail/cone_array__type_support.c.o
+[ 55%] Linking CXX shared library libwuta_msgs__rosidl_typesupport_c.so
+[ 57%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/wuta_msgs/msg/detail/dds_fastrtps/cone_array__type_support.cpp.o
+[ 58%] Building C object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/wuta_msgs/msg/detail/cone_map__type_support.c.o
+[ 60%] Building C object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/wuta_msgs/msg/detail/mission_state__type_support.c.o
+[ 62%] Linking CXX shared library libwuta_msgs__rosidl_typesupport_cpp.so
+[ 64%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/wuta_msgs/msg/detail/dds_fastrtps/cone_map__type_support.cpp.o
+[ 64%] Built target wuta_msgs__rosidl_typesupport_c
+[ 66%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/wuta_msgs/msg/detail/cone_array__type_support_c.cpp.o
+[ 67%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/wuta_msgs/msg/detail/cone_map__type_support_c.cpp.o
+[ 67%] Built target wuta_msgs__rosidl_typesupport_cpp
+[ 69%] Linking C shared library libwuta_msgs__rosidl_typesupport_introspection_c.so
+[ 71%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/wuta_msgs/msg/detail/mission_state__type_support_c.cpp.o
+[ 73%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/wuta_msgs/msg/detail/dds_fastrtps/mission_state__type_support.cpp.o
+[ 73%] Built target wuta_msgs__rosidl_typesupport_introspection_c
+[ 75%] Linking CXX shared library libwuta_msgs__rosidl_typesupport_introspection_cpp.so
+[ 75%] Built target wuta_msgs__rosidl_typesupport_introspection_cpp
+[ 76%] Linking CXX shared library libwuta_msgs__rosidl_typesupport_fastrtps_c.so
+[ 76%] Built target wuta_msgs__rosidl_typesupport_fastrtps_c
+[ 78%] Linking CXX shared library libwuta_msgs__rosidl_typesupport_fastrtps_cpp.so
+[ 78%] Built target wuta_msgs__rosidl_typesupport_fastrtps_cpp
+[ 78%] Built target wuta_msgs
+[ 80%] Generating Python code for ROS interfaces
+[ 80%] Built target wuta_msgs__py
+[ 83%] Building C object CMakeFiles/wuta_msgs__rosidl_generator_py.dir/rosidl_generator_py/wuta_msgs/msg/_cone_array_s.c.o
+[ 83%] Building C object CMakeFiles/wuta_msgs__rosidl_generator_py.dir/rosidl_generator_py/wuta_msgs/msg/_cone_s.c.o
+[ 85%] Building C object CMakeFiles/wuta_msgs__rosidl_generator_py.dir/rosidl_generator_py/wuta_msgs/msg/_cone_map_s.c.o
+[ 87%] Building C object CMakeFiles/wuta_msgs__rosidl_generator_py.dir/rosidl_generator_py/wuta_msgs/msg/_mission_state_s.c.o
+[ 89%] Linking C shared library rosidl_generator_py/wuta_msgs/libwuta_msgs__rosidl_generator_py.so
+[ 89%] Built target wuta_msgs__rosidl_generator_py
+[ 92%] Building C object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_c__pyext.dir/rosidl_generator_py/wuta_msgs/_wuta_msgs_s.ep.rosidl_typesupport_fastrtps_c.c.o
+[ 92%] Building C object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_c__pyext.dir/rosidl_generator_py/wuta_msgs/_wuta_msgs_s.ep.rosidl_typesupport_introspection_c.c.o
+[ 94%] Building C object CMakeFiles/wuta_msgs__rosidl_typesupport_c__pyext.dir/rosidl_generator_py/wuta_msgs/_wuta_msgs_s.ep.rosidl_typesupport_c.c.o
+[100%] Linking C shared library rosidl_generator_py/wuta_msgs/wuta_msgs_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so
+[100%] Linking C shared library rosidl_generator_py/wuta_msgs/wuta_msgs_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so
+[100%] Linking C shared library rosidl_generator_py/wuta_msgs/wuta_msgs_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so
+[100%] Built target wuta_msgs__rosidl_typesupport_c__pyext
+[100%] Built target wuta_msgs__rosidl_typesupport_introspection_c__pyext
+[100%] Built target wuta_msgs__rosidl_typesupport_fastrtps_c__pyext

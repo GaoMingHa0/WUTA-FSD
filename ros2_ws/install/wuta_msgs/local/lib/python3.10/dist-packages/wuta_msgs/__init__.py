@@ -1,0 +1,1 @@
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs/rosidl_generator_py/wuta_msgs/__init__.py

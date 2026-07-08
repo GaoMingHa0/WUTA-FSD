@@ -1,0 +1,21 @@
+[100%] Built target localization_manager_node
+-- Install configuration: ""
+-- Execute custom install script
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/localization_manager/lib/localization_manager/localization_manager_node
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/localization_manager/share/localization_manager/ekf.yaml
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/localization_manager/share/localization_manager/localization.launch.py
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/localization_manager/share/ament_index/resource_index/package_run_dependencies/localization_manager
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/localization_manager/share/ament_index/resource_index/parent_prefix_path/localization_manager
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/localization_manager/share/localization_manager/environment/ament_prefix_path.sh
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/localization_manager/share/localization_manager/environment/ament_prefix_path.dsv
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/localization_manager/share/localization_manager/environment/path.sh
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/localization_manager/share/localization_manager/environment/path.dsv
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/localization_manager/share/localization_manager/local_setup.bash
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/localization_manager/share/localization_manager/local_setup.sh
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/localization_manager/share/localization_manager/local_setup.zsh
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/localization_manager/share/localization_manager/local_setup.dsv
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/localization_manager/share/localization_manager/package.dsv
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/localization_manager/share/ament_index/resource_index/packages/localization_manager
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/localization_manager/share/localization_manager/cmake/localization_managerConfig.cmake
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/localization_manager/share/localization_manager/cmake/localization_managerConfig-version.cmake
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/localization_manager/share/localization_manager/package.xml

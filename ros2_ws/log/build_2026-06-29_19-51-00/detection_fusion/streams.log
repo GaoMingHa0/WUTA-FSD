@@ -1,0 +1,20 @@
+[0.055s] Invoking command in '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/detection_fusion': CMAKE_PREFIX_PATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/detection_fusion:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/camera_detection:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/autoware_msgs:/opt/ros/humble /home/wuta/.local/bin/cmake --build /home/wuta/WUTA/WUTA-FSD/ros2_ws/build/detection_fusion -- -j12 -l12
+[0.423s] Invoked command in '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/detection_fusion' returned '0': CMAKE_PREFIX_PATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/detection_fusion:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/camera_detection:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/autoware_msgs:/opt/ros/humble /home/wuta/.local/bin/cmake --build /home/wuta/WUTA/WUTA-FSD/ros2_ws/build/detection_fusion -- -j12 -l12
+[0.424s] Invoking command in '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/detection_fusion': CMAKE_PREFIX_PATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/detection_fusion:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/camera_detection:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/autoware_msgs:/opt/ros/humble /home/wuta/.local/bin/cmake --install /home/wuta/WUTA/WUTA-FSD/ros2_ws/build/detection_fusion
+[0.811s] -- Install configuration: ""
+[0.822s] -- Execute custom install script
+[0.822s] -- Up-to-date symlink: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/detection_fusion/share/ament_index/resource_index/package_run_dependencies/detection_fusion
+[0.822s] -- Up-to-date symlink: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/detection_fusion/share/ament_index/resource_index/parent_prefix_path/detection_fusion
+[0.823s] -- Up-to-date symlink: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/environment/ament_prefix_path.sh
+[0.823s] -- Up-to-date symlink: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/environment/ament_prefix_path.dsv
+[0.823s] -- Up-to-date symlink: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/environment/path.sh
+[0.823s] -- Up-to-date symlink: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/environment/path.dsv
+[0.823s] -- Up-to-date symlink: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/local_setup.bash
+[0.823s] -- Up-to-date symlink: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/local_setup.sh
+[0.827s] -- Up-to-date symlink: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/local_setup.zsh
+[0.827s] -- Up-to-date symlink: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/local_setup.dsv
+[0.827s] -- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/package.dsv
+[0.836s] -- Up-to-date symlink: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/detection_fusion/share/ament_index/resource_index/packages/detection_fusion
+[0.837s] -- Up-to-date symlink: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/cmake/detection_fusionConfig.cmake
+[0.837s] -- Up-to-date symlink: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/cmake/detection_fusionConfig-version.cmake
+[0.837s] -- Up-to-date symlink: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/package.xml

@@ -1,0 +1,12 @@
+-- The CXX compiler identification is GNU 12.3.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+[31mCMake Error at /home/wuta/WUTA/WUTA-FSD/ros2_ws/build/kiss_icp/_deps/sophus-src/CMakeLists.txt:1 (cmake_minimum_required):
+  CMake 3.24 or higher is required.  You are running version 3.22.1
+
+[0m
+-- Configuring incomplete, errors occurred!
+See also "/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/kiss_icp/CMakeFiles/CMakeOutput.log".

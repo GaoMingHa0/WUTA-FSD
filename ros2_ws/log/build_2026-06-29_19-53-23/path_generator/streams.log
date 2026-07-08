@@ -1,0 +1,23 @@
+[0.058s] Invoking command in '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/path_generator': AMENT_PREFIX_PATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/wuta/.local/bin/cmake --build /home/wuta/WUTA/WUTA-FSD/ros2_ws/build/path_generator -- -j12 -l12
+[0.302s] [100%] Built target path_generator_node
+[0.310s] Invoked command in '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/path_generator' returned '0': AMENT_PREFIX_PATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/wuta/.local/bin/cmake --build /home/wuta/WUTA/WUTA-FSD/ros2_ws/build/path_generator -- -j12 -l12
+[0.311s] Invoking command in '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/path_generator': AMENT_PREFIX_PATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/wuta/.local/bin/cmake --install /home/wuta/WUTA/WUTA-FSD/ros2_ws/build/path_generator
+[0.506s] -- Install configuration: ""
+[0.506s] -- Execute custom install script
+[0.506s] -- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/path_generator/lib/path_generator/path_generator_node
+[0.506s] -- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/path_generator/share/path_generator/config/path_generator.yaml
+[0.506s] -- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/path_generator/share/ament_index/resource_index/package_run_dependencies/path_generator
+[0.506s] -- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/path_generator/share/ament_index/resource_index/parent_prefix_path/path_generator
+[0.507s] -- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/path_generator/share/path_generator/environment/ament_prefix_path.sh
+[0.570s] -- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/path_generator/share/path_generator/environment/ament_prefix_path.dsv
+[0.570s] -- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/path_generator/share/path_generator/environment/path.sh
+[0.570s] -- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/path_generator/share/path_generator/environment/path.dsv
+[0.570s] -- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/path_generator/share/path_generator/local_setup.bash
+[0.570s] -- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/path_generator/share/path_generator/local_setup.sh
+[0.570s] -- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/path_generator/share/path_generator/local_setup.zsh
+[0.570s] -- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/path_generator/share/path_generator/local_setup.dsv
+[0.570s] -- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/path_generator/share/path_generator/package.dsv
+[0.570s] -- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/path_generator/share/ament_index/resource_index/packages/path_generator
+[0.570s] -- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/path_generator/share/path_generator/cmake/path_generatorConfig.cmake
+[0.570s] -- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/path_generator/share/path_generator/cmake/path_generatorConfig-version.cmake
+[0.570s] -- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/path_generator/share/path_generator/package.xml

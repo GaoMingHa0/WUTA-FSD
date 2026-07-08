@@ -1,0 +1,1 @@
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/robot_localization/rosidl_generator_rs/robot_localization/rust/src/srv/rmw.rs

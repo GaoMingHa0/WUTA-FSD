@@ -1,0 +1,1 @@
+Invoking command in '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/kiss_icp': CMAKE_PREFIX_PATH=/opt/ros/humble /home/wuta/.local/bin/cmake --build /home/wuta/WUTA/WUTA-FSD/ros2_ws/build/kiss_icp -- -j12 -l12

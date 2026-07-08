@@ -1,0 +1,1 @@
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/boundary_detector/ament_cmake_core/boundary_detectorConfig-version.cmake

@@ -1,0 +1,20 @@
+[0.009s] Invoking command in '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/kiss_icp': CMAKE_PREFIX_PATH=/opt/ros/humble /home/wuta/.local/bin/cmake --build /home/wuta/WUTA/WUTA-FSD/ros2_ws/build/kiss_icp -- -j12 -l12
+[0.106s] [  7%] Building CXX object CMakeFiles/kiss_icp_node.dir/rclcpp_components/node_main_kiss_icp_node.cpp.o
+[0.107s] [ 14%] Building CXX object kiss_icp/core/CMakeFiles/kiss_icp_core.dir/VoxelHashMap.cpp.o
+[0.107s] [ 21%] Building CXX object kiss_icp/metrics/CMakeFiles/kiss_icp_metrics.dir/Metrics.cpp.o
+[0.107s] [ 28%] Building CXX object kiss_icp/core/CMakeFiles/kiss_icp_core.dir/VoxelUtils.cpp.o
+[0.108s] [ 35%] Building CXX object kiss_icp/core/CMakeFiles/kiss_icp_core.dir/Preprocessing.cpp.o
+[0.109s] [ 42%] Building CXX object kiss_icp/core/CMakeFiles/kiss_icp_core.dir/Registration.cpp.o
+[0.110s] [ 50%] Building CXX object kiss_icp/core/CMakeFiles/kiss_icp_core.dir/Threshold.cpp.o
+[8.586s] [ 57%] Linking CXX executable kiss_icp_node
+[8.812s] [ 57%] Built target kiss_icp_node
+[12.934s] [ 64%] Linking CXX static library libkiss_icp_core.a
+[12.958s] [ 64%] Built target kiss_icp_core
+[12.969s] [ 71%] Building CXX object kiss_icp/pipeline/CMakeFiles/kiss_icp_pipeline.dir/KissICP.cpp.o
+[15.364s] [ 78%] Linking CXX static library libkiss_icp_pipeline.a
+[15.384s] [ 78%] Built target kiss_icp_pipeline
+[15.396s] [ 85%] Building CXX object CMakeFiles/odometry_component.dir/src/OdometryServer.cpp.o
+[19.137s] [ 92%] Linking CXX static library libkiss_icp_metrics.a
+[19.157s] [ 92%] Built target kiss_icp_metrics
+[34.298s] [100%] Linking CXX shared library libodometry_component.so
+[34.467s] [100%] Built target odometry_component

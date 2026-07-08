@@ -1,0 +1,1 @@
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/autoware_msgs/rosidl_typesupport_fastrtps_c/autoware_msgs/msg/detail/waypoint__rosidl_typesupport_fastrtps_c.h

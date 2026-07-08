@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
-class MidPoint;
+#include "pathplanning/structs/Point2d.h"
+#include "pathplanning/structs/MidPoint.h"
 class PathSearch;
 class GlobalVariables;
 class Path {

@@ -26,7 +26,7 @@ target_include_directories(ndt_localization_node PUBLIC
 )
 target_link_libraries(ndt_localization_node ${PCL_LIBRARIES})
 ament_target_dependencies(ndt_localization_node
-  rclcpp sensor_msgs geometry_msgs nav_msgs wuta_msgs pcl_conversions
+  rclcpp sensor_msgs geometry_msgs nav_msgs visualization_msgs wuta_msgs pcl_conversions
 )
 
 # Map saver node

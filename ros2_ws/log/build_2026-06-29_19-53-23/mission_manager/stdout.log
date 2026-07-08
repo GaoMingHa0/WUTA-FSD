@@ -1,0 +1,20 @@
+[100%] Built target mission_manager_node
+-- Install configuration: ""
+-- Execute custom install script
+-- Up-to-date symlink: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/mission_manager/lib/mission_manager/mission_manager_node
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/config/.gitkeep
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/mission_manager/share/ament_index/resource_index/package_run_dependencies/mission_manager
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/mission_manager/share/ament_index/resource_index/parent_prefix_path/mission_manager
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/environment/ament_prefix_path.sh
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/environment/ament_prefix_path.dsv
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/environment/path.sh
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/environment/path.dsv
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/local_setup.bash
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/local_setup.sh
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/local_setup.zsh
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/local_setup.dsv
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/package.dsv
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/mission_manager/share/ament_index/resource_index/packages/mission_manager
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/cmake/mission_managerConfig.cmake
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/cmake/mission_managerConfig-version.cmake
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/package.xml

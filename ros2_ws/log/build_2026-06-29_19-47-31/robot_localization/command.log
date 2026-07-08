@@ -1,0 +1,1 @@
+Invoking command in '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/robot_localization': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/wuta/WUTA/WUTA-FSD/ros2_ws/src/localization/robot_localization -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/robot_localization

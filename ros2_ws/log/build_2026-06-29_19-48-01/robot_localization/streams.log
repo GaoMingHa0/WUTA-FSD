@@ -1,0 +1,59 @@
+[0.010s] Invoking command in '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/robot_localization': CMAKE_PREFIX_PATH=/opt/ros/humble /home/wuta/.local/bin/cmake /home/wuta/WUTA/WUTA-FSD/ros2_ws/src/localization/robot_localization -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/robot_localization
+[0.084s] CMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+[0.084s]   Compatibility with CMake < 3.10 will be removed from a future version of
+[0.084s]   CMake.
+[0.084s] 
+[0.084s]   Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+[0.084s]   to tell CMake that the project requires at least <min> but has been updated
+[0.084s]   to work with policies introduced by <max> or earlier.
+[0.084s] 
+[0.084s] 
+[0.140s] -- The C compiler identification is GNU 12.3.0
+[0.227s] -- The CXX compiler identification is GNU 12.3.0
+[0.237s] -- Detecting C compiler ABI info
+[0.305s] -- Detecting C compiler ABI info - done
+[0.323s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.323s] -- Detecting C compile features
+[0.323s] -- Detecting C compile features - done
+[0.335s] -- Detecting CXX compiler ABI info
+[0.409s] -- Detecting CXX compiler ABI info - done
+[0.428s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.428s] -- Detecting CXX compile features
+[0.429s] -- Detecting CXX compile features - done
+[0.435s] -- robot_localization: You did not request a specific build type: selecting 'RelWithDebInfo'.
+[0.435s] -- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+[0.553s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter
+[0.608s] -- Override CMake install command with custom implementation using symlinks instead of copying resources
+[0.615s] -- Found angles: 1.15.0 (/opt/ros/humble/share/angles/cmake)
+[0.617s] -- Found rclcpp: 16.0.19 (/opt/ros/humble/share/rclcpp/cmake)
+[0.652s] -- Found rosidl_generator_c: 3.1.8 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[0.655s] -- Found rosidl_adapter: 3.1.8 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[0.661s] -- Found rosidl_generator_cpp: 3.1.8 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[0.675s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[0.690s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[0.730s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[0.731s] -- Found rmw_fastrtps_cpp: 6.2.10 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[0.772s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")
+[0.848s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[0.918s] -- Found diagnostic_msgs: 4.9.1 (/opt/ros/humble/share/diagnostic_msgs/cmake)
+[0.934s] -- Found diagnostic_updater: 4.0.6 (/opt/ros/humble/share/diagnostic_updater/cmake)
+[0.948s] CMake Error at CMakeLists.txt:22 (find_package):
+[0.948s]   By not providing "Findgeographic_msgs.cmake" in CMAKE_MODULE_PATH this
+[0.948s]   project has asked CMake to find a package configuration file provided by
+[0.948s]   "geographic_msgs", but CMake did not find one.
+[0.948s] 
+[0.948s]   Could not find a package configuration file provided by "geographic_msgs"
+[0.948s]   with any of the following names:
+[0.948s] 
+[0.948s]     geographic_msgs.cps
+[0.948s]     geographic_msgsConfig.cmake
+[0.948s]     geographic_msgs-config.cmake
+[0.948s] 
+[0.948s]   Add the installation prefix of "geographic_msgs" to CMAKE_PREFIX_PATH or
+[0.948s]   set "geographic_msgs_DIR" to a directory containing one of the above files.
+[0.948s]   If "geographic_msgs" provides a separate development package or SDK, be
+[0.948s]   sure it has been installed.
+[0.948s] 
+[0.948s] 
+[0.948s] -- Configuring incomplete, errors occurred!
+[0.957s] Invoked command in '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/robot_localization' returned '1': CMAKE_PREFIX_PATH=/opt/ros/humble /home/wuta/.local/bin/cmake /home/wuta/WUTA/WUTA-FSD/ros2_ws/src/localization/robot_localization -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/robot_localization

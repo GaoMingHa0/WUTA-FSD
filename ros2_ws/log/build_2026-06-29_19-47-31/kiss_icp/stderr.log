@@ -1,0 +1,4 @@
+CMake Error at /home/wuta/WUTA/WUTA-FSD/ros2_ws/build/kiss_icp/_deps/sophus-src/CMakeLists.txt:1 (cmake_minimum_required):
+  CMake 3.24 or higher is required.  You are running version 3.22.1
+
+

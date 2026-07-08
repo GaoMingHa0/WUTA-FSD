@@ -1,10 +1,10 @@
 #pragma once
 #include <vector>
-
-class Point2d;
-class MidPoint;
-class Vect;
-class Triangle;
+#include <memory>
+#include "pathplanning/structs/Point2d.h"
+#include "pathplanning/structs/MidPoint.h"
+#include "pathplanning/structs/Vect.h"
+#include "pathplanning/structs/Triangle.h"
 namespace TOOL {
     // 计算向量 p1p2 和 p1p3 的叉乘
     bool IsPointOnLine(Point2d startPoint, Point2d lineP1 , Point2d lineP2) ;

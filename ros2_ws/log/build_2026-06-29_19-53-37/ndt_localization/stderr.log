@@ -1,0 +1,8 @@
+In file included from /home/wuta/WUTA/WUTA-FSD/ros2_ws/src/localization/ndt_localization/src/ndt_localization.cpp:1:
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/localization/ndt_localization/include/ndt_localization/ndt_localization.hpp:8:10: fatal error: visualization_msgs/msg/marker_array.hpp: No such file or directory
+    8 | #include <visualization_msgs/msg/marker_array.hpp>
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+gmake[2]: *** [CMakeFiles/ndt_localization_node.dir/build.make:79: CMakeFiles/ndt_localization_node.dir/src/ndt_localization.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:156: CMakeFiles/ndt_localization_node.dir/all] Error 2
+gmake: *** [Makefile:146: all] Error 2

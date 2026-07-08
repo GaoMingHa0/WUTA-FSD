@@ -1,8 +1,10 @@
 #pragma once
 #include <iostream>
 #include <vector>
-class MidPoint;
-class Vect;
+#include "pathplanning/structs/Point2d.h"
+#include "pathplanning/structs/MidPoint.h"
+#include "pathplanning/structs/Vect.h"
+#include "pathplanning/structs/Triangle.h"
 class Evaluation;
 class DelaunayTriangle;
 class GlobalVariables;

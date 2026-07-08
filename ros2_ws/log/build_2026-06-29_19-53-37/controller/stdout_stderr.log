@@ -1,0 +1,20 @@
+[100%] Built target controller_node
+-- Install configuration: ""
+-- Execute custom install script
+-- Up-to-date symlink: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/controller/lib/controller/controller_node
+-- Up-to-date symlink: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/controller/share/controller/controller.yaml
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/controller/share/ament_index/resource_index/package_run_dependencies/controller
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/controller/share/ament_index/resource_index/parent_prefix_path/controller
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/controller/share/controller/environment/ament_prefix_path.sh
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/controller/share/controller/environment/ament_prefix_path.dsv
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/controller/share/controller/environment/path.sh
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/controller/share/controller/environment/path.dsv
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/controller/share/controller/local_setup.bash
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/controller/share/controller/local_setup.sh
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/controller/share/controller/local_setup.zsh
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/controller/share/controller/local_setup.dsv
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/controller/share/controller/package.dsv
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/controller/share/ament_index/resource_index/packages/controller
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/controller/share/controller/cmake/controllerConfig.cmake
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/controller/share/controller/cmake/controllerConfig-version.cmake
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/controller/share/controller/package.xml

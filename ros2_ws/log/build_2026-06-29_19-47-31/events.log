@@ -1,0 +1,210 @@
+[0.000000] (-) TimerEvent: {}
+[0.000046] (kiss_icp) JobQueued: {'identifier': 'kiss_icp', 'dependencies': OrderedDict()}
+[0.000067] (robot_localization) JobQueued: {'identifier': 'robot_localization', 'dependencies': OrderedDict()}
+[0.000081] (wuta_msgs) JobQueued: {'identifier': 'wuta_msgs', 'dependencies': OrderedDict()}
+[0.000093] (boundary_detector) JobQueued: {'identifier': 'boundary_detector', 'dependencies': OrderedDict([('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000109] (camera_detection) JobQueued: {'identifier': 'camera_detection', 'dependencies': OrderedDict([('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000123] (cone_map_builder) JobQueued: {'identifier': 'cone_map_builder', 'dependencies': OrderedDict([('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000136] (controller) JobQueued: {'identifier': 'controller', 'dependencies': OrderedDict([('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000149] (detection_fusion) JobQueued: {'identifier': 'detection_fusion', 'dependencies': OrderedDict([('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000162] (kiss_icp_wrapper) JobQueued: {'identifier': 'kiss_icp_wrapper', 'dependencies': OrderedDict([('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000175] (lidar_detection) JobQueued: {'identifier': 'lidar_detection', 'dependencies': OrderedDict([('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000188] (localization_manager) JobQueued: {'identifier': 'localization_manager', 'dependencies': OrderedDict([('kiss_icp', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/kiss_icp'), ('robot_localization', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/robot_localization'), ('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000204] (mission_manager) JobQueued: {'identifier': 'mission_manager', 'dependencies': OrderedDict([('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000217] (ndt_localization) JobQueued: {'identifier': 'ndt_localization', 'dependencies': OrderedDict([('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000229] (path_generator) JobQueued: {'identifier': 'path_generator', 'dependencies': OrderedDict([('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000242] (wuta_tools) JobQueued: {'identifier': 'wuta_tools', 'dependencies': OrderedDict([('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000255] (wuta_msgs) JobStarted: {'identifier': 'wuta_msgs'}
+[0.003904] (kiss_icp) JobStarted: {'identifier': 'kiss_icp'}
+[0.006302] (robot_localization) JobStarted: {'identifier': 'robot_localization'}
+[0.009180] (wuta_msgs) JobProgress: {'identifier': 'wuta_msgs', 'progress': 'cmake'}
+[0.010132] (wuta_msgs) JobProgress: {'identifier': 'wuta_msgs', 'progress': 'build'}
+[0.010169] (wuta_msgs) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs', '--', '-j12', '-l12'], 'cwd': '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('ANTHROPIC_MODEL', 'DeepSeek-v4-pro'), ('HISTFILESIZE', '2147450879'), ('BLE_SESSION_ID', '1782729826.821136/3630'), ('AI_AGENT', 'claude-code_2-1-141_agent'), ('LANGUAGE', 'en_US:en'), ('USER', 'wuta'), ('CLAUDE_CODE_ENTRYPOINT', 'cli'), ('LC_TIME', 'zh_CN.UTF-8'), ('GIT_EDITOR', 'true'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('LESS', '-R'), ('HOME', '/home/wuta'), ('OLDPWD', '/home/wuta/WUTA/WUTA-FSD'), ('DESKTOP_SESSION', 'ubuntu'), ('LSCOLORS', 'Gxfxcxdxdxegedabagacad'), ('ANTHROPIC_DEFAULT_SONNET_MODEL', 'DeepSeek-V3.2'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('PAGER', 'less'), ('LC_MONETARY', 'zh_CN.UTF-8'), ('MANAGERPID', '1102'), ('LC_CTYPE', 'en_US.UTF-8'), ('SYSTEMD_EXEC_PID', '1526'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('TERMINATOR_DBUS_NAME', 'net.tenshu.Terminator21a9d5db22c73a993ff0b42f64b396873'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '3607'), ('ROS_DISTRO', 'humble'), ('GTK_IM_MODULE', 'ibus'), ('LOGNAME', 'wuta'), ('OSH', '/home/wuta/.oh-my-bash'), ('JOURNAL_STREAM', '8:8772'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'wuta'), ('ANTHROPIC_BASE_URL', 'https://api.deepseek.com/anthropic'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('ANTHROPIC_DEFAULT_OPUS_MODEL', 'DeepSeek-V3.2'), ('PATH', '/opt/ros/humble/bin:/usr/local/cuda-12.8/bin:/home/wuta/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/wuta/.claude/plugins/agent-browser-main/bin'), ('SESSION_MANAGER', 'local/wuta-Nuvo-7000-Series:@/tmp/.ICE-unix/1332,unix/wuta-Nuvo-7000-Series:/tmp/.ICE-unix/1332'), ('INVOCATION_ID', 'b64d8a03ca314c4bbf8e7abf3053db8c'), ('_ble_util_fdlist_cloexec', ''), ('PAPERSIZE', 'a4'), ('COREPACK_ENABLE_AUTO_PIN', '0'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'zh_CN.UTF-8'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('CLAUDE_EFFORT', 'high'), ('DISPLAY', ':0'), ('HISTSIZE', '2147450879'), ('TERMINATOR_DBUS_PATH', '/net/tenshu/Terminator2'), ('NoDefaultCurrentDirectoryInExePath', '1'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('IBUS_DISABLE_SNOOPER', '1'), ('LC_TELEPHONE', 'zh_CN.UTF-8'), ('ANTHROPIC_DEFAULT_HAIKU_MODEL', 'DeepSeek-V3.2'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/opt/ros/humble'), ('SHELL', '/bin/bash'), ('LC_NAME', 'zh_CN.UTF-8'), ('TERMINATOR_UUID', 'urn:uuid:e20a50af-f14d-4390-a0f1-0fdb1d19d4a5'), ('ANTHROPIC_AUTH_TOKEN', 'sk-2c4ee7544679453f9edbeaeaf883e544'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('CLAUDE_CODE_SESSION_ID', '02d1a7b5-a434-4976-a341-193259342e0e'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LDIBRARY_PATH', '/usr/local/cuda-12.8/lib64:'), ('CLAUDECODE', '1'), ('LC_MEASUREMENT', 'zh_CN.UTF-8'), ('LINENO', '1'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'zh_CN.UTF-8'), ('bleopt_connect_tty', '1'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('CLAUDE_CODE_EXECPATH', '/usr/lib/node_modules/@anthropic-ai/claude-code/bin/claude.exe'), ('_ble_util_fdvars_export', ''), ('PYTHONPATH', '/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('LC_NUMERIC', 'zh_CN.UTF-8'), ('LC_PAPER', 'zh_CN.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/opt/ros/humble')]), 'shell': False}
+[0.011534] (kiss_icp) JobProgress: {'identifier': 'kiss_icp', 'progress': 'cmake'}
+[0.011763] (kiss_icp) Command: {'cmd': ['/usr/bin/cmake', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/localization/kiss-icp/ros', '-DAMENT_CMAKE_SYMLINK_INSTALL=1', '-DCMAKE_INSTALL_PREFIX=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/kiss_icp'], 'cwd': '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/kiss_icp', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('ANTHROPIC_MODEL', 'DeepSeek-v4-pro'), ('HISTFILESIZE', '2147450879'), ('BLE_SESSION_ID', '1782729826.821136/3630'), ('AI_AGENT', 'claude-code_2-1-141_agent'), ('LANGUAGE', 'en_US:en'), ('USER', 'wuta'), ('CLAUDE_CODE_ENTRYPOINT', 'cli'), ('LC_TIME', 'zh_CN.UTF-8'), ('GIT_EDITOR', 'true'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('LESS', '-R'), ('HOME', '/home/wuta'), ('OLDPWD', '/home/wuta/WUTA/WUTA-FSD'), ('DESKTOP_SESSION', 'ubuntu'), ('LSCOLORS', 'Gxfxcxdxdxegedabagacad'), ('ANTHROPIC_DEFAULT_SONNET_MODEL', 'DeepSeek-V3.2'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('PAGER', 'less'), ('LC_MONETARY', 'zh_CN.UTF-8'), ('MANAGERPID', '1102'), ('LC_CTYPE', 'en_US.UTF-8'), ('SYSTEMD_EXEC_PID', '1526'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('TERMINATOR_DBUS_NAME', 'net.tenshu.Terminator21a9d5db22c73a993ff0b42f64b396873'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '3607'), ('ROS_DISTRO', 'humble'), ('GTK_IM_MODULE', 'ibus'), ('LOGNAME', 'wuta'), ('OSH', '/home/wuta/.oh-my-bash'), ('JOURNAL_STREAM', '8:8772'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'wuta'), ('ANTHROPIC_BASE_URL', 'https://api.deepseek.com/anthropic'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('ANTHROPIC_DEFAULT_OPUS_MODEL', 'DeepSeek-V3.2'), ('PATH', '/opt/ros/humble/bin:/usr/local/cuda-12.8/bin:/home/wuta/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/wuta/.claude/plugins/agent-browser-main/bin'), ('SESSION_MANAGER', 'local/wuta-Nuvo-7000-Series:@/tmp/.ICE-unix/1332,unix/wuta-Nuvo-7000-Series:/tmp/.ICE-unix/1332'), ('INVOCATION_ID', 'b64d8a03ca314c4bbf8e7abf3053db8c'), ('_ble_util_fdlist_cloexec', ''), ('PAPERSIZE', 'a4'), ('COREPACK_ENABLE_AUTO_PIN', '0'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'zh_CN.UTF-8'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('CLAUDE_EFFORT', 'high'), ('DISPLAY', ':0'), ('HISTSIZE', '2147450879'), ('TERMINATOR_DBUS_PATH', '/net/tenshu/Terminator2'), ('NoDefaultCurrentDirectoryInExePath', '1'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('IBUS_DISABLE_SNOOPER', '1'), ('LC_TELEPHONE', 'zh_CN.UTF-8'), ('ANTHROPIC_DEFAULT_HAIKU_MODEL', 'DeepSeek-V3.2'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/opt/ros/humble'), ('SHELL', '/bin/bash'), ('LC_NAME', 'zh_CN.UTF-8'), ('TERMINATOR_UUID', 'urn:uuid:e20a50af-f14d-4390-a0f1-0fdb1d19d4a5'), ('ANTHROPIC_AUTH_TOKEN', 'sk-2c4ee7544679453f9edbeaeaf883e544'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('CLAUDE_CODE_SESSION_ID', '02d1a7b5-a434-4976-a341-193259342e0e'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LDIBRARY_PATH', '/usr/local/cuda-12.8/lib64:'), ('CLAUDECODE', '1'), ('LC_MEASUREMENT', 'zh_CN.UTF-8'), ('LINENO', '1'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'zh_CN.UTF-8'), ('bleopt_connect_tty', '1'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/kiss_icp'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('CLAUDE_CODE_EXECPATH', '/usr/lib/node_modules/@anthropic-ai/claude-code/bin/claude.exe'), ('_ble_util_fdvars_export', ''), ('PYTHONPATH', '/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('LC_NUMERIC', 'zh_CN.UTF-8'), ('LC_PAPER', 'zh_CN.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/opt/ros/humble')]), 'shell': False}
+[0.013385] (robot_localization) JobProgress: {'identifier': 'robot_localization', 'progress': 'cmake'}
+[0.013922] (robot_localization) Command: {'cmd': ['/usr/bin/cmake', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/localization/robot_localization', '-DAMENT_CMAKE_SYMLINK_INSTALL=1', '-DCMAKE_INSTALL_PREFIX=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/robot_localization'], 'cwd': '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/robot_localization', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('ANTHROPIC_MODEL', 'DeepSeek-v4-pro'), ('HISTFILESIZE', '2147450879'), ('BLE_SESSION_ID', '1782729826.821136/3630'), ('AI_AGENT', 'claude-code_2-1-141_agent'), ('LANGUAGE', 'en_US:en'), ('USER', 'wuta'), ('CLAUDE_CODE_ENTRYPOINT', 'cli'), ('LC_TIME', 'zh_CN.UTF-8'), ('GIT_EDITOR', 'true'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('LESS', '-R'), ('HOME', '/home/wuta'), ('OLDPWD', '/home/wuta/WUTA/WUTA-FSD'), ('DESKTOP_SESSION', 'ubuntu'), ('LSCOLORS', 'Gxfxcxdxdxegedabagacad'), ('ANTHROPIC_DEFAULT_SONNET_MODEL', 'DeepSeek-V3.2'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('PAGER', 'less'), ('LC_MONETARY', 'zh_CN.UTF-8'), ('MANAGERPID', '1102'), ('LC_CTYPE', 'en_US.UTF-8'), ('SYSTEMD_EXEC_PID', '1526'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('TERMINATOR_DBUS_NAME', 'net.tenshu.Terminator21a9d5db22c73a993ff0b42f64b396873'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '3607'), ('ROS_DISTRO', 'humble'), ('GTK_IM_MODULE', 'ibus'), ('LOGNAME', 'wuta'), ('OSH', '/home/wuta/.oh-my-bash'), ('JOURNAL_STREAM', '8:8772'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'wuta'), ('ANTHROPIC_BASE_URL', 'https://api.deepseek.com/anthropic'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('ANTHROPIC_DEFAULT_OPUS_MODEL', 'DeepSeek-V3.2'), ('PATH', '/opt/ros/humble/bin:/usr/local/cuda-12.8/bin:/home/wuta/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/wuta/.claude/plugins/agent-browser-main/bin'), ('SESSION_MANAGER', 'local/wuta-Nuvo-7000-Series:@/tmp/.ICE-unix/1332,unix/wuta-Nuvo-7000-Series:/tmp/.ICE-unix/1332'), ('INVOCATION_ID', 'b64d8a03ca314c4bbf8e7abf3053db8c'), ('_ble_util_fdlist_cloexec', ''), ('PAPERSIZE', 'a4'), ('COREPACK_ENABLE_AUTO_PIN', '0'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'zh_CN.UTF-8'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('CLAUDE_EFFORT', 'high'), ('DISPLAY', ':0'), ('HISTSIZE', '2147450879'), ('TERMINATOR_DBUS_PATH', '/net/tenshu/Terminator2'), ('NoDefaultCurrentDirectoryInExePath', '1'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('IBUS_DISABLE_SNOOPER', '1'), ('LC_TELEPHONE', 'zh_CN.UTF-8'), ('ANTHROPIC_DEFAULT_HAIKU_MODEL', 'DeepSeek-V3.2'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/opt/ros/humble'), ('SHELL', '/bin/bash'), ('LC_NAME', 'zh_CN.UTF-8'), ('TERMINATOR_UUID', 'urn:uuid:e20a50af-f14d-4390-a0f1-0fdb1d19d4a5'), ('ANTHROPIC_AUTH_TOKEN', 'sk-2c4ee7544679453f9edbeaeaf883e544'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('CLAUDE_CODE_SESSION_ID', '02d1a7b5-a434-4976-a341-193259342e0e'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LDIBRARY_PATH', '/usr/local/cuda-12.8/lib64:'), ('CLAUDECODE', '1'), ('LC_MEASUREMENT', 'zh_CN.UTF-8'), ('LINENO', '1'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'zh_CN.UTF-8'), ('bleopt_connect_tty', '1'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/robot_localization'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('CLAUDE_CODE_EXECPATH', '/usr/lib/node_modules/@anthropic-ai/claude-code/bin/claude.exe'), ('_ble_util_fdvars_export', ''), ('PYTHONPATH', '/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('LC_NUMERIC', 'zh_CN.UTF-8'), ('LC_PAPER', 'zh_CN.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/opt/ros/humble')]), 'shell': False}
+[0.029225] (robot_localization) StdoutLine: {'line': b"-- robot_localization: You did not request a specific build type: selecting 'RelWithDebInfo'.\n"}
+[0.029420] (robot_localization) StdoutLine: {'line': b'-- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)\n'}
+[0.048044] (wuta_msgs) StdoutLine: {'line': b'[  1%] Generating C code for ROS interfaces\n'}
+[0.060007] (wuta_msgs) StdoutLine: {'line': b'[  3%] Generating C++ code for ROS interfaces\n'}
+[0.060658] (wuta_msgs) StdoutLine: {'line': b'[  5%] Generating Rust code for ROS interfaces\n'}
+[0.068063] (wuta_msgs) StdoutLine: {'line': b'[  5%] Built target ament_cmake_python_symlink_wuta_msgs\n'}
+[0.099339] (-) TimerEvent: {}
+[0.132742] (kiss_icp) StderrLine: {'line': b'CMake Error at /home/wuta/WUTA/WUTA-FSD/ros2_ws/build/kiss_icp/_deps/sophus-src/CMakeLists.txt:1 (cmake_minimum_required):\n'}
+[0.132907] (kiss_icp) StderrLine: {'line': b'  CMake 3.24 or higher is required.  You are running version 3.22.1\n'}
+[0.132983] (kiss_icp) StderrLine: {'line': b'\n'}
+[0.133047] (kiss_icp) StderrLine: {'line': b'\n'}
+[0.133107] (kiss_icp) StdoutLine: {'line': b'-- Configuring incomplete, errors occurred!\n'}
+[0.133178] (kiss_icp) StdoutLine: {'line': b'See also "/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/kiss_icp/CMakeFiles/CMakeOutput.log".\n'}
+[0.134868] (kiss_icp) CommandEnded: {'returncode': 1}
+[0.162954] (kiss_icp) JobEnded: {'identifier': 'kiss_icp', 'rc': 1}
+[0.168831] (robot_localization) StdoutLine: {'line': b'-- Override CMake install command with custom implementation using symlinks instead of copying resources\n'}
+[0.180909] (robot_localization) StdoutLine: {'line': b'-- Found angles: 1.15.0 (/opt/ros/humble/share/angles/cmake)\n'}
+[0.183169] (robot_localization) StdoutLine: {'line': b'-- Found rclcpp: 16.0.19 (/opt/ros/humble/share/rclcpp/cmake)\n'}
+[0.199436] (-) TimerEvent: {}
+[0.225681] (robot_localization) StdoutLine: {'line': b'-- Found rosidl_generator_c: 3.1.8 (/opt/ros/humble/share/rosidl_generator_c/cmake)\n'}
+[0.228644] (robot_localization) StdoutLine: {'line': b'-- Found rosidl_adapter: 3.1.8 (/opt/ros/humble/share/rosidl_adapter/cmake)\n'}
+[0.235788] (robot_localization) StdoutLine: {'line': b'-- Found rosidl_generator_cpp: 3.1.8 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)\n'}
+[0.248061] (robot_localization) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[0.262104] (robot_localization) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[0.299532] (-) TimerEvent: {}
+[0.305261] (robot_localization) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)\n'}
+[0.306973] (robot_localization) StdoutLine: {'line': b'-- Found rmw_fastrtps_cpp: 6.2.10 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)\n'}
+[0.368783] (wuta_msgs) StdoutLine: {'line': b'running egg_info\n'}
+[0.369617] (wuta_msgs) StdoutLine: {'line': b'creating wuta_msgs.egg-info\n'}
+[0.369862] (wuta_msgs) StdoutLine: {'line': b'writing wuta_msgs.egg-info/PKG-INFO\n'}
+[0.370106] (wuta_msgs) StdoutLine: {'line': b'writing dependency_links to wuta_msgs.egg-info/dependency_links.txt\n'}
+[0.370369] (wuta_msgs) StdoutLine: {'line': b'writing top-level names to wuta_msgs.egg-info/top_level.txt\n'}
+[0.370646] (wuta_msgs) StdoutLine: {'line': b"writing manifest file 'wuta_msgs.egg-info/SOURCES.txt'\n"}
+[0.373465] (wuta_msgs) StdoutLine: {'line': b"reading manifest file 'wuta_msgs.egg-info/SOURCES.txt'\n"}
+[0.374067] (wuta_msgs) StdoutLine: {'line': b"writing manifest file 'wuta_msgs.egg-info/SOURCES.txt'\n"}
+[0.399615] (-) TimerEvent: {}
+[0.404462] (wuta_msgs) StdoutLine: {'line': b'[  5%] Built target ament_cmake_python_build_wuta_msgs_egg\n'}
+[0.428863] (robot_localization) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_fastrtps_cpp' as default\n"}
+[0.485684] (robot_localization) StdoutLine: {'line': b'-- Found diagnostic_msgs: 4.9.1 (/opt/ros/humble/share/diagnostic_msgs/cmake)\n'}
+[0.499730] (-) TimerEvent: {}
+[0.504736] (robot_localization) StdoutLine: {'line': b'-- Found diagnostic_updater: 4.0.6 (/opt/ros/humble/share/diagnostic_updater/cmake)\n'}
+[0.520571] (robot_localization) StderrLine: {'line': b'CMake Error at CMakeLists.txt:22 (find_package):\n'}
+[0.520721] (robot_localization) StderrLine: {'line': b'  By not providing "Findgeographic_msgs.cmake" in CMAKE_MODULE_PATH this\n'}
+[0.520787] (robot_localization) StderrLine: {'line': b'  project has asked CMake to find a package configuration file provided by\n'}
+[0.520844] (robot_localization) StderrLine: {'line': b'  "geographic_msgs", but CMake did not find one.\n'}
+[0.520900] (robot_localization) StderrLine: {'line': b'\n'}
+[0.520953] (robot_localization) StderrLine: {'line': b'  Could not find a package configuration file provided by "geographic_msgs"\n'}
+[0.521006] (robot_localization) StderrLine: {'line': b'  with any of the following names:\n'}
+[0.521073] (robot_localization) StderrLine: {'line': b'\n'}
+[0.521126] (robot_localization) StderrLine: {'line': b'    geographic_msgsConfig.cmake\n'}
+[0.521179] (robot_localization) StderrLine: {'line': b'    geographic_msgs-config.cmake\n'}
+[0.521231] (robot_localization) StderrLine: {'line': b'\n'}
+[0.521283] (robot_localization) StderrLine: {'line': b'  Add the installation prefix of "geographic_msgs" to CMAKE_PREFIX_PATH or\n'}
+[0.521336] (robot_localization) StderrLine: {'line': b'  set "geographic_msgs_DIR" to a directory containing one of the above files.\n'}
+[0.521389] (robot_localization) StderrLine: {'line': b'  If "geographic_msgs" provides a separate development package or SDK, be\n'}
+[0.521456] (robot_localization) StderrLine: {'line': b'  sure it has been installed.\n'}
+[0.521512] (robot_localization) StderrLine: {'line': b'\n'}
+[0.521565] (robot_localization) StderrLine: {'line': b'\n'}
+[0.521618] (robot_localization) StdoutLine: {'line': b'-- Configuring incomplete, errors occurred!\n'}
+[0.521676] (robot_localization) StdoutLine: {'line': b'See also "/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/robot_localization/CMakeFiles/CMakeOutput.log".\n'}
+[0.527102] (robot_localization) JobEnded: {'identifier': 'robot_localization', 'rc': 'SIGINT'}
+[0.599812] (-) TimerEvent: {}
+[0.699992] (-) TimerEvent: {}
+[0.756369] (wuta_msgs) StdoutLine: {'line': b'[  5%] Built target wuta_msgs__rs\n'}
+[0.800104] (-) TimerEvent: {}
+[0.855001] (wuta_msgs) StdoutLine: {'line': b'[  5%] Built target wuta_msgs__cpp\n'}
+[0.871426] (wuta_msgs) StdoutLine: {'line': b'[  8%] Generating C++ introspection for ROS interfaces\n'}
+[0.871674] (wuta_msgs) StdoutLine: {'line': b'[  8%] Generating C++ type support for eProsima Fast-RTPS\n'}
+[0.872164] (wuta_msgs) StdoutLine: {'line': b'[ 10%] Generating C++ type support dispatch for ROS interfaces\n'}
+[0.900227] (-) TimerEvent: {}
+[0.914119] (wuta_msgs) StdoutLine: {'line': b'[ 14%] Building C object CMakeFiles/wuta_msgs__rosidl_generator_c.dir/rosidl_generator_c/wuta_msgs/msg/detail/cone__functions.c.o\n'}
+[0.914469] (wuta_msgs) StdoutLine: {'line': b'[ 14%] Building C object CMakeFiles/wuta_msgs__rosidl_generator_c.dir/rosidl_generator_c/wuta_msgs/msg/detail/cone_array__functions.c.o\n'}
+[0.914645] (wuta_msgs) StdoutLine: {'line': b'[ 16%] Building C object CMakeFiles/wuta_msgs__rosidl_generator_c.dir/rosidl_generator_c/wuta_msgs/msg/detail/cone_map__functions.c.o\n'}
+[0.918733] (wuta_msgs) StdoutLine: {'line': b'[ 17%] Building C object CMakeFiles/wuta_msgs__rosidl_generator_c.dir/rosidl_generator_c/wuta_msgs/msg/detail/mission_state__functions.c.o\n'}
+[1.000349] (-) TimerEvent: {}
+[1.010928] (wuta_msgs) StdoutLine: {'line': b'[ 19%] Linking C shared library libwuta_msgs__rosidl_generator_c.so\n'}
+[1.054971] (wuta_msgs) StdoutLine: {'line': b'[ 19%] Built target wuta_msgs__rosidl_generator_c\n'}
+[1.065928] (wuta_msgs) StdoutLine: {'line': b'[ 21%] Generating C type support for eProsima Fast-RTPS\n'}
+[1.066264] (wuta_msgs) StdoutLine: {'line': b'[ 25%] Generating C introspection for ROS interfaces\n'}
+[1.066428] (wuta_msgs) StdoutLine: {'line': b'[ 25%] Generating C type support dispatch for ROS interfaces\n'}
+[1.100464] (-) TimerEvent: {}
+[1.200646] (-) TimerEvent: {}
+[1.300805] (-) TimerEvent: {}
+[1.400974] (-) TimerEvent: {}
+[1.501145] (-) TimerEvent: {}
+[1.575713] (wuta_msgs) StdoutLine: {'line': b'[ 28%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/wuta_msgs/msg/cone_array__type_support.cpp.o\n'}
+[1.575921] (wuta_msgs) StdoutLine: {'line': b'[ 28%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/wuta_msgs/msg/cone__type_support.cpp.o\n'}
+[1.576046] (wuta_msgs) StdoutLine: {'line': b'[ 30%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/wuta_msgs/msg/cone_map__type_support.cpp.o\n'}
+[1.576499] (wuta_msgs) StdoutLine: {'line': b'[ 32%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/wuta_msgs/msg/mission_state__type_support.cpp.o\n'}
+[1.601237] (-) TimerEvent: {}
+[1.673457] (wuta_msgs) StdoutLine: {'line': b'[ 33%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/wuta_msgs/msg/detail/cone__type_support.cpp.o\n'}
+[1.676780] (wuta_msgs) StdoutLine: {'line': b'[ 35%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/wuta_msgs/msg/detail/cone_array__type_support.cpp.o\n'}
+[1.676981] (wuta_msgs) StdoutLine: {'line': b'[ 37%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/wuta_msgs/msg/detail/cone_map__type_support.cpp.o\n'}
+[1.688619] (wuta_msgs) StdoutLine: {'line': b'[ 39%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/wuta_msgs/msg/detail/mission_state__type_support.cpp.o\n'}
+[1.701339] (-) TimerEvent: {}
+[1.719957] (wuta_msgs) StdoutLine: {'line': b'[ 41%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/wuta_msgs/msg/detail/dds_fastrtps/cone__type_support.cpp.o\n'}
+[1.804453] (-) TimerEvent: {}
+[1.904634] (-) TimerEvent: {}
+[1.937593] (wuta_msgs) StdoutLine: {'line': b'[ 42%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/wuta_msgs/msg/cone__type_support.cpp.o\n'}
+[1.996500] (wuta_msgs) StdoutLine: {'line': b'[ 44%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/wuta_msgs/msg/cone_array__type_support.cpp.o\n'}
+[2.004741] (-) TimerEvent: {}
+[2.070746] (wuta_msgs) StdoutLine: {'line': b'[ 46%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/wuta_msgs/msg/cone_map__type_support.cpp.o\n'}
+[2.106079] (-) TimerEvent: {}
+[2.123616] (wuta_msgs) StdoutLine: {'line': b'[ 48%] Building C object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/wuta_msgs/msg/detail/cone__type_support.c.o\n'}
+[2.143309] (wuta_msgs) StdoutLine: {'line': b'[ 50%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/wuta_msgs/msg/mission_state__type_support.cpp.o\n'}
+[2.155649] (wuta_msgs) StdoutLine: {'line': b'[ 51%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/wuta_msgs/msg/detail/cone__type_support_c.cpp.o\n'}
+[2.197429] (wuta_msgs) StdoutLine: {'line': b'[ 53%] Building C object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/wuta_msgs/msg/detail/cone_array__type_support.c.o\n'}
+[2.206693] (-) TimerEvent: {}
+[2.210644] (wuta_msgs) StdoutLine: {'line': b'[ 55%] Linking CXX shared library libwuta_msgs__rosidl_typesupport_c.so\n'}
+[2.239376] (wuta_msgs) StdoutLine: {'line': b'[ 57%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/wuta_msgs/msg/detail/dds_fastrtps/cone_array__type_support.cpp.o\n'}
+[2.246497] (wuta_msgs) StdoutLine: {'line': b'[ 58%] Building C object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/wuta_msgs/msg/detail/cone_map__type_support.c.o\n'}
+[2.246952] (wuta_msgs) StdoutLine: {'line': b'[ 60%] Building C object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/wuta_msgs/msg/detail/mission_state__type_support.c.o\n'}
+[2.274960] (wuta_msgs) StdoutLine: {'line': b'[ 62%] Linking CXX shared library libwuta_msgs__rosidl_typesupport_cpp.so\n'}
+[2.284689] (wuta_msgs) StdoutLine: {'line': b'[ 64%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/wuta_msgs/msg/detail/dds_fastrtps/cone_map__type_support.cpp.o\n'}
+[2.288923] (wuta_msgs) StdoutLine: {'line': b'[ 64%] Built target wuta_msgs__rosidl_typesupport_c\n'}
+[2.302525] (wuta_msgs) StdoutLine: {'line': b'[ 66%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/wuta_msgs/msg/detail/cone_array__type_support_c.cpp.o\n'}
+[2.306794] (-) TimerEvent: {}
+[2.332642] (wuta_msgs) StdoutLine: {'line': b'[ 67%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/wuta_msgs/msg/detail/cone_map__type_support_c.cpp.o\n'}
+[2.362448] (wuta_msgs) StdoutLine: {'line': b'[ 67%] Built target wuta_msgs__rosidl_typesupport_cpp\n'}
+[2.362692] (wuta_msgs) StdoutLine: {'line': b'[ 69%] Linking C shared library libwuta_msgs__rosidl_typesupport_introspection_c.so\n'}
+[2.375496] (wuta_msgs) StdoutLine: {'line': b'[ 71%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/wuta_msgs/msg/detail/mission_state__type_support_c.cpp.o\n'}
+[2.399025] (wuta_msgs) StdoutLine: {'line': b'[ 73%] Building CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/wuta_msgs/msg/detail/dds_fastrtps/mission_state__type_support.cpp.o\n'}
+[2.406903] (-) TimerEvent: {}
+[2.421034] (wuta_msgs) StdoutLine: {'line': b'[ 73%] Built target wuta_msgs__rosidl_typesupport_introspection_c\n'}
+[2.508473] (-) TimerEvent: {}
+[2.528549] (wuta_msgs) StdoutLine: {'line': b'[ 75%] Linking CXX shared library libwuta_msgs__rosidl_typesupport_introspection_cpp.so\n'}
+[2.608597] (-) TimerEvent: {}
+[2.635021] (wuta_msgs) StdoutLine: {'line': b'[ 75%] Built target wuta_msgs__rosidl_typesupport_introspection_cpp\n'}
+[2.708705] (-) TimerEvent: {}
+[2.808896] (-) TimerEvent: {}
+[2.909071] (-) TimerEvent: {}
+[3.009242] (-) TimerEvent: {}
+[3.024437] (wuta_msgs) StdoutLine: {'line': b'[ 76%] Linking CXX shared library libwuta_msgs__rosidl_typesupport_fastrtps_c.so\n'}
+[3.104252] (wuta_msgs) StdoutLine: {'line': b'[ 76%] Built target wuta_msgs__rosidl_typesupport_fastrtps_c\n'}
+[3.109320] (-) TimerEvent: {}
+[3.112707] (wuta_msgs) StdoutLine: {'line': b'[ 78%] Linking CXX shared library libwuta_msgs__rosidl_typesupport_fastrtps_cpp.so\n'}
+[3.185745] (wuta_msgs) StdoutLine: {'line': b'[ 78%] Built target wuta_msgs__rosidl_typesupport_fastrtps_cpp\n'}
+[3.205330] (wuta_msgs) StdoutLine: {'line': b'[ 78%] Built target wuta_msgs\n'}
+[3.209395] (-) TimerEvent: {}
+[3.225022] (wuta_msgs) StdoutLine: {'line': b'[ 80%] Generating Python code for ROS interfaces\n'}
+[3.309477] (-) TimerEvent: {}
+[3.409624] (-) TimerEvent: {}
+[3.509792] (-) TimerEvent: {}
+[3.609948] (-) TimerEvent: {}
+[3.710118] (-) TimerEvent: {}
+[3.810292] (-) TimerEvent: {}
+[3.910446] (-) TimerEvent: {}
+[4.010600] (-) TimerEvent: {}
+[4.110755] (-) TimerEvent: {}
+[4.182536] (wuta_msgs) StdoutLine: {'line': b'[ 80%] Built target wuta_msgs__py\n'}
+[4.200619] (wuta_msgs) StdoutLine: {'line': b'[ 83%] Building C object CMakeFiles/wuta_msgs__rosidl_generator_py.dir/rosidl_generator_py/wuta_msgs/msg/_cone_array_s.c.o\n'}
+[4.200805] (wuta_msgs) StdoutLine: {'line': b'[ 83%] Building C object CMakeFiles/wuta_msgs__rosidl_generator_py.dir/rosidl_generator_py/wuta_msgs/msg/_cone_s.c.o\n'}
+[4.200916] (wuta_msgs) StdoutLine: {'line': b'[ 85%] Building C object CMakeFiles/wuta_msgs__rosidl_generator_py.dir/rosidl_generator_py/wuta_msgs/msg/_cone_map_s.c.o\n'}
+[4.201012] (wuta_msgs) StdoutLine: {'line': b'[ 87%] Building C object CMakeFiles/wuta_msgs__rosidl_generator_py.dir/rosidl_generator_py/wuta_msgs/msg/_mission_state_s.c.o\n'}
+[4.210889] (-) TimerEvent: {}
+[4.311032] (-) TimerEvent: {}
+[4.375185] (wuta_msgs) StdoutLine: {'line': b'[ 89%] Linking C shared library rosidl_generator_py/wuta_msgs/libwuta_msgs__rosidl_generator_py.so\n'}
+[4.411132] (-) TimerEvent: {}
+[4.417209] (wuta_msgs) StdoutLine: {'line': b'[ 89%] Built target wuta_msgs__rosidl_generator_py\n'}
+[4.435698] (wuta_msgs) StdoutLine: {'line': b'[ 92%] Building C object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_c__pyext.dir/rosidl_generator_py/wuta_msgs/_wuta_msgs_s.ep.rosidl_typesupport_fastrtps_c.c.o\n'}
+[4.435901] (wuta_msgs) StdoutLine: {'line': b'[ 92%] Building C object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_c__pyext.dir/rosidl_generator_py/wuta_msgs/_wuta_msgs_s.ep.rosidl_typesupport_introspection_c.c.o\n'}
+[4.436032] (wuta_msgs) StdoutLine: {'line': b'[ 94%] Building C object CMakeFiles/wuta_msgs__rosidl_typesupport_c__pyext.dir/rosidl_generator_py/wuta_msgs/_wuta_msgs_s.ep.rosidl_typesupport_c.c.o\n'}
+[4.511250] (-) TimerEvent: {}
+[4.553923] (wuta_msgs) StdoutLine: {'line': b'[100%] Linking C shared library rosidl_generator_py/wuta_msgs/wuta_msgs_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so\n'}
+[4.554049] (wuta_msgs) StdoutLine: {'line': b'[100%] Linking C shared library rosidl_generator_py/wuta_msgs/wuta_msgs_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so\n'}
+[4.554108] (wuta_msgs) StdoutLine: {'line': b'[100%] Linking C shared library rosidl_generator_py/wuta_msgs/wuta_msgs_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so\n'}
+[4.593092] (wuta_msgs) StdoutLine: {'line': b'[100%] Built target wuta_msgs__rosidl_typesupport_c__pyext\n'}
+[4.594054] (wuta_msgs) StdoutLine: {'line': b'[100%] Built target wuta_msgs__rosidl_typesupport_introspection_c__pyext\n'}
+[4.594238] (wuta_msgs) StdoutLine: {'line': b'[100%] Built target wuta_msgs__rosidl_typesupport_fastrtps_c__pyext\n'}
+[4.605233] (wuta_msgs) JobEnded: {'identifier': 'wuta_msgs', 'rc': 'SIGINT'}
+[4.611422] (-) TimerEvent: {}
+[4.615673] (boundary_detector) JobSkipped: {'identifier': 'boundary_detector'}
+[4.615703] (camera_detection) JobSkipped: {'identifier': 'camera_detection'}
+[4.615721] (cone_map_builder) JobSkipped: {'identifier': 'cone_map_builder'}
+[4.615735] (controller) JobSkipped: {'identifier': 'controller'}
+[4.615749] (detection_fusion) JobSkipped: {'identifier': 'detection_fusion'}
+[4.615762] (kiss_icp_wrapper) JobSkipped: {'identifier': 'kiss_icp_wrapper'}
+[4.615775] (lidar_detection) JobSkipped: {'identifier': 'lidar_detection'}
+[4.615788] (localization_manager) JobSkipped: {'identifier': 'localization_manager'}
+[4.615801] (mission_manager) JobSkipped: {'identifier': 'mission_manager'}
+[4.615814] (ndt_localization) JobSkipped: {'identifier': 'ndt_localization'}
+[4.615826] (path_generator) JobSkipped: {'identifier': 'path_generator'}
+[4.615839] (wuta_tools) JobSkipped: {'identifier': 'wuta_tools'}
+[4.615852] (-) EventReactorShutdown: {}

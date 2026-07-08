@@ -1,0 +1,1 @@
+Invoking command in '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/wuta/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs -- -j12 -l12

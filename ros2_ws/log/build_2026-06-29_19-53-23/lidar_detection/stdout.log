@@ -1,0 +1,20 @@
+[100%] Built target lidar_detection_node
+-- Install configuration: ""
+-- Execute custom install script
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/lib/lidar_detection/lidar_detection_node
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/config/lidar_detection.yaml
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/ament_index/resource_index/package_run_dependencies/lidar_detection
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/ament_index/resource_index/parent_prefix_path/lidar_detection
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/environment/ament_prefix_path.sh
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/environment/ament_prefix_path.dsv
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/environment/path.sh
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/environment/path.dsv
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/local_setup.bash
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/local_setup.sh
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/local_setup.zsh
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/local_setup.dsv
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/package.dsv
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/ament_index/resource_index/packages/lidar_detection
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/cmake/lidar_detectionConfig.cmake
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/cmake/lidar_detectionConfig-version.cmake
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/package.xml

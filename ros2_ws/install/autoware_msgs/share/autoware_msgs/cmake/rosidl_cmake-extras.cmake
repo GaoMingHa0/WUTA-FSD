@@ -1,0 +1,1 @@
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/autoware_msgs/rosidl_cmake/rosidl_cmake-extras.cmake

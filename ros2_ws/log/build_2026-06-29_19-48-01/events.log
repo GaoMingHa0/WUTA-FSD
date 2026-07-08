@@ -1,0 +1,402 @@
+[0.000000] (-) TimerEvent: {}
+[0.000569] (kiss_icp) JobQueued: {'identifier': 'kiss_icp', 'dependencies': OrderedDict()}
+[0.000596] (robot_localization) JobQueued: {'identifier': 'robot_localization', 'dependencies': OrderedDict()}
+[0.000611] (wuta_msgs) JobQueued: {'identifier': 'wuta_msgs', 'dependencies': OrderedDict()}
+[0.000624] (boundary_detector) JobQueued: {'identifier': 'boundary_detector', 'dependencies': OrderedDict([('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000640] (camera_detection) JobQueued: {'identifier': 'camera_detection', 'dependencies': OrderedDict([('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000652] (cone_map_builder) JobQueued: {'identifier': 'cone_map_builder', 'dependencies': OrderedDict([('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000664] (controller) JobQueued: {'identifier': 'controller', 'dependencies': OrderedDict([('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000678] (detection_fusion) JobQueued: {'identifier': 'detection_fusion', 'dependencies': OrderedDict([('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000691] (kiss_icp_wrapper) JobQueued: {'identifier': 'kiss_icp_wrapper', 'dependencies': OrderedDict([('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000704] (lidar_detection) JobQueued: {'identifier': 'lidar_detection', 'dependencies': OrderedDict([('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000717] (localization_manager) JobQueued: {'identifier': 'localization_manager', 'dependencies': OrderedDict([('kiss_icp', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/kiss_icp'), ('robot_localization', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/robot_localization'), ('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000732] (mission_manager) JobQueued: {'identifier': 'mission_manager', 'dependencies': OrderedDict([('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000745] (ndt_localization) JobQueued: {'identifier': 'ndt_localization', 'dependencies': OrderedDict([('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000758] (path_generator) JobQueued: {'identifier': 'path_generator', 'dependencies': OrderedDict([('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000770] (wuta_tools) JobQueued: {'identifier': 'wuta_tools', 'dependencies': OrderedDict([('wuta_msgs', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000783] (wuta_msgs) JobStarted: {'identifier': 'wuta_msgs'}
+[0.004661] (kiss_icp) JobStarted: {'identifier': 'kiss_icp'}
+[0.007018] (robot_localization) JobStarted: {'identifier': 'robot_localization'}
+[0.009716] (wuta_msgs) JobProgress: {'identifier': 'wuta_msgs', 'progress': 'cmake'}
+[0.010742] (wuta_msgs) JobProgress: {'identifier': 'wuta_msgs', 'progress': 'build'}
+[0.010780] (wuta_msgs) Command: {'cmd': ['/home/wuta/.local/bin/cmake', '--build', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs', '--', '-j12', '-l12'], 'cwd': '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('ANTHROPIC_MODEL', 'DeepSeek-v4-pro'), ('HISTFILESIZE', '2147450879'), ('BLE_SESSION_ID', '1782729826.821136/3630'), ('AI_AGENT', 'claude-code_2-1-141_agent'), ('LANGUAGE', 'en_US:en'), ('USER', 'wuta'), ('CLAUDE_CODE_ENTRYPOINT', 'cli'), ('LC_TIME', 'zh_CN.UTF-8'), ('GIT_EDITOR', 'true'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('LESS', '-R'), ('HOME', '/home/wuta'), ('OLDPWD', '/home/wuta/WUTA/WUTA-FSD'), ('DESKTOP_SESSION', 'ubuntu'), ('LSCOLORS', 'Gxfxcxdxdxegedabagacad'), ('ANTHROPIC_DEFAULT_SONNET_MODEL', 'DeepSeek-V3.2'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('PAGER', 'less'), ('LC_MONETARY', 'zh_CN.UTF-8'), ('MANAGERPID', '1102'), ('LC_CTYPE', 'en_US.UTF-8'), ('SYSTEMD_EXEC_PID', '1526'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('TERMINATOR_DBUS_NAME', 'net.tenshu.Terminator21a9d5db22c73a993ff0b42f64b396873'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '3607'), ('ROS_DISTRO', 'humble'), ('GTK_IM_MODULE', 'ibus'), ('LOGNAME', 'wuta'), ('OSH', '/home/wuta/.oh-my-bash'), ('JOURNAL_STREAM', '8:8772'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'wuta'), ('ANTHROPIC_BASE_URL', 'https://api.deepseek.com/anthropic'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('ANTHROPIC_DEFAULT_OPUS_MODEL', 'DeepSeek-V3.2'), ('PATH', '/opt/ros/humble/bin:/usr/local/cuda-12.8/bin:/home/wuta/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/wuta/.claude/plugins/agent-browser-main/bin'), ('SESSION_MANAGER', 'local/wuta-Nuvo-7000-Series:@/tmp/.ICE-unix/1332,unix/wuta-Nuvo-7000-Series:/tmp/.ICE-unix/1332'), ('INVOCATION_ID', 'b64d8a03ca314c4bbf8e7abf3053db8c'), ('_ble_util_fdlist_cloexec', ''), ('PAPERSIZE', 'a4'), ('COREPACK_ENABLE_AUTO_PIN', '0'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'zh_CN.UTF-8'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('CLAUDE_EFFORT', 'high'), ('DISPLAY', ':0'), ('HISTSIZE', '2147450879'), ('TERMINATOR_DBUS_PATH', '/net/tenshu/Terminator2'), ('NoDefaultCurrentDirectoryInExePath', '1'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('IBUS_DISABLE_SNOOPER', '1'), ('LC_TELEPHONE', 'zh_CN.UTF-8'), ('ANTHROPIC_DEFAULT_HAIKU_MODEL', 'DeepSeek-V3.2'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/opt/ros/humble'), ('SHELL', '/bin/bash'), ('LC_NAME', 'zh_CN.UTF-8'), ('TERMINATOR_UUID', 'urn:uuid:e20a50af-f14d-4390-a0f1-0fdb1d19d4a5'), ('ANTHROPIC_AUTH_TOKEN', 'sk-2c4ee7544679453f9edbeaeaf883e544'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('CLAUDE_CODE_SESSION_ID', '02d1a7b5-a434-4976-a341-193259342e0e'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LDIBRARY_PATH', '/usr/local/cuda-12.8/lib64:'), ('CLAUDECODE', '1'), ('LC_MEASUREMENT', 'zh_CN.UTF-8'), ('LINENO', '1'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'zh_CN.UTF-8'), ('bleopt_connect_tty', '1'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('CLAUDE_CODE_EXECPATH', '/usr/lib/node_modules/@anthropic-ai/claude-code/bin/claude.exe'), ('_ble_util_fdvars_export', ''), ('PYTHONPATH', '/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('LC_NUMERIC', 'zh_CN.UTF-8'), ('LC_PAPER', 'zh_CN.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/opt/ros/humble')]), 'shell': False}
+[0.012212] (kiss_icp) JobProgress: {'identifier': 'kiss_icp', 'progress': 'cmake'}
+[0.012437] (kiss_icp) Command: {'cmd': ['/home/wuta/.local/bin/cmake', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/localization/kiss-icp/ros', '-DAMENT_CMAKE_SYMLINK_INSTALL=1', '-DCMAKE_INSTALL_PREFIX=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/kiss_icp'], 'cwd': '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/kiss_icp', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('ANTHROPIC_MODEL', 'DeepSeek-v4-pro'), ('HISTFILESIZE', '2147450879'), ('BLE_SESSION_ID', '1782729826.821136/3630'), ('AI_AGENT', 'claude-code_2-1-141_agent'), ('LANGUAGE', 'en_US:en'), ('USER', 'wuta'), ('CLAUDE_CODE_ENTRYPOINT', 'cli'), ('LC_TIME', 'zh_CN.UTF-8'), ('GIT_EDITOR', 'true'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('LESS', '-R'), ('HOME', '/home/wuta'), ('OLDPWD', '/home/wuta/WUTA/WUTA-FSD'), ('DESKTOP_SESSION', 'ubuntu'), ('LSCOLORS', 'Gxfxcxdxdxegedabagacad'), ('ANTHROPIC_DEFAULT_SONNET_MODEL', 'DeepSeek-V3.2'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('PAGER', 'less'), ('LC_MONETARY', 'zh_CN.UTF-8'), ('MANAGERPID', '1102'), ('LC_CTYPE', 'en_US.UTF-8'), ('SYSTEMD_EXEC_PID', '1526'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('TERMINATOR_DBUS_NAME', 'net.tenshu.Terminator21a9d5db22c73a993ff0b42f64b396873'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '3607'), ('ROS_DISTRO', 'humble'), ('GTK_IM_MODULE', 'ibus'), ('LOGNAME', 'wuta'), ('OSH', '/home/wuta/.oh-my-bash'), ('JOURNAL_STREAM', '8:8772'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'wuta'), ('ANTHROPIC_BASE_URL', 'https://api.deepseek.com/anthropic'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('ANTHROPIC_DEFAULT_OPUS_MODEL', 'DeepSeek-V3.2'), ('PATH', '/opt/ros/humble/bin:/usr/local/cuda-12.8/bin:/home/wuta/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/wuta/.claude/plugins/agent-browser-main/bin'), ('SESSION_MANAGER', 'local/wuta-Nuvo-7000-Series:@/tmp/.ICE-unix/1332,unix/wuta-Nuvo-7000-Series:/tmp/.ICE-unix/1332'), ('INVOCATION_ID', 'b64d8a03ca314c4bbf8e7abf3053db8c'), ('_ble_util_fdlist_cloexec', ''), ('PAPERSIZE', 'a4'), ('COREPACK_ENABLE_AUTO_PIN', '0'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'zh_CN.UTF-8'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('CLAUDE_EFFORT', 'high'), ('DISPLAY', ':0'), ('HISTSIZE', '2147450879'), ('TERMINATOR_DBUS_PATH', '/net/tenshu/Terminator2'), ('NoDefaultCurrentDirectoryInExePath', '1'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('IBUS_DISABLE_SNOOPER', '1'), ('LC_TELEPHONE', 'zh_CN.UTF-8'), ('ANTHROPIC_DEFAULT_HAIKU_MODEL', 'DeepSeek-V3.2'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/opt/ros/humble'), ('SHELL', '/bin/bash'), ('LC_NAME', 'zh_CN.UTF-8'), ('TERMINATOR_UUID', 'urn:uuid:e20a50af-f14d-4390-a0f1-0fdb1d19d4a5'), ('ANTHROPIC_AUTH_TOKEN', 'sk-2c4ee7544679453f9edbeaeaf883e544'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('CLAUDE_CODE_SESSION_ID', '02d1a7b5-a434-4976-a341-193259342e0e'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LDIBRARY_PATH', '/usr/local/cuda-12.8/lib64:'), ('CLAUDECODE', '1'), ('LC_MEASUREMENT', 'zh_CN.UTF-8'), ('LINENO', '1'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'zh_CN.UTF-8'), ('bleopt_connect_tty', '1'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/kiss_icp'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('CLAUDE_CODE_EXECPATH', '/usr/lib/node_modules/@anthropic-ai/claude-code/bin/claude.exe'), ('_ble_util_fdvars_export', ''), ('PYTHONPATH', '/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('LC_NUMERIC', 'zh_CN.UTF-8'), ('LC_PAPER', 'zh_CN.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/opt/ros/humble')]), 'shell': False}
+[0.014666] (robot_localization) JobProgress: {'identifier': 'robot_localization', 'progress': 'cmake'}
+[0.015496] (robot_localization) Command: {'cmd': ['/home/wuta/.local/bin/cmake', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/localization/robot_localization', '-DAMENT_CMAKE_SYMLINK_INSTALL=1', '-DCMAKE_INSTALL_PREFIX=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/robot_localization'], 'cwd': '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/robot_localization', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('ANTHROPIC_MODEL', 'DeepSeek-v4-pro'), ('HISTFILESIZE', '2147450879'), ('BLE_SESSION_ID', '1782729826.821136/3630'), ('AI_AGENT', 'claude-code_2-1-141_agent'), ('LANGUAGE', 'en_US:en'), ('USER', 'wuta'), ('CLAUDE_CODE_ENTRYPOINT', 'cli'), ('LC_TIME', 'zh_CN.UTF-8'), ('GIT_EDITOR', 'true'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('LESS', '-R'), ('HOME', '/home/wuta'), ('OLDPWD', '/home/wuta/WUTA/WUTA-FSD'), ('DESKTOP_SESSION', 'ubuntu'), ('LSCOLORS', 'Gxfxcxdxdxegedabagacad'), ('ANTHROPIC_DEFAULT_SONNET_MODEL', 'DeepSeek-V3.2'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('PAGER', 'less'), ('LC_MONETARY', 'zh_CN.UTF-8'), ('MANAGERPID', '1102'), ('LC_CTYPE', 'en_US.UTF-8'), ('SYSTEMD_EXEC_PID', '1526'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('TERMINATOR_DBUS_NAME', 'net.tenshu.Terminator21a9d5db22c73a993ff0b42f64b396873'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '3607'), ('ROS_DISTRO', 'humble'), ('GTK_IM_MODULE', 'ibus'), ('LOGNAME', 'wuta'), ('OSH', '/home/wuta/.oh-my-bash'), ('JOURNAL_STREAM', '8:8772'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'wuta'), ('ANTHROPIC_BASE_URL', 'https://api.deepseek.com/anthropic'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('ANTHROPIC_DEFAULT_OPUS_MODEL', 'DeepSeek-V3.2'), ('PATH', '/opt/ros/humble/bin:/usr/local/cuda-12.8/bin:/home/wuta/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/wuta/.claude/plugins/agent-browser-main/bin'), ('SESSION_MANAGER', 'local/wuta-Nuvo-7000-Series:@/tmp/.ICE-unix/1332,unix/wuta-Nuvo-7000-Series:/tmp/.ICE-unix/1332'), ('INVOCATION_ID', 'b64d8a03ca314c4bbf8e7abf3053db8c'), ('_ble_util_fdlist_cloexec', ''), ('PAPERSIZE', 'a4'), ('COREPACK_ENABLE_AUTO_PIN', '0'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'zh_CN.UTF-8'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('CLAUDE_EFFORT', 'high'), ('DISPLAY', ':0'), ('HISTSIZE', '2147450879'), ('TERMINATOR_DBUS_PATH', '/net/tenshu/Terminator2'), ('NoDefaultCurrentDirectoryInExePath', '1'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('IBUS_DISABLE_SNOOPER', '1'), ('LC_TELEPHONE', 'zh_CN.UTF-8'), ('ANTHROPIC_DEFAULT_HAIKU_MODEL', 'DeepSeek-V3.2'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/opt/ros/humble'), ('SHELL', '/bin/bash'), ('LC_NAME', 'zh_CN.UTF-8'), ('TERMINATOR_UUID', 'urn:uuid:e20a50af-f14d-4390-a0f1-0fdb1d19d4a5'), ('ANTHROPIC_AUTH_TOKEN', 'sk-2c4ee7544679453f9edbeaeaf883e544'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('CLAUDE_CODE_SESSION_ID', '02d1a7b5-a434-4976-a341-193259342e0e'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LDIBRARY_PATH', '/usr/local/cuda-12.8/lib64:'), ('CLAUDECODE', '1'), ('LC_MEASUREMENT', 'zh_CN.UTF-8'), ('LINENO', '1'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'zh_CN.UTF-8'), ('bleopt_connect_tty', '1'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/robot_localization'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('CLAUDE_CODE_EXECPATH', '/usr/lib/node_modules/@anthropic-ai/claude-code/bin/claude.exe'), ('_ble_util_fdvars_export', ''), ('PYTHONPATH', '/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('LC_NUMERIC', 'zh_CN.UTF-8'), ('LC_PAPER', 'zh_CN.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/opt/ros/humble')]), 'shell': False}
+[0.090918] (robot_localization) StderrLine: {'line': b'CMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):\n'}
+[0.091083] (robot_localization) StderrLine: {'line': b'  Compatibility with CMake < 3.10 will be removed from a future version of\n'}
+[0.091148] (robot_localization) StderrLine: {'line': b'  CMake.\n'}
+[0.091200] (robot_localization) StderrLine: {'line': b'\n'}
+[0.091248] (robot_localization) StderrLine: {'line': b'  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax\n'}
+[0.091296] (robot_localization) StderrLine: {'line': b'  to tell CMake that the project requires at least <min> but has been updated\n'}
+[0.091344] (robot_localization) StderrLine: {'line': b'  to work with policies introduced by <max> or earlier.\n'}
+[0.091391] (robot_localization) StderrLine: {'line': b'\n'}
+[0.091437] (robot_localization) StderrLine: {'line': b'\n'}
+[0.099829] (-) TimerEvent: {}
+[0.119603] (wuta_msgs) StdoutLine: {'line': b'Consolidate compiler generated dependencies of target wuta_msgs__rosidl_generator_c\n'}
+[0.127465] (wuta_msgs) StdoutLine: {'line': b'[  1%] Built target wuta_msgs__rs\n'}
+[0.129473] (wuta_msgs) StdoutLine: {'line': b'[  3%] Built target wuta_msgs__cpp\n'}
+[0.131655] (wuta_msgs) StdoutLine: {'line': b'[ 14%] Built target wuta_msgs__rosidl_generator_c\n'}
+[0.138253] (wuta_msgs) StdoutLine: {'line': b'[ 14%] Built target ament_cmake_python_symlink_wuta_msgs\n'}
+[0.146697] (robot_localization) StdoutLine: {'line': b'-- The C compiler identification is GNU 12.3.0\n'}
+[0.148016] (wuta_msgs) StdoutLine: {'line': b'Consolidate compiler generated dependencies of target wuta_msgs__rosidl_typesupport_c\n'}
+[0.150899] (wuta_msgs) StdoutLine: {'line': b'Consolidate compiler generated dependencies of target wuta_msgs__rosidl_typesupport_fastrtps_c\n'}
+[0.151103] (wuta_msgs) StdoutLine: {'line': b'Consolidate compiler generated dependencies of target wuta_msgs__rosidl_typesupport_introspection_c\n'}
+[0.151623] (wuta_msgs) StdoutLine: {'line': b'Consolidate compiler generated dependencies of target wuta_msgs__rosidl_typesupport_cpp\n'}
+[0.151927] (wuta_msgs) StdoutLine: {'line': b'Consolidate compiler generated dependencies of target wuta_msgs__rosidl_typesupport_introspection_cpp\n'}
+[0.152777] (wuta_msgs) StdoutLine: {'line': b'Consolidate compiler generated dependencies of target wuta_msgs__rosidl_typesupport_fastrtps_cpp\n'}
+[0.164719] (wuta_msgs) StdoutLine: {'line': b'[ 25%] Built target wuta_msgs__rosidl_typesupport_c\n'}
+[0.167699] (wuta_msgs) StdoutLine: {'line': b'[ 35%] Built target wuta_msgs__rosidl_typesupport_introspection_c\n'}
+[0.169878] (wuta_msgs) StdoutLine: {'line': b'[ 66%] Built target wuta_msgs__rosidl_typesupport_fastrtps_cpp\n'}
+[0.170097] (wuta_msgs) StdoutLine: {'line': b'[ 67%] Built target wuta_msgs__rosidl_typesupport_cpp\n'}
+[0.170260] (wuta_msgs) StdoutLine: {'line': b'[ 67%] Built target wuta_msgs__rosidl_typesupport_fastrtps_c\n'}
+[0.171668] (wuta_msgs) StdoutLine: {'line': b'[ 78%] Built target wuta_msgs__rosidl_typesupport_introspection_cpp\n'}
+[0.176342] (kiss_icp) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 12.3.0\n'}
+[0.186824] (kiss_icp) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[0.194428] (wuta_msgs) StdoutLine: {'line': b'[ 78%] Built target wuta_msgs\n'}
+[0.199922] (-) TimerEvent: {}
+[0.216612] (wuta_msgs) StdoutLine: {'line': b'[ 80%] Built target wuta_msgs__py\n'}
+[0.231337] (wuta_msgs) StdoutLine: {'line': b'Consolidate compiler generated dependencies of target wuta_msgs__rosidl_generator_py\n'}
+[0.233584] (robot_localization) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 12.3.0\n'}
+[0.244272] (robot_localization) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[0.244463] (wuta_msgs) StdoutLine: {'line': b'[ 89%] Built target wuta_msgs__rosidl_generator_py\n'}
+[0.257061] (wuta_msgs) StdoutLine: {'line': b'Consolidate compiler generated dependencies of target wuta_msgs__rosidl_typesupport_introspection_c__pyext\n'}
+[0.257570] (wuta_msgs) StdoutLine: {'line': b'Consolidate compiler generated dependencies of target wuta_msgs__rosidl_typesupport_fastrtps_c__pyext\n'}
+[0.257848] (wuta_msgs) StdoutLine: {'line': b'Consolidate compiler generated dependencies of target wuta_msgs__rosidl_typesupport_c__pyext\n'}
+[0.270168] (kiss_icp) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[0.270586] (wuta_msgs) StdoutLine: {'line': b'[ 96%] Built target wuta_msgs__rosidl_typesupport_c__pyext\n'}
+[0.270764] (wuta_msgs) StdoutLine: {'line': b'[ 96%] Built target wuta_msgs__rosidl_typesupport_introspection_c__pyext\n'}
+[0.270907] (wuta_msgs) StdoutLine: {'line': b'[100%] Built target wuta_msgs__rosidl_typesupport_fastrtps_c__pyext\n'}
+[0.290472] (kiss_icp) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ - skipped\n'}
+[0.290809] (kiss_icp) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[0.291502] (kiss_icp) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[0.300039] (-) TimerEvent: {}
+[0.300768] (kiss_icp) StderrLine: {'line': b'CMake Deprecation Warning at /home/wuta/WUTA/WUTA-FSD/ros2_ws/src/localization/kiss-icp/cpp/kiss_icp/3rdparty/find_dependencies.cmake:25 (cmake_policy):\n'}
+[0.300897] (kiss_icp) StderrLine: {'line': b'  The OLD behavior for policy CMP0135 will be removed from a future version\n'}
+[0.300965] (kiss_icp) StderrLine: {'line': b'  of CMake.\n'}
+[0.301039] (kiss_icp) StderrLine: {'line': b'\n'}
+[0.301111] (kiss_icp) StderrLine: {'line': b'  The cmake-policies(7) manual explains that the OLD behaviors of all\n'}
+[0.301170] (kiss_icp) StderrLine: {'line': b'  policies are deprecated and that a policy should be set to OLD only under\n'}
+[0.301228] (kiss_icp) StderrLine: {'line': b'  specific short-term circumstances.  Projects should be ported to the NEW\n'}
+[0.301283] (kiss_icp) StderrLine: {'line': b'  behavior and not rely on setting a policy to OLD.\n'}
+[0.301338] (kiss_icp) StderrLine: {'line': b'Call Stack (most recent call first):\n'}
+[0.301392] (kiss_icp) StderrLine: {'line': b'  /home/wuta/WUTA/WUTA-FSD/ros2_ws/src/localization/kiss-icp/cpp/kiss_icp/CMakeLists.txt:48 (include)\n'}
+[0.301448] (kiss_icp) StderrLine: {'line': b'\n'}
+[0.301502] (kiss_icp) StderrLine: {'line': b'\n'}
+[0.311791] (robot_localization) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[0.329451] (robot_localization) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc - skipped\n'}
+[0.329788] (robot_localization) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[0.330414] (robot_localization) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[0.342285] (robot_localization) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[0.400123] (-) TimerEvent: {}
+[0.416216] (robot_localization) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[0.423990] (wuta_msgs) StdoutLine: {'line': b'running egg_info\n'}
+[0.424694] (wuta_msgs) StdoutLine: {'line': b'writing wuta_msgs.egg-info/PKG-INFO\n'}
+[0.424889] (wuta_msgs) StdoutLine: {'line': b'writing dependency_links to wuta_msgs.egg-info/dependency_links.txt\n'}
+[0.425128] (wuta_msgs) StdoutLine: {'line': b'writing top-level names to wuta_msgs.egg-info/top_level.txt\n'}
+[0.427601] (wuta_msgs) StdoutLine: {'line': b"reading manifest file 'wuta_msgs.egg-info/SOURCES.txt'\n"}
+[0.428165] (wuta_msgs) StdoutLine: {'line': b"writing manifest file 'wuta_msgs.egg-info/SOURCES.txt'\n"}
+[0.435038] (robot_localization) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ - skipped\n'}
+[0.435368] (robot_localization) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[0.435973] (robot_localization) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[0.441868] (robot_localization) StdoutLine: {'line': b"-- robot_localization: You did not request a specific build type: selecting 'RelWithDebInfo'.\n"}
+[0.442195] (robot_localization) StdoutLine: {'line': b'-- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)\n'}
+[0.450722] (wuta_msgs) StdoutLine: {'line': b'[100%] Built target ament_cmake_python_build_wuta_msgs_egg\n'}
+[0.460836] (wuta_msgs) CommandEnded: {'returncode': 0}
+[0.461840] (wuta_msgs) JobProgress: {'identifier': 'wuta_msgs', 'progress': 'install'}
+[0.500202] (-) TimerEvent: {}
+[0.534062] (wuta_msgs) Command: {'cmd': ['/home/wuta/.local/bin/cmake', '--install', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs'], 'cwd': '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('ANTHROPIC_MODEL', 'DeepSeek-v4-pro'), ('HISTFILESIZE', '2147450879'), ('BLE_SESSION_ID', '1782729826.821136/3630'), ('AI_AGENT', 'claude-code_2-1-141_agent'), ('LANGUAGE', 'en_US:en'), ('USER', 'wuta'), ('CLAUDE_CODE_ENTRYPOINT', 'cli'), ('LC_TIME', 'zh_CN.UTF-8'), ('GIT_EDITOR', 'true'), ('XDG_SESSION_TYPE', 'x11'), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('LESS', '-R'), ('HOME', '/home/wuta'), ('OLDPWD', '/home/wuta/WUTA/WUTA-FSD'), ('DESKTOP_SESSION', 'ubuntu'), ('LSCOLORS', 'Gxfxcxdxdxegedabagacad'), ('ANTHROPIC_DEFAULT_SONNET_MODEL', 'DeepSeek-V3.2'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('PAGER', 'less'), ('LC_MONETARY', 'zh_CN.UTF-8'), ('MANAGERPID', '1102'), ('LC_CTYPE', 'en_US.UTF-8'), ('SYSTEMD_EXEC_PID', '1526'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('TERMINATOR_DBUS_NAME', 'net.tenshu.Terminator21a9d5db22c73a993ff0b42f64b396873'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '3607'), ('ROS_DISTRO', 'humble'), ('GTK_IM_MODULE', 'ibus'), ('LOGNAME', 'wuta'), ('OSH', '/home/wuta/.oh-my-bash'), ('JOURNAL_STREAM', '8:8772'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'wuta'), ('ANTHROPIC_BASE_URL', 'https://api.deepseek.com/anthropic'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('ANTHROPIC_DEFAULT_OPUS_MODEL', 'DeepSeek-V3.2'), ('PATH', '/opt/ros/humble/bin:/usr/local/cuda-12.8/bin:/home/wuta/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/wuta/.claude/plugins/agent-browser-main/bin'), ('SESSION_MANAGER', 'local/wuta-Nuvo-7000-Series:@/tmp/.ICE-unix/1332,unix/wuta-Nuvo-7000-Series:/tmp/.ICE-unix/1332'), ('INVOCATION_ID', 'b64d8a03ca314c4bbf8e7abf3053db8c'), ('_ble_util_fdlist_cloexec', ''), ('PAPERSIZE', 'a4'), ('COREPACK_ENABLE_AUTO_PIN', '0'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'zh_CN.UTF-8'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('CLAUDE_EFFORT', 'high'), ('DISPLAY', ':0'), ('HISTSIZE', '2147450879'), ('TERMINATOR_DBUS_PATH', '/net/tenshu/Terminator2'), ('NoDefaultCurrentDirectoryInExePath', '1'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('IBUS_DISABLE_SNOOPER', '1'), ('LC_TELEPHONE', 'zh_CN.UTF-8'), ('ANTHROPIC_DEFAULT_HAIKU_MODEL', 'DeepSeek-V3.2'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/opt/ros/humble'), ('SHELL', '/bin/bash'), ('LC_NAME', 'zh_CN.UTF-8'), ('TERMINATOR_UUID', 'urn:uuid:e20a50af-f14d-4390-a0f1-0fdb1d19d4a5'), ('ANTHROPIC_AUTH_TOKEN', 'sk-2c4ee7544679453f9edbeaeaf883e544'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('CLAUDE_CODE_SESSION_ID', '02d1a7b5-a434-4976-a341-193259342e0e'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('LDIBRARY_PATH', '/usr/local/cuda-12.8/lib64:'), ('CLAUDECODE', '1'), ('LC_MEASUREMENT', 'zh_CN.UTF-8'), ('LINENO', '1'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('LC_IDENTIFICATION', 'zh_CN.UTF-8'), ('bleopt_connect_tty', '1'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('CLAUDE_CODE_EXECPATH', '/usr/lib/node_modules/@anthropic-ai/claude-code/bin/claude.exe'), ('_ble_util_fdvars_export', ''), ('PYTHONPATH', '/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('LC_NUMERIC', 'zh_CN.UTF-8'), ('LC_PAPER', 'zh_CN.UTF-8'), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/opt/ros/humble')]), 'shell': False}
+[0.559921] (robot_localization) StdoutLine: {'line': b'-- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter\n'}
+[0.600309] (-) TimerEvent: {}
+[0.606077] (wuta_msgs) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[0.606539] (wuta_msgs) StdoutLine: {'line': b'-- Execute custom install script\n'}
+[0.606784] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/ament_index/resource_index/rosidl_interfaces/wuta_msgs\n'}
+[0.614808] (robot_localization) StdoutLine: {'line': b'-- Override CMake install command with custom implementation using symlinks instead of copying resources\n'}
+[0.614923] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/cone.h\n'}
+[0.621830] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/cone_array.h\n'}
+[0.622123] (robot_localization) StdoutLine: {'line': b'-- Found angles: 1.15.0 (/opt/ros/humble/share/angles/cmake)\n'}
+[0.623628] (robot_localization) StdoutLine: {'line': b'-- Found rclcpp: 16.0.19 (/opt/ros/humble/share/rclcpp/cmake)\n'}
+[0.628824] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/cone_map.h\n'}
+[0.635666] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone__functions.h\n'}
+[0.642456] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone__struct.h\n'}
+[0.649828] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone__type_support.h\n'}
+[0.657191] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_array__functions.h\n'}
+[0.658702] (robot_localization) StdoutLine: {'line': b'-- Found rosidl_generator_c: 3.1.8 (/opt/ros/humble/share/rosidl_generator_c/cmake)\n'}
+[0.661569] (robot_localization) StdoutLine: {'line': b'-- Found rosidl_adapter: 3.1.8 (/opt/ros/humble/share/rosidl_adapter/cmake)\n'}
+[0.664324] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_array__struct.h\n'}
+[0.668423] (robot_localization) StdoutLine: {'line': b'-- Found rosidl_generator_cpp: 3.1.8 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)\n'}
+[0.671468] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_array__type_support.h\n'}
+[0.679208] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_map__functions.h\n'}
+[0.682451] (robot_localization) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[0.686547] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_map__struct.h\n'}
+[0.693648] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_map__type_support.h\n'}
+[0.697475] (robot_localization) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[0.700406] (-) TimerEvent: {}
+[0.700629] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/mission_state__functions.h\n'}
+[0.707554] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/mission_state__struct.h\n'}
+[0.714518] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/mission_state__type_support.h\n'}
+[0.721257] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/mission_state.h\n'}
+[0.728018] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/rosidl_generator_c__visibility_control.h\n'}
+[0.734894] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/environment/library_path.sh\n'}
+[0.736830] (robot_localization) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)\n'}
+[0.738172] (robot_localization) StdoutLine: {'line': b'-- Found rmw_fastrtps_cpp: 6.2.10 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)\n'}
+[0.742009] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/environment/library_path.dsv\n'}
+[0.749239] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone__rosidl_typesupport_fastrtps_c.h\n'}
+[0.756799] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_array__rosidl_typesupport_fastrtps_c.h\n'}
+[0.763706] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_map__rosidl_typesupport_fastrtps_c.h\n'}
+[0.771378] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/mission_state__rosidl_typesupport_fastrtps_c.h\n'}
+[0.778651] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/rosidl_typesupport_fastrtps_c__visibility_control.h\n'}
+[0.779388] (robot_localization) StdoutLine: {'line': b'-- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")\n'}
+[0.786619] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone__rosidl_typesupport_introspection_c.h\n'}
+[0.794235] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_array__rosidl_typesupport_introspection_c.h\n'}
+[0.800507] (-) TimerEvent: {}
+[0.801750] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_map__rosidl_typesupport_introspection_c.h\n'}
+[0.809150] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/mission_state__rosidl_typesupport_introspection_c.h\n'}
+[0.816277] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/rosidl_typesupport_introspection_c__visibility_control.h\n'}
+[0.823869] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/cone.hpp\n'}
+[0.830971] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/cone_array.hpp\n'}
+[0.838274] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/cone_map.hpp\n'}
+[0.845460] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone__builder.hpp\n'}
+[0.852456] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone__struct.hpp\n'}
+[0.854921] (robot_localization) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_fastrtps_cpp' as default\n"}
+[0.859954] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone__traits.hpp\n'}
+[0.867240] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone__type_support.hpp\n'}
+[0.874644] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_array__builder.hpp\n'}
+[0.881457] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_array__struct.hpp\n'}
+[0.888588] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_array__traits.hpp\n'}
+[0.896125] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_array__type_support.hpp\n'}
+[0.900572] (-) TimerEvent: {}
+[0.903170] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_map__builder.hpp\n'}
+[0.910072] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_map__struct.hpp\n'}
+[0.916800] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_map__traits.hpp\n'}
+[0.923604] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_map__type_support.hpp\n'}
+[0.924781] (robot_localization) StdoutLine: {'line': b'-- Found diagnostic_msgs: 4.9.1 (/opt/ros/humble/share/diagnostic_msgs/cmake)\n'}
+[0.930526] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/mission_state__builder.hpp\n'}
+[0.937333] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/mission_state__struct.hpp\n'}
+[0.940736] (robot_localization) StdoutLine: {'line': b'-- Found diagnostic_updater: 4.0.6 (/opt/ros/humble/share/diagnostic_updater/cmake)\n'}
+[0.943934] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/mission_state__traits.hpp\n'}
+[0.950885] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/mission_state__type_support.hpp\n'}
+[0.954511] (robot_localization) StderrLine: {'line': b'CMake Error at CMakeLists.txt:22 (find_package):\n'}
+[0.954611] (robot_localization) StderrLine: {'line': b'  By not providing "Findgeographic_msgs.cmake" in CMAKE_MODULE_PATH this\n'}
+[0.954746] (robot_localization) StderrLine: {'line': b'  project has asked CMake to find a package configuration file provided by\n'}
+[0.954818] (robot_localization) StderrLine: {'line': b'  "geographic_msgs", but CMake did not find one.\n'}
+[0.954869] (robot_localization) StderrLine: {'line': b'\n'}
+[0.954915] (robot_localization) StderrLine: {'line': b'  Could not find a package configuration file provided by "geographic_msgs"\n'}
+[0.954961] (robot_localization) StderrLine: {'line': b'  with any of the following names:\n'}
+[0.955006] (robot_localization) StderrLine: {'line': b'\n'}
+[0.955063] (robot_localization) StderrLine: {'line': b'    geographic_msgs.cps\n'}
+[0.955109] (robot_localization) StderrLine: {'line': b'    geographic_msgsConfig.cmake\n'}
+[0.955152] (robot_localization) StderrLine: {'line': b'    geographic_msgs-config.cmake\n'}
+[0.955196] (robot_localization) StderrLine: {'line': b'\n'}
+[0.955239] (robot_localization) StderrLine: {'line': b'  Add the installation prefix of "geographic_msgs" to CMAKE_PREFIX_PATH or\n'}
+[0.955283] (robot_localization) StderrLine: {'line': b'  set "geographic_msgs_DIR" to a directory containing one of the above files.\n'}
+[0.955327] (robot_localization) StderrLine: {'line': b'  If "geographic_msgs" provides a separate development package or SDK, be\n'}
+[0.955370] (robot_localization) StderrLine: {'line': b'  sure it has been installed.\n'}
+[0.955417] (robot_localization) StderrLine: {'line': b'\n'}
+[0.955460] (robot_localization) StderrLine: {'line': b'\n'}
+[0.955503] (robot_localization) StdoutLine: {'line': b'-- Configuring incomplete, errors occurred!\n'}
+[0.957877] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/mission_state.hpp\n'}
+[0.963443] (robot_localization) CommandEnded: {'returncode': 1}
+[0.965257] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/rosidl_generator_cpp__visibility_control.hpp\n'}
+[0.973556] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[0.980802] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_array__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[0.988104] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_map__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[0.995112] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/mission_state__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[1.000674] (-) TimerEvent: {}
+[1.002672] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h\n'}
+[1.010327] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone__rosidl_typesupport_introspection_cpp.hpp\n'}
+[1.017610] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_array__rosidl_typesupport_introspection_cpp.hpp\n'}
+[1.024633] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_map__rosidl_typesupport_introspection_cpp.hpp\n'}
+[1.031707] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/mission_state__rosidl_typesupport_introspection_cpp.hpp\n'}
+[1.043141] (robot_localization) JobEnded: {'identifier': 'robot_localization', 'rc': 1}
+[1.043394] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/environment/pythonpath.sh\n'}
+[1.045963] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/environment/pythonpath.dsv\n'}
+[1.053000] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs-1.0.0-py3.10.egg-info/PKG-INFO\n'}
+[1.059662] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs-1.0.0-py3.10.egg-info/SOURCES.txt\n'}
+[1.066311] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs-1.0.0-py3.10.egg-info/dependency_links.txt\n'}
+[1.073029] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs-1.0.0-py3.10.egg-info/top_level.txt\n'}
+[1.080089] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/__init__.py\n'}
+[1.086880] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/_wuta_msgs_s.ep.rosidl_typesupport_c.c\n'}
+[1.093554] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/_wuta_msgs_s.ep.rosidl_typesupport_fastrtps_c.c\n'}
+[1.100364] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/_wuta_msgs_s.ep.rosidl_typesupport_introspection_c.c\n'}
+[1.100733] (-) TimerEvent: {}
+[1.107058] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/libwuta_msgs__rosidl_generator_py.so\n'}
+[1.113789] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/__init__.py\n'}
+[1.121127] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_cone.py\n'}
+[1.127971] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_cone_array.py\n'}
+[1.134942] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_cone_array_s.c\n'}
+[1.141621] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_cone_map.py\n'}
+[1.148251] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_cone_map_s.c\n'}
+[1.154845] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_cone_s.c\n'}
+[1.161403] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_mission_state.py\n'}
+[1.168029] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_mission_state_s.c\n'}
+[1.174525] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/wuta_msgs_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so\n'}
+[1.181379] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/wuta_msgs_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so\n'}
+[1.188191] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/wuta_msgs_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so\n'}
+[1.194962] (wuta_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/wuta_msgs_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so\n'}
+[1.195248] (wuta_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/wuta_msgs_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so\n'}
+[1.195486] (wuta_msgs) StdoutLine: {'line': b'-- Up-to-date symlink: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/wuta_msgs_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so\n'}
+[1.195688] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/ament_index/resource_index/rust_packages/wuta_msgs\n'}
+[1.200835] (-) TimerEvent: {}
+[1.202806] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/rust/Cargo.toml\n'}
+[1.209609] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/rust/build.rs\n'}
+[1.216818] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/rust/src/lib.rs\n'}
+[1.223439] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/rust/src/msg.rs\n'}
+[1.230140] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/rust/src/msg/rmw.rs\n'}
+[1.237350] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/msg/Cone.idl\n'}
+[1.244093] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/msg/ConeArray.idl\n'}
+[1.250379] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/msg/ConeMap.idl\n'}
+[1.256620] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/msg/MissionState.idl\n'}
+[1.262763] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/msg/Cone.msg\n'}
+[1.269191] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/msg/ConeArray.msg\n'}
+[1.275414] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/msg/ConeMap.msg\n'}
+[1.281701] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/msg/MissionState.msg\n'}
+[1.288434] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/ament_index/resource_index/package_run_dependencies/wuta_msgs\n'}
+[1.294852] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/ament_index/resource_index/parent_prefix_path/wuta_msgs\n'}
+[1.300940] (-) TimerEvent: {}
+[1.301430] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/environment/ament_prefix_path.sh\n'}
+[1.307611] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/environment/ament_prefix_path.dsv\n'}
+[1.314047] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/environment/path.sh\n'}
+[1.320325] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/environment/path.dsv\n'}
+[1.326500] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/local_setup.bash\n'}
+[1.332878] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/local_setup.sh\n'}
+[1.339260] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/local_setup.zsh\n'}
+[1.345733] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/local_setup.dsv\n'}
+[1.352391] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/package.dsv\n'}
+[1.358692] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/ament_index/resource_index/packages/wuta_msgs\n'}
+[1.365913] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/rosidl_cmake-extras.cmake\n'}
+[1.372245] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/ament_cmake_export_dependencies-extras.cmake\n'}
+[1.378754] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/ament_cmake_export_include_directories-extras.cmake\n'}
+[1.385159] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/ament_cmake_export_libraries-extras.cmake\n'}
+[1.391458] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/ament_cmake_export_targets-extras.cmake\n'}
+[1.398208] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake\n'}
+[1.401041] (-) TimerEvent: {}
+[1.405135] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake\n'}
+[1.412154] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/wuta_msgsConfig.cmake\n'}
+[1.418384] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/wuta_msgsConfig-version.cmake\n'}
+[1.424538] (wuta_msgs) StdoutLine: {'line': b'-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/package.xml\n'}
+[1.430750] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_generator_c.so\n'}
+[1.431130] (wuta_msgs) StdoutLine: {'line': b'-- Set non-toolchain portion of runtime path of "/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_generator_c.so" to ""\n'}
+[1.431206] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_fastrtps_c.so\n'}
+[1.431525] (wuta_msgs) StdoutLine: {'line': b'-- Set non-toolchain portion of runtime path of "/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_fastrtps_c.so" to ""\n'}
+[1.431595] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_introspection_c.so\n'}
+[1.431907] (wuta_msgs) StdoutLine: {'line': b'-- Set non-toolchain portion of runtime path of "/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_introspection_c.so" to ""\n'}
+[1.431977] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_c.so\n'}
+[1.432220] (wuta_msgs) StdoutLine: {'line': b'-- Set non-toolchain portion of runtime path of "/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_c.so" to ""\n'}
+[1.432297] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_fastrtps_cpp.so\n'}
+[1.432667] (wuta_msgs) StdoutLine: {'line': b'-- Set non-toolchain portion of runtime path of "/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_fastrtps_cpp.so" to ""\n'}
+[1.432737] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_introspection_cpp.so\n'}
+[1.433144] (wuta_msgs) StdoutLine: {'line': b'-- Set non-toolchain portion of runtime path of "/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_introspection_cpp.so" to ""\n'}
+[1.433219] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_cpp.so\n'}
+[1.433461] (wuta_msgs) StdoutLine: {'line': b'-- Set non-toolchain portion of runtime path of "/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_cpp.so" to ""\n'}
+[1.462968] (wuta_msgs) StdoutLine: {'line': b"Listing '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs'...\n"}
+[1.463085] (wuta_msgs) StdoutLine: {'line': b"Compiling '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/__init__.py'...\n"}
+[1.463138] (wuta_msgs) StdoutLine: {'line': b"Listing '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg'...\n"}
+[1.463183] (wuta_msgs) StdoutLine: {'line': b"Compiling '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/__init__.py'...\n"}
+[1.463226] (wuta_msgs) StdoutLine: {'line': b"Compiling '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_cone.py'...\n"}
+[1.463277] (wuta_msgs) StdoutLine: {'line': b"Compiling '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_cone_array.py'...\n"}
+[1.463318] (wuta_msgs) StdoutLine: {'line': b"Compiling '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_cone_map.py'...\n"}
+[1.463359] (wuta_msgs) StdoutLine: {'line': b"Compiling '/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_mission_state.py'...\n"}
+[1.466696] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_generator_py.so\n'}
+[1.467076] (wuta_msgs) StdoutLine: {'line': b'-- Set non-toolchain portion of runtime path of "/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_generator_py.so" to ""\n'}
+[1.467152] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/export_wuta_msgs__rosidl_generator_cExport.cmake\n'}
+[1.467352] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/export_wuta_msgs__rosidl_generator_cExport-noconfig.cmake\n'}
+[1.467426] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/export_wuta_msgs__rosidl_typesupport_fastrtps_cExport.cmake\n'}
+[1.467560] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/export_wuta_msgs__rosidl_typesupport_fastrtps_cExport-noconfig.cmake\n'}
+[1.467635] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/wuta_msgs__rosidl_typesupport_introspection_cExport.cmake\n'}
+[1.467760] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/wuta_msgs__rosidl_typesupport_introspection_cExport-noconfig.cmake\n'}
+[1.467830] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/wuta_msgs__rosidl_typesupport_cExport.cmake\n'}
+[1.467923] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/wuta_msgs__rosidl_typesupport_cExport-noconfig.cmake\n'}
+[1.468005] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/export_wuta_msgs__rosidl_generator_cppExport.cmake\n'}
+[1.468169] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/export_wuta_msgs__rosidl_typesupport_fastrtps_cppExport.cmake\n'}
+[1.468283] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/export_wuta_msgs__rosidl_typesupport_fastrtps_cppExport-noconfig.cmake\n'}
+[1.468403] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/wuta_msgs__rosidl_typesupport_introspection_cppExport.cmake\n'}
+[1.468521] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/wuta_msgs__rosidl_typesupport_introspection_cppExport-noconfig.cmake\n'}
+[1.468657] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/wuta_msgs__rosidl_typesupport_cppExport.cmake\n'}
+[1.468826] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/wuta_msgs__rosidl_typesupport_cppExport-noconfig.cmake\n'}
+[1.468877] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/export_wuta_msgs__rosidl_generator_pyExport.cmake\n'}
+[1.468968] (wuta_msgs) StdoutLine: {'line': b'-- Installing: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/export_wuta_msgs__rosidl_generator_pyExport-noconfig.cmake\n'}
+[1.470208] (wuta_msgs) JobEnded: {'identifier': 'wuta_msgs', 'rc': 'SIGINT'}
+[1.501128] (-) TimerEvent: {}
+[1.601272] (-) TimerEvent: {}
+[1.616456] (kiss_icp) StdoutLine: {'line': b'-- The C compiler identification is GNU 12.3.0\n'}
+[1.623914] (kiss_icp) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[1.681776] (kiss_icp) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[1.697822] (kiss_icp) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc - skipped\n'}
+[1.698169] (kiss_icp) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[1.698589] (kiss_icp) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[1.701370] (-) TimerEvent: {}
+[1.801593] (-) TimerEvent: {}
+[1.901851] (-) TimerEvent: {}
+[2.002137] (-) TimerEvent: {}
+[2.102401] (-) TimerEvent: {}
+[2.202762] (-) TimerEvent: {}
+[2.303133] (-) TimerEvent: {}
+[2.403468] (-) TimerEvent: {}
+[2.503806] (-) TimerEvent: {}
+[2.604076] (-) TimerEvent: {}
+[2.704448] (-) TimerEvent: {}
+[2.804883] (-) TimerEvent: {}
+[2.905168] (-) TimerEvent: {}
+[3.005397] (-) TimerEvent: {}
+[3.105556] (-) TimerEvent: {}
+[3.155555] (kiss_icp) StderrLine: {'line': b'CMake Deprecation Warning at /home/wuta/WUTA/WUTA-FSD/ros2_ws/build/kiss_icp/_deps/tessil-src/CMakeLists.txt:1 (cmake_minimum_required):\n'}
+[3.155726] (kiss_icp) StderrLine: {'line': b'  Compatibility with CMake < 3.10 will be removed from a future version of\n'}
+[3.155822] (kiss_icp) StderrLine: {'line': b'  CMake.\n'}
+[3.155909] (kiss_icp) StderrLine: {'line': b'\n'}
+[3.155990] (kiss_icp) StderrLine: {'line': b'  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax\n'}
+[3.156083] (kiss_icp) StderrLine: {'line': b'  to tell CMake that the project requires at least <min> but has been updated\n'}
+[3.156175] (kiss_icp) StderrLine: {'line': b'  to work with policies introduced by <max> or earlier.\n'}
+[3.156260] (kiss_icp) StderrLine: {'line': b'\n'}
+[3.156344] (kiss_icp) StderrLine: {'line': b'\n'}
+[3.161077] (kiss_icp) StdoutLine: {'line': b'-- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)\n'}
+[3.205671] (-) TimerEvent: {}
+[3.272585] (kiss_icp) StdoutLine: {'line': b'-- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter\n'}
+[3.305780] (-) TimerEvent: {}
+[3.322351] (kiss_icp) StdoutLine: {'line': b'-- Override CMake install command with custom implementation using symlinks instead of copying resources\n'}
+[3.343034] (kiss_icp) StdoutLine: {'line': b'-- Found geometry_msgs: 4.9.1 (/opt/ros/humble/share/geometry_msgs/cmake)\n'}
+[3.379337] (kiss_icp) StdoutLine: {'line': b'-- Found rosidl_generator_c: 3.1.8 (/opt/ros/humble/share/rosidl_generator_c/cmake)\n'}
+[3.384668] (kiss_icp) StdoutLine: {'line': b'-- Found rosidl_adapter: 3.1.8 (/opt/ros/humble/share/rosidl_adapter/cmake)\n'}
+[3.393480] (kiss_icp) StdoutLine: {'line': b'-- Found rosidl_generator_cpp: 3.1.8 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)\n'}
+[3.405881] (-) TimerEvent: {}
+[3.406650] (kiss_icp) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[3.424961] (kiss_icp) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[3.473915] (kiss_icp) StdoutLine: {'line': b'-- Found nav_msgs: 4.9.1 (/opt/ros/humble/share/nav_msgs/cmake)\n'}
+[3.499977] (kiss_icp) StdoutLine: {'line': b'-- Found rclcpp: 16.0.19 (/opt/ros/humble/share/rclcpp/cmake)\n'}
+[3.505980] (-) TimerEvent: {}
+[3.541296] (kiss_icp) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)\n'}
+[3.543435] (kiss_icp) StdoutLine: {'line': b'-- Found rmw_fastrtps_cpp: 6.2.10 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)\n'}
+[3.606118] (-) TimerEvent: {}
+[3.621469] (kiss_icp) StdoutLine: {'line': b'-- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")\n'}
+[3.653670] (kiss_icp) StdoutLine: {'line': b'-- Found FastRTPS: /opt/ros/humble/include\n'}
+[3.700276] (kiss_icp) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_fastrtps_cpp' as default\n"}
+[3.706179] (-) TimerEvent: {}
+[3.707729] (kiss_icp) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n'}
+[3.780480] (kiss_icp) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success\n'}
+[3.781603] (kiss_icp) StdoutLine: {'line': b'-- Found Threads: TRUE\n'}
+[3.806269] (-) TimerEvent: {}
+[3.836782] (kiss_icp) StdoutLine: {'line': b'-- Found rclcpp_components: 16.0.19 (/opt/ros/humble/share/rclcpp_components/cmake)\n'}
+[3.878709] (kiss_icp) StdoutLine: {'line': b'-- Found sensor_msgs: 4.9.1 (/opt/ros/humble/share/sensor_msgs/cmake)\n'}
+[3.906142] (kiss_icp) StdoutLine: {'line': b'-- Found tf2_ros: 0.25.20 (/opt/ros/humble/share/tf2_ros/cmake)\n'}
+[3.906324] (-) TimerEvent: {}
+[4.006463] (-) TimerEvent: {}
+[4.010553] (kiss_icp) StdoutLine: {'line': b'-- Found std_srvs: 4.9.1 (/opt/ros/humble/share/std_srvs/cmake)\n'}
+[4.082130] (kiss_icp) StdoutLine: {'line': b'-- Configuring done (4.0s)\n'}
+[4.106582] (-) TimerEvent: {}
+[4.109839] (kiss_icp) StdoutLine: {'line': b'-- Generating done (0.0s)\n'}
+[4.150269] (kiss_icp) StdoutLine: {'line': b'-- Build files have been written to: /home/wuta/WUTA/WUTA-FSD/ros2_ws/build/kiss_icp\n'}
+[4.163548] (kiss_icp) JobEnded: {'identifier': 'kiss_icp', 'rc': 'SIGINT'}
+[4.173957] (boundary_detector) JobSkipped: {'identifier': 'boundary_detector'}
+[4.173987] (camera_detection) JobSkipped: {'identifier': 'camera_detection'}
+[4.174002] (cone_map_builder) JobSkipped: {'identifier': 'cone_map_builder'}
+[4.174014] (controller) JobSkipped: {'identifier': 'controller'}
+[4.174032] (detection_fusion) JobSkipped: {'identifier': 'detection_fusion'}
+[4.174045] (kiss_icp_wrapper) JobSkipped: {'identifier': 'kiss_icp_wrapper'}
+[4.174056] (lidar_detection) JobSkipped: {'identifier': 'lidar_detection'}
+[4.174066] (localization_manager) JobSkipped: {'identifier': 'localization_manager'}
+[4.174077] (mission_manager) JobSkipped: {'identifier': 'mission_manager'}
+[4.174088] (ndt_localization) JobSkipped: {'identifier': 'ndt_localization'}
+[4.174098] (path_generator) JobSkipped: {'identifier': 'path_generator'}
+[4.174108] (wuta_tools) JobSkipped: {'identifier': 'wuta_tools'}
+[4.174119] (-) EventReactorShutdown: {}

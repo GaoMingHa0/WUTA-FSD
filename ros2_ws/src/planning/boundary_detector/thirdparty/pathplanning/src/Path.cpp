@@ -5,6 +5,8 @@
 #include "pathplanning/PathSearch.h"
 #include "pathplanning/Path.h"
 #include "pathplanning/GlobalVariables.h"
+#include <cmath>
+#include <cassert>
 
 Path::Path(){
     isSetStartPoint = false;

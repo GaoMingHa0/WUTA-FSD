@@ -1,0 +1,1 @@
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/kiss_icp/ament_cmake_environment_hooks/local_setup.bash

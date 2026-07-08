@@ -1,0 +1,17 @@
+-- Install configuration: ""
+-- Execute custom install script
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/ament_index/resource_index/package_run_dependencies/wuta_tools
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/ament_index/resource_index/parent_prefix_path/wuta_tools
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/environment/ament_prefix_path.sh
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/environment/ament_prefix_path.dsv
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/environment/path.sh
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/environment/path.dsv
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/local_setup.bash
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/local_setup.sh
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/local_setup.zsh
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/local_setup.dsv
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/package.dsv
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/ament_index/resource_index/packages/wuta_tools
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/cmake/wuta_toolsConfig.cmake
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/cmake/wuta_toolsConfig-version.cmake
+-- Symlinking: /home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/package.xml

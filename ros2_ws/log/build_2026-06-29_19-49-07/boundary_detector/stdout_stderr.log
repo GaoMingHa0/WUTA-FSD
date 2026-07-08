@@ -1,0 +1,98 @@
+CMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+-- The C compiler identification is GNU 12.3.0
+-- The CXX compiler identification is GNU 12.3.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+-- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter
+-- Override CMake install command with custom implementation using symlinks instead of copying resources
+-- Found rclcpp: 16.0.19 (/opt/ros/humble/share/rclcpp/cmake)
+-- Found rosidl_generator_c: 3.1.8 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+-- Found rosidl_adapter: 3.1.8 (/opt/ros/humble/share/rosidl_adapter/cmake)
+-- Found rosidl_generator_cpp: 3.1.8 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+-- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+-- Found rmw_fastrtps_cpp: 6.2.10 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+-- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")
+-- Found FastRTPS: /opt/ros/humble/include
+-- Using RMW implementation 'rmw_fastrtps_cpp' as default
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Found geometry_msgs: 4.9.1 (/opt/ros/humble/share/geometry_msgs/cmake)
+-- Found visualization_msgs: 4.9.1 (/opt/ros/humble/share/visualization_msgs/cmake)
+-- Found wuta_msgs: 1.0.0 (/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake)
+-- Found autoware_msgs: 1.12.0 (/opt/ros/humble/share/autoware_msgs/cmake)
+-- Configuring done (4.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/wuta/WUTA/WUTA-FSD/ros2_ws/build/boundary_detector
+[  6%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/DelaunayTriangle.cpp.o
+[ 12%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Divide.cpp.o
+[ 18%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/BowyerWatson.cpp.o
+[ 25%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Line.cpp.o
+[ 31%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Evaluation.cpp.o
+[ 37%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/GlobalVariables.cpp.o
+[ 43%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/MidPoint.cpp.o
+[ 50%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Path.cpp.o
+[ 56%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/PathSearch.cpp.o
+[ 62%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Tool.cpp.o
+[ 68%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Point2d.cpp.o
+[ 75%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Triangle.cpp.o
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/GlobalVariables.cpp:1:10: fatal error: hpl/hpl_param.hpp: No such file or directory
+    1 | #include "hpl/hpl_param.hpp"
+      |          ^~~~~~~~~~~~~~~~~~~
+compilation terminated.
+gmake[2]: *** [CMakeFiles/pathplanning.dir/build.make:135: CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/GlobalVariables.cpp.o] Error 1
+gmake[2]: *** Waiting for unfinished jobs....
+[ 81%] Building CXX object CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Vect.cpp.o
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp: In constructor ‘Path::Path()’:
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp:20:36: error: ‘class GlobalVariables’ has no member named ‘GetStartPointRedundancy’
+   20 |     startPointRedundancy = single->GetStartPointRedundancy();
+      |                                    ^~~~~~~~~~~~~~~~~~~~~~~
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp: In member function ‘void Path::SetDirectionVector(double)’:
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp:103:16: error: ‘cos’ was not declared in this scope
+  103 |     double x = cos(yaw);
+      |                ^~~
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp:104:16: error: ‘sin’ was not declared in this scope
+  104 |     double y = sin(yaw);
+      |                ^~~
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp: In member function ‘void Path::Init()’:
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp:110:9: error: ‘assert’ was not declared in this scope
+  110 |         assert(!isSetPoints);
+      |         ^~~~~~
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp:8:1: note: ‘assert’ is defined in header ‘<cassert>’; did you forget to ‘#include <cassert>’?
+    7 | #include "pathplanning/GlobalVariables.h"
+  +++ |+#include <cassert>
+    8 | 
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp:114:9: error: ‘assert’ was not declared in this scope
+  114 |         assert(!isSetStartPoint);
+      |         ^~~~~~
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp:114:9: note: ‘assert’ is defined in header ‘<cassert>’; did you forget to ‘#include <cassert>’?
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp:118:9: error: ‘assert’ was not declared in this scope
+  118 |         assert(!isSetDirectionVector);
+      |         ^~~~~~
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp:118:9: note: ‘assert’ is defined in header ‘<cassert>’; did you forget to ‘#include <cassert>’?
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp:122:9: error: ‘assert’ was not declared in this scope
+  122 |         assert(!isSetPathSearchStartPoint);
+      |         ^~~~~~
+/home/wuta/WUTA/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/src/Path.cpp:122:9: note: ‘assert’ is defined in header ‘<cassert>’; did you forget to ‘#include <cassert>’?
+gmake[2]: *** [CMakeFiles/pathplanning.dir/build.make:177: CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Path.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:156: CMakeFiles/pathplanning.dir/all] Error 2
+gmake: *** [Makefile:146: all] Error 2
