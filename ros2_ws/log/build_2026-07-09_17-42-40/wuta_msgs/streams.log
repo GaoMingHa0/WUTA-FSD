@@ -1,0 +1,331 @@
+[0.019s] Invoking command in '/home/starry1n/WUTA-FSD1/ros2_ws/build/wuta_msgs': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/starry1n/WUTA-FSD1/ros2_ws/src/common/wuta_msgs -DCMAKE_MODULE_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/cmake -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs
+[0.034s] [0mCMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+[0.034s]   Compatibility with CMake < 3.10 will be removed from a future version of
+[0.034s]   CMake.
+[0.034s] 
+[0.034s]   Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+[0.034s]   to tell CMake that the project requires at least <min> but has been updated
+[0.034s]   to work with policies introduced by <max> or earlier.
+[0.034s] 
+[0.034s] [0m
+[0.093s] -- The C compiler identification is GNU 11.4.0
+[0.192s] -- The CXX compiler identification is GNU 11.4.0
+[0.201s] -- Detecting C compiler ABI info
+[0.305s] -- Detecting C compiler ABI info - done
+[0.321s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.322s] -- Detecting C compile features
+[0.322s] -- Detecting C compile features - done
+[0.342s] -- Detecting CXX compiler ABI info
+[0.473s] -- Detecting CXX compiler ABI info - done
+[0.492s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.492s] -- Detecting CXX compile features
+[0.492s] -- Detecting CXX compile features - done
+[0.504s] -- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+[0.673s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter
+[0.741s] -- Override CMake install command with custom implementation using symlinks instead of copying resources
+[0.781s] -- Found rosidl_default_generators: 1.2.1 (/opt/ros/humble/share/rosidl_default_generators/cmake)
+[0.785s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[0.792s] -- Found rosidl_adapter: 3.1.9 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[0.840s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[0.886s] -- Found std_msgs: 4.9.1 (/opt/ros/humble/share/std_msgs/cmake)
+[0.927s] -- Found geometry_msgs: 4.9.1 (/opt/ros/humble/share/geometry_msgs/cmake)
+[1.502s] -- Found ament_cmake_ros: 0.10.0 (/opt/ros/humble/share/ament_cmake_ros/cmake)
+[2.091s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[2.896s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[2.900s] [33mCMake Warning (dev) at /opt/ros/humble/share/rosidl_generator_py/cmake/rosidl_generator_py_generate_interfaces.cmake:20 (find_package):
+[2.900s]   Policy CMP0148 is not set: The FindPythonInterp and FindPythonLibs modules
+[2.900s]   are removed.  Run "cmake --help-policy CMP0148" for policy details.  Use
+[2.900s]   the cmake_policy command to set the policy and suppress this warning.
+[2.900s] 
+[2.900s] Call Stack (most recent call first):
+[2.900s]   /opt/ros/humble/share/ament_cmake_core/cmake/core/ament_execute_extensions.cmake:48 (include)
+[2.900s]   /opt/ros/humble/share/rosidl_cmake/cmake/rosidl_generate_interfaces.cmake:286 (ament_execute_extensions)
+[2.900s]   CMakeLists.txt:9 (rosidl_generate_interfaces)
+[2.900s] This warning is for project developers.  Use -Wno-dev to suppress it.
+[2.900s] [0m
+[2.926s] -- Found PythonInterp: /usr/bin/python3 (found suitable version "3.10.12", minimum required is "3.6")
+[2.928s] -- Found python_cmake_module: 0.10.0 (/opt/ros/humble/share/python_cmake_module/cmake)
+[2.929s] [33mCMake Warning (dev) at /opt/ros/humble/share/python_cmake_module/cmake/Modules/FindPythonExtra.cmake:52 (find_package):
+[2.929s]   Policy CMP0148 is not set: The FindPythonInterp and FindPythonLibs modules
+[2.929s]   are removed.  Run "cmake --help-policy CMP0148" for policy details.  Use
+[2.929s]   the cmake_policy command to set the policy and suppress this warning.
+[2.929s] 
+[2.930s] Call Stack (most recent call first):
+[2.930s]   /opt/ros/humble/share/rosidl_generator_py/cmake/rosidl_generator_py_generate_interfaces.cmake:23 (find_package)
+[2.930s]   /opt/ros/humble/share/ament_cmake_core/cmake/core/ament_execute_extensions.cmake:48 (include)
+[2.930s]   /opt/ros/humble/share/rosidl_cmake/cmake/rosidl_generate_interfaces.cmake:286 (ament_execute_extensions)
+[2.930s]   CMakeLists.txt:9 (rosidl_generate_interfaces)
+[2.930s] This warning is for project developers.  Use -Wno-dev to suppress it.
+[2.930s] [0m
+[2.961s] [33mCMake Warning (dev) at /opt/ros/humble/share/python_cmake_module/cmake/Modules/FindPythonExtra.cmake:140 (find_package):
+[2.961s]   Policy CMP0148 is not set: The FindPythonInterp and FindPythonLibs modules
+[2.961s]   are removed.  Run "cmake --help-policy CMP0148" for policy details.  Use
+[2.961s]   the cmake_policy command to set the policy and suppress this warning.
+[2.961s] 
+[2.962s] Call Stack (most recent call first):
+[2.962s]   /opt/ros/humble/share/rosidl_generator_py/cmake/rosidl_generator_py_generate_interfaces.cmake:23 (find_package)
+[2.962s]   /opt/ros/humble/share/ament_cmake_core/cmake/core/ament_execute_extensions.cmake:48 (include)
+[2.962s]   /opt/ros/humble/share/rosidl_cmake/cmake/rosidl_generate_interfaces.cmake:286 (ament_execute_extensions)
+[2.962s]   CMakeLists.txt:9 (rosidl_generate_interfaces)
+[2.962s] This warning is for project developers.  Use -Wno-dev to suppress it.
+[2.962s] [0m
+[2.971s] -- Found PythonLibs: /usr/lib/x86_64-linux-gnu/libpython3.10.so (found suitable version "3.10.12", minimum required is "3.5")
+[2.971s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[2.971s] -- Using PYTHON_INCLUDE_DIRS: /usr/include/python3.10
+[2.971s] -- Using PYTHON_LIBRARIES: /usr/lib/x86_64-linux-gnu/libpython3.10.so
+[2.997s] -- Found PythonExtra: .so
+[3.261s] -- Configuring done (3.2s)
+[3.321s] -- Generating done (0.1s)
+[3.334s] -- Build files have been written to: /home/starry1n/WUTA-FSD1/ros2_ws/build/wuta_msgs
+[3.347s] Invoked command in '/home/starry1n/WUTA-FSD1/ros2_ws/build/wuta_msgs' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/starry1n/WUTA-FSD1/ros2_ws/src/common/wuta_msgs -DCMAKE_MODULE_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/cmake -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs
+[3.349s] Invoking command in '/home/starry1n/WUTA-FSD1/ros2_ws/build/wuta_msgs': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/starry1n/WUTA-FSD1/ros2_ws/build/wuta_msgs -- -j8 -l8
+[3.431s] [  1%] [1m[34mGenerating C code for ROS interfaces[0m
+[3.444s] [  3%] [1m[34mGenerating C++ code for ROS interfaces[0m
+[3.445s] [  5%] [1m[34mGenerating Rust code for ROS interfaces[0m
+[3.447s] [  5%] Built target ament_cmake_python_symlink_wuta_msgs
+[3.692s] running egg_info
+[3.692s] creating wuta_msgs.egg-info
+[3.692s] writing wuta_msgs.egg-info/PKG-INFO
+[3.692s] writing dependency_links to wuta_msgs.egg-info/dependency_links.txt
+[3.695s] writing top-level names to wuta_msgs.egg-info/top_level.txt
+[3.695s] writing manifest file 'wuta_msgs.egg-info/SOURCES.txt'
+[3.695s] reading manifest file 'wuta_msgs.egg-info/SOURCES.txt'
+[3.695s] writing manifest file 'wuta_msgs.egg-info/SOURCES.txt'
+[3.715s] [  5%] Built target ament_cmake_python_build_wuta_msgs_egg
+[4.144s] [  5%] Built target wuta_msgs__rs
+[4.245s] [  5%] Built target wuta_msgs__cpp
+[4.273s] [  7%] [1m[34mGenerating C++ type support for eProsima Fast-RTPS[0m
+[4.285s] [  8%] [1m[34mGenerating C++ type support dispatch for ROS interfaces[0m
+[4.292s] [ 10%] [1m[34mGenerating C++ introspection for ROS interfaces[0m
+[4.646s] [ 12%] [32mBuilding C object CMakeFiles/wuta_msgs__rosidl_generator_c.dir/rosidl_generator_c/wuta_msgs/msg/detail/cone__functions.c.o[0m
+[4.655s] [ 14%] [32mBuilding C object CMakeFiles/wuta_msgs__rosidl_generator_c.dir/rosidl_generator_c/wuta_msgs/msg/detail/cone_map__functions.c.o[0m
+[4.663s] [ 16%] [32mBuilding C object CMakeFiles/wuta_msgs__rosidl_generator_c.dir/rosidl_generator_c/wuta_msgs/msg/detail/mission_state__functions.c.o[0m
+[4.676s] [ 17%] [32mBuilding C object CMakeFiles/wuta_msgs__rosidl_generator_c.dir/rosidl_generator_c/wuta_msgs/msg/detail/cone_array__functions.c.o[0m
+[4.798s] [ 19%] [1m[32mLinking C shared library libwuta_msgs__rosidl_generator_c.so[0m
+[4.877s] [ 19%] Built target wuta_msgs__rosidl_generator_c
+[4.907s] [ 21%] [1m[34mGenerating C type support for eProsima Fast-RTPS[0m
+[4.918s] [ 23%] [1m[34mGenerating C introspection for ROS interfaces[0m
+[4.930s] [ 25%] [1m[34mGenerating C type support dispatch for ROS interfaces[0m
+[5.172s] [ 26%] [32mBuilding CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/wuta_msgs/msg/cone__type_support.cpp.o[0m
+[5.173s] [ 28%] [32mBuilding CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/wuta_msgs/msg/cone_map__type_support.cpp.o[0m
+[5.180s] [ 30%] [32mBuilding CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/wuta_msgs/msg/cone_array__type_support.cpp.o[0m
+[5.676s] [ 32%] [32mBuilding CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/wuta_msgs/msg/detail/dds_fastrtps/cone__type_support.cpp.o[0m
+[5.819s] [ 33%] [32mBuilding CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/wuta_msgs/msg/mission_state__type_support.cpp.o[0m
+[5.936s] [ 35%] [32mBuilding CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/wuta_msgs/msg/detail/cone__type_support.cpp.o[0m
+[6.003s] [ 37%] [32mBuilding CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/wuta_msgs/msg/detail/cone_array__type_support.cpp.o[0m
+[6.134s] [ 39%] [32mBuilding CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/wuta_msgs/msg/detail/cone_map__type_support.cpp.o[0m
+[6.416s] [ 41%] [1m[32mLinking CXX shared library libwuta_msgs__rosidl_typesupport_cpp.so[0m
+[6.511s] [ 42%] [32mBuilding C object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/wuta_msgs/msg/detail/cone__type_support.c.o[0m
+[6.615s] [ 42%] Built target wuta_msgs__rosidl_typesupport_cpp
+[6.630s] [ 44%] [32mBuilding C object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/wuta_msgs/msg/detail/cone_array__type_support.c.o[0m
+[6.646s] [ 46%] [32mBuilding CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/wuta_msgs/msg/detail/dds_fastrtps/cone_array__type_support.cpp.o[0m
+[6.656s] [ 48%] [32mBuilding CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/wuta_msgs/msg/cone__type_support.cpp.o[0m
+[6.665s] [ 50%] [32mBuilding CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/wuta_msgs/msg/detail/mission_state__type_support.cpp.o[0m
+[6.670s] [ 51%] [32mBuilding CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/wuta_msgs/msg/detail/cone__type_support_c.cpp.o[0m
+[6.750s] [ 53%] [32mBuilding CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/wuta_msgs/msg/cone_array__type_support.cpp.o[0m
+[6.750s] [ 55%] [32mBuilding C object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/wuta_msgs/msg/detail/cone_map__type_support.c.o[0m
+[6.791s] [ 57%] [32mBuilding CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/wuta_msgs/msg/cone_map__type_support.cpp.o[0m
+[6.837s] [ 58%] [32mBuilding C object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/wuta_msgs/msg/detail/mission_state__type_support.c.o[0m
+[6.857s] [ 60%] [32mBuilding CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/wuta_msgs/msg/detail/dds_fastrtps/cone_map__type_support.cpp.o[0m
+[6.867s] [ 62%] [32mBuilding CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_c.dir/rosidl_typesupport_c/wuta_msgs/msg/mission_state__type_support.cpp.o[0m
+[6.887s] [ 64%] [32mBuilding CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/wuta_msgs/msg/detail/dds_fastrtps/mission_state__type_support.cpp.o[0m
+[6.942s] [ 66%] [1m[32mLinking C shared library libwuta_msgs__rosidl_typesupport_introspection_c.so[0m
+[6.978s] [ 67%] [1m[32mLinking CXX shared library libwuta_msgs__rosidl_typesupport_c.so[0m
+[7.055s] [ 67%] Built target wuta_msgs__rosidl_typesupport_introspection_c
+[7.092s] [ 69%] [32mBuilding CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/wuta_msgs/msg/detail/cone_array__type_support_c.cpp.o[0m
+[7.125s] [ 69%] Built target wuta_msgs__rosidl_typesupport_c
+[7.130s] [ 71%] [32mBuilding CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/wuta_msgs/msg/detail/cone_map__type_support_c.cpp.o[0m
+[7.155s] [ 73%] [32mBuilding CXX object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/wuta_msgs/msg/detail/mission_state__type_support_c.cpp.o[0m
+[7.456s] [ 75%] [1m[32mLinking CXX shared library libwuta_msgs__rosidl_typesupport_introspection_cpp.so[0m
+[7.724s] [ 75%] Built target wuta_msgs__rosidl_typesupport_introspection_cpp
+[7.864s] [ 76%] [1m[32mLinking CXX shared library libwuta_msgs__rosidl_typesupport_fastrtps_c.so[0m
+[8.006s] [ 78%] [1m[32mLinking CXX shared library libwuta_msgs__rosidl_typesupport_fastrtps_cpp.so[0m
+[8.061s] [ 78%] Built target wuta_msgs__rosidl_typesupport_fastrtps_c
+[8.152s] [ 78%] Built target wuta_msgs__rosidl_typesupport_fastrtps_cpp
+[8.210s] [ 78%] Built target wuta_msgs
+[8.262s] [ 80%] [1m[34mGenerating Python code for ROS interfaces[0m
+[9.625s] [ 80%] Built target wuta_msgs__py
+[9.694s] [ 82%] [32mBuilding C object CMakeFiles/wuta_msgs__rosidl_generator_py.dir/rosidl_generator_py/wuta_msgs/msg/_mission_state_s.c.o[0m
+[9.705s] [ 83%] [32mBuilding C object CMakeFiles/wuta_msgs__rosidl_generator_py.dir/rosidl_generator_py/wuta_msgs/msg/_cone_array_s.c.o[0m
+[9.713s] [ 85%] [32mBuilding C object CMakeFiles/wuta_msgs__rosidl_generator_py.dir/rosidl_generator_py/wuta_msgs/msg/_cone_map_s.c.o[0m
+[9.714s] [ 87%] [32mBuilding C object CMakeFiles/wuta_msgs__rosidl_generator_py.dir/rosidl_generator_py/wuta_msgs/msg/_cone_s.c.o[0m
+[9.962s] [ 89%] [1m[32mLinking C shared library rosidl_generator_py/wuta_msgs/libwuta_msgs__rosidl_generator_py.so[0m
+[10.073s] [ 89%] Built target wuta_msgs__rosidl_generator_py
+[10.136s] [ 91%] [32mBuilding C object CMakeFiles/wuta_msgs__rosidl_typesupport_c__pyext.dir/rosidl_generator_py/wuta_msgs/_wuta_msgs_s.ep.rosidl_typesupport_c.c.o[0m
+[10.146s] [ 92%] [32mBuilding C object CMakeFiles/wuta_msgs__rosidl_typesupport_fastrtps_c__pyext.dir/rosidl_generator_py/wuta_msgs/_wuta_msgs_s.ep.rosidl_typesupport_fastrtps_c.c.o[0m
+[10.152s] [ 94%] [32mBuilding C object CMakeFiles/wuta_msgs__rosidl_typesupport_introspection_c__pyext.dir/rosidl_generator_py/wuta_msgs/_wuta_msgs_s.ep.rosidl_typesupport_introspection_c.c.o[0m
+[10.371s] [ 96%] [1m[32mLinking C shared library rosidl_generator_py/wuta_msgs/wuta_msgs_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so[0m
+[10.380s] [ 98%] [1m[32mLinking C shared library rosidl_generator_py/wuta_msgs/wuta_msgs_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so[0m
+[10.390s] [100%] [1m[32mLinking C shared library rosidl_generator_py/wuta_msgs/wuta_msgs_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so[0m
+[10.529s] [100%] Built target wuta_msgs__rosidl_typesupport_introspection_c__pyext
+[10.531s] [100%] Built target wuta_msgs__rosidl_typesupport_fastrtps_c__pyext
+[10.533s] [100%] Built target wuta_msgs__rosidl_typesupport_c__pyext
+[10.572s] Invoked command in '/home/starry1n/WUTA-FSD1/ros2_ws/build/wuta_msgs' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/starry1n/WUTA-FSD1/ros2_ws/build/wuta_msgs -- -j8 -l8
+[10.573s] Invoking command in '/home/starry1n/WUTA-FSD1/ros2_ws/build/wuta_msgs': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/starry1n/WUTA-FSD1/ros2_ws/build/wuta_msgs
+[10.603s] -- Install configuration: ""
+[10.603s] -- Execute custom install script
+[10.603s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/ament_index/resource_index/rosidl_interfaces/wuta_msgs
+[10.630s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/cone.h
+[10.659s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/cone_array.h
+[10.688s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/cone_map.h
+[10.708s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone__functions.h
+[10.738s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone__struct.h
+[10.762s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone__type_support.h
+[10.778s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_array__functions.h
+[10.788s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_array__struct.h
+[10.799s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_array__type_support.h
+[10.818s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_map__functions.h
+[10.842s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_map__struct.h
+[10.867s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_map__type_support.h
+[10.902s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/mission_state__functions.h
+[10.911s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/mission_state__struct.h
+[10.922s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/mission_state__type_support.h
+[10.953s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/mission_state.h
+[10.981s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/rosidl_generator_c__visibility_control.h
+[11.013s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/environment/library_path.sh
+[11.026s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/environment/library_path.dsv
+[11.049s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone__rosidl_typesupport_fastrtps_c.h
+[11.063s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_array__rosidl_typesupport_fastrtps_c.h
+[11.078s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_map__rosidl_typesupport_fastrtps_c.h
+[11.092s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/mission_state__rosidl_typesupport_fastrtps_c.h
+[11.107s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/rosidl_typesupport_fastrtps_c__visibility_control.h
+[11.123s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone__rosidl_typesupport_introspection_c.h
+[11.153s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_array__rosidl_typesupport_introspection_c.h
+[11.175s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_map__rosidl_typesupport_introspection_c.h
+[11.207s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/mission_state__rosidl_typesupport_introspection_c.h
+[11.227s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/rosidl_typesupport_introspection_c__visibility_control.h
+[11.256s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/cone.hpp
+[11.269s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/cone_array.hpp
+[11.287s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/cone_map.hpp
+[11.311s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone__builder.hpp
+[11.330s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone__struct.hpp
+[11.346s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone__traits.hpp
+[11.368s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone__type_support.hpp
+[11.377s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_array__builder.hpp
+[11.384s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_array__struct.hpp
+[11.393s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_array__traits.hpp
+[11.402s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_array__type_support.hpp
+[11.411s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_map__builder.hpp
+[11.428s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_map__struct.hpp
+[11.446s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_map__traits.hpp
+[11.462s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_map__type_support.hpp
+[11.478s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/mission_state__builder.hpp
+[11.503s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/mission_state__struct.hpp
+[11.531s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/mission_state__traits.hpp
+[11.559s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/mission_state__type_support.hpp
+[11.589s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/mission_state.hpp
+[11.611s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/rosidl_generator_cpp__visibility_control.hpp
+[11.631s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone__rosidl_typesupport_fastrtps_cpp.hpp
+[11.651s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_array__rosidl_typesupport_fastrtps_cpp.hpp
+[11.669s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_map__rosidl_typesupport_fastrtps_cpp.hpp
+[11.686s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/mission_state__rosidl_typesupport_fastrtps_cpp.hpp
+[11.703s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h
+[11.721s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone__rosidl_typesupport_introspection_cpp.hpp
+[11.744s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_array__rosidl_typesupport_introspection_cpp.hpp
+[11.755s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/cone_map__rosidl_typesupport_introspection_cpp.hpp
+[11.765s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/include/wuta_msgs/wuta_msgs/msg/detail/mission_state__rosidl_typesupport_introspection_cpp.hpp
+[11.778s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/environment/pythonpath.sh
+[11.796s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/environment/pythonpath.dsv
+[11.810s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs-1.0.0-py3.10.egg-info/PKG-INFO
+[11.825s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs-1.0.0-py3.10.egg-info/SOURCES.txt
+[11.840s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs-1.0.0-py3.10.egg-info/dependency_links.txt
+[11.860s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs-1.0.0-py3.10.egg-info/top_level.txt
+[11.872s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/__init__.py
+[11.890s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/_wuta_msgs_s.ep.rosidl_typesupport_c.c
+[11.905s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/_wuta_msgs_s.ep.rosidl_typesupport_fastrtps_c.c
+[11.921s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/_wuta_msgs_s.ep.rosidl_typesupport_introspection_c.c
+[11.937s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/libwuta_msgs__rosidl_generator_py.so
+[11.952s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/__init__.py
+[11.966s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_cone.py
+[11.983s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_cone_array.py
+[11.999s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_cone_array_s.c
+[12.014s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_cone_map.py
+[12.030s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_cone_map_s.c
+[12.048s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_cone_s.c
+[12.063s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_mission_state.py
+[12.078s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_mission_state_s.c
+[12.096s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/wuta_msgs_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so
+[12.113s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/wuta_msgs_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so
+[12.129s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/wuta_msgs_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so
+[12.146s] -- Up-to-date symlink: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/wuta_msgs_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so
+[12.147s] -- Up-to-date symlink: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/wuta_msgs_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so
+[12.148s] -- Up-to-date symlink: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/wuta_msgs_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so
+[12.149s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/ament_index/resource_index/rust_packages/wuta_msgs
+[12.164s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/rust/Cargo.toml
+[12.189s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/rust/build.rs
+[12.201s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/rust/src/lib.rs
+[12.211s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/rust/src/msg.rs
+[12.222s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/rust/src/msg/rmw.rs
+[12.236s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/msg/Cone.idl
+[12.246s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/msg/ConeArray.idl
+[12.257s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/msg/ConeMap.idl
+[12.265s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/msg/MissionState.idl
+[12.275s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/msg/Cone.msg
+[12.290s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/msg/ConeArray.msg
+[12.298s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/msg/ConeMap.msg
+[12.306s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/msg/MissionState.msg
+[12.315s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/ament_index/resource_index/package_run_dependencies/wuta_msgs
+[12.331s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/ament_index/resource_index/parent_prefix_path/wuta_msgs
+[12.362s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/environment/ament_prefix_path.sh
+[12.381s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/environment/ament_prefix_path.dsv
+[12.405s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/environment/path.sh
+[12.428s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/environment/path.dsv
+[12.455s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/local_setup.bash
+[12.491s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/local_setup.sh
+[12.551s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/local_setup.zsh
+[12.573s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/local_setup.dsv
+[12.595s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/package.dsv
+[12.628s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/ament_index/resource_index/packages/wuta_msgs
+[12.659s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/rosidl_cmake-extras.cmake
+[12.682s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/ament_cmake_export_dependencies-extras.cmake
+[12.711s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/ament_cmake_export_include_directories-extras.cmake
+[12.726s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/ament_cmake_export_libraries-extras.cmake
+[12.751s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/ament_cmake_export_targets-extras.cmake
+[12.777s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake
+[12.808s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake
+[12.840s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/rosidl_cmake_aggregate_target-extras.cmake
+[12.860s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/wuta_msgsConfig.cmake
+[12.877s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/wuta_msgsConfig-version.cmake
+[12.914s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/package.xml
+[12.936s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_generator_c.so
+[12.937s] -- Set non-toolchain portion of runtime path of "/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_generator_c.so" to ""
+[12.937s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_fastrtps_c.so
+[12.938s] -- Set non-toolchain portion of runtime path of "/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_fastrtps_c.so" to ""
+[12.938s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_introspection_c.so
+[12.938s] -- Set non-toolchain portion of runtime path of "/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_introspection_c.so" to ""
+[12.938s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_c.so
+[12.938s] -- Set non-toolchain portion of runtime path of "/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_c.so" to ""
+[12.938s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_fastrtps_cpp.so
+[12.943s] -- Set non-toolchain portion of runtime path of "/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_fastrtps_cpp.so" to ""
+[12.944s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_introspection_cpp.so
+[12.944s] -- Set non-toolchain portion of runtime path of "/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_introspection_cpp.so" to ""
+[12.944s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_cpp.so
+[12.944s] -- Set non-toolchain portion of runtime path of "/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_typesupport_cpp.so" to ""
+[13.027s] Listing '/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs'...
+[13.027s] Compiling '/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/__init__.py'...
+[13.027s] Listing '/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg'...
+[13.027s] Compiling '/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/__init__.py'...
+[13.027s] Compiling '/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_cone.py'...
+[13.027s] Compiling '/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_cone_array.py'...
+[13.027s] Compiling '/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_cone_map.py'...
+[13.027s] Compiling '/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages/wuta_msgs/msg/_mission_state.py'...
+[13.032s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_generator_py.so
+[13.032s] -- Set non-toolchain portion of runtime path of "/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/lib/libwuta_msgs__rosidl_generator_py.so" to ""
+[13.034s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/export_wuta_msgs__rosidl_generator_cExport.cmake
+[13.034s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/export_wuta_msgs__rosidl_generator_cExport-noconfig.cmake
+[13.036s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/export_wuta_msgs__rosidl_typesupport_fastrtps_cExport.cmake
+[13.037s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/export_wuta_msgs__rosidl_typesupport_fastrtps_cExport-noconfig.cmake
+[13.037s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/wuta_msgs__rosidl_typesupport_introspection_cExport.cmake
+[13.037s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/wuta_msgs__rosidl_typesupport_introspection_cExport-noconfig.cmake
+[13.037s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/wuta_msgs__rosidl_typesupport_cExport.cmake
+[13.037s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/wuta_msgs__rosidl_typesupport_cExport-noconfig.cmake
+[13.037s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/export_wuta_msgs__rosidl_generator_cppExport.cmake
+[13.039s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/export_wuta_msgs__rosidl_typesupport_fastrtps_cppExport.cmake
+[13.039s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/export_wuta_msgs__rosidl_typesupport_fastrtps_cppExport-noconfig.cmake
+[13.040s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/wuta_msgs__rosidl_typesupport_introspection_cppExport.cmake
+[13.040s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/wuta_msgs__rosidl_typesupport_introspection_cppExport-noconfig.cmake
+[13.040s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/wuta_msgs__rosidl_typesupport_cppExport.cmake
+[13.040s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/wuta_msgs__rosidl_typesupport_cppExport-noconfig.cmake
+[13.040s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/export_wuta_msgs__rosidl_generator_pyExport.cmake
+[13.040s] -- Installing: /home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake/export_wuta_msgs__rosidl_generator_pyExport-noconfig.cmake
+[13.053s] Invoked command in '/home/starry1n/WUTA-FSD1/ros2_ws/build/wuta_msgs' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/starry1n/WUTA-FSD1/ros2_ws/build/wuta_msgs

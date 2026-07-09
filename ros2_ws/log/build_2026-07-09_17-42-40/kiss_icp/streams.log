@@ -1,0 +1,107 @@
+[0.020s] Invoking command in '/home/starry1n/WUTA-FSD1/ros2_ws/build/kiss_icp': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/starry1n/WUTA-FSD1/ros2_ws/src/localization/kiss-icp/ros -DCMAKE_MODULE_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/cmake -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp
+[0.118s] -- The CXX compiler identification is GNU 11.4.0
+[0.130s] -- Detecting CXX compiler ABI info
+[0.264s] -- Detecting CXX compiler ABI info - done
+[0.282s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.282s] -- Detecting CXX compile features
+[0.283s] -- Detecting CXX compile features - done
+[0.298s] [0mCMake Deprecation Warning at /home/starry1n/WUTA-FSD1/ros2_ws/src/localization/kiss-icp/cpp/kiss_icp/3rdparty/find_dependencies.cmake:25 (cmake_policy):
+[0.298s]   The OLD behavior for policy CMP0135 will be removed from a future version
+[0.298s]   of CMake.
+[0.298s] 
+[0.298s]   The cmake-policies(7) manual explains that the OLD behaviors of all
+[0.298s]   policies are deprecated and that a policy should be set to OLD only under
+[0.298s]   specific short-term circumstances.  Projects should be ported to the NEW
+[0.298s]   behavior and not rely on setting a policy to OLD.
+[0.298s] Call Stack (most recent call first):
+[0.298s]   /home/starry1n/WUTA-FSD1/ros2_ws/src/localization/kiss-icp/cpp/kiss_icp/CMakeLists.txt:48 (include)
+[0.298s] 
+[0.299s] [0m
+[2.605s] -- The C compiler identification is GNU 11.4.0
+[2.617s] -- Detecting C compiler ABI info
+[2.727s] -- Detecting C compiler ABI info - done
+[2.740s] -- Check for working C compiler: /usr/bin/cc - skipped
+[2.741s] -- Detecting C compile features
+[2.741s] -- Detecting C compile features - done
+[64.856s] [0mCMake Deprecation Warning at /home/starry1n/WUTA-FSD1/ros2_ws/build/kiss_icp/_deps/tessil-src/CMakeLists.txt:1 (cmake_minimum_required):
+[64.856s]   Compatibility with CMake < 3.10 will be removed from a future version of
+[64.856s]   CMake.
+[64.856s] 
+[64.856s]   Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+[64.856s]   to tell CMake that the project requires at least <min> but has been updated
+[64.857s]   to work with policies introduced by <max> or earlier.
+[64.857s] 
+[64.857s] [0m
+[64.866s] -- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+[65.053s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter
+[65.132s] -- Override CMake install command with custom implementation using symlinks instead of copying resources
+[65.171s] -- Found geometry_msgs: 4.9.1 (/opt/ros/humble/share/geometry_msgs/cmake)
+[65.221s] -- Found rosidl_generator_c: 3.1.9 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[65.228s] -- Found rosidl_adapter: 3.1.9 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[65.237s] -- Found rosidl_generator_cpp: 3.1.9 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[65.255s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[65.278s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[65.363s] -- Found nav_msgs: 4.9.1 (/opt/ros/humble/share/nav_msgs/cmake)
+[65.429s] -- Found rclcpp: 16.0.19 (/opt/ros/humble/share/rclcpp/cmake)
+[65.478s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[65.482s] -- Found rmw_fastrtps_cpp: 6.2.10 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[65.639s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")
+[65.678s] -- Found FastRTPS: /opt/ros/humble/include
+[65.740s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[65.759s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[65.912s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[65.914s] -- Found Threads: TRUE
+[65.996s] -- Found rclcpp_components: 16.0.19 (/opt/ros/humble/share/rclcpp_components/cmake)
+[66.071s] -- Found sensor_msgs: 4.9.1 (/opt/ros/humble/share/sensor_msgs/cmake)
+[66.113s] -- Found tf2_ros: 0.25.20 (/opt/ros/humble/share/tf2_ros/cmake)
+[66.357s] -- Found std_srvs: 4.9.1 (/opt/ros/humble/share/std_srvs/cmake)
+[66.634s] -- Configuring done (66.6s)
+[66.692s] -- Generating done (0.1s)
+[66.757s] -- Build files have been written to: /home/starry1n/WUTA-FSD1/ros2_ws/build/kiss_icp
+[66.784s] Invoked command in '/home/starry1n/WUTA-FSD1/ros2_ws/build/kiss_icp' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/starry1n/WUTA-FSD1/ros2_ws/src/localization/kiss-icp/ros -DCMAKE_MODULE_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/cmake -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp
+[66.784s] Invoking command in '/home/starry1n/WUTA-FSD1/ros2_ws/build/kiss_icp': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/starry1n/WUTA-FSD1/ros2_ws/build/kiss_icp -- -j8 -l8
+[66.870s] [  7%] [32mBuilding CXX object kiss_icp/core/CMakeFiles/kiss_icp_core.dir/Registration.cpp.o[0m
+[75.850s] [ 14%] [32mBuilding CXX object kiss_icp/core/CMakeFiles/kiss_icp_core.dir/Preprocessing.cpp.o[0m
+[75.850s] [ 21%] [32mBuilding CXX object kiss_icp/core/CMakeFiles/kiss_icp_core.dir/Threshold.cpp.o[0m
+[75.852s] [ 28%] [32mBuilding CXX object kiss_icp/core/CMakeFiles/kiss_icp_core.dir/VoxelUtils.cpp.o[0m
+[77.451s] [ 35%] [32mBuilding CXX object kiss_icp/core/CMakeFiles/kiss_icp_core.dir/VoxelHashMap.cpp.o[0m
+[80.317s] [ 42%] [1m[32mLinking CXX static library libkiss_icp_core.a[0m
+[80.406s] [ 42%] Built target kiss_icp_core
+[80.441s] [ 50%] [32mBuilding CXX object kiss_icp/metrics/CMakeFiles/kiss_icp_metrics.dir/Metrics.cpp.o[0m
+[80.444s] [ 57%] [32mBuilding CXX object CMakeFiles/kiss_icp_node.dir/rclcpp_components/node_main_kiss_icp_node.cpp.o[0m
+[80.448s] [ 64%] [32mBuilding CXX object kiss_icp/pipeline/CMakeFiles/kiss_icp_pipeline.dir/KissICP.cpp.o[0m
+[83.220s] [ 71%] [1m[32mLinking CXX static library libkiss_icp_pipeline.a[0m
+[83.342s] [ 71%] Built target kiss_icp_pipeline
+[83.373s] [ 78%] [32mBuilding CXX object CMakeFiles/odometry_component.dir/src/OdometryServer.cpp.o[0m
+[85.452s] [ 85%] [1m[32mLinking CXX executable kiss_icp_node[0m
+[85.610s] [ 85%] Built target kiss_icp_node
+[99.708s] [ 92%] [1m[32mLinking CXX static library libkiss_icp_metrics.a[0m
+[99.766s] [ 92%] Built target kiss_icp_metrics
+[113.188s] [100%] [1m[32mLinking CXX shared library libodometry_component.so[0m
+[113.504s] [100%] Built target odometry_component
+[113.515s] Invoked command in '/home/starry1n/WUTA-FSD1/ros2_ws/build/kiss_icp' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/starry1n/WUTA-FSD1/ros2_ws/build/kiss_icp -- -j8 -l8
+[113.518s] Invoking command in '/home/starry1n/WUTA-FSD1/ros2_ws/build/kiss_icp': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/starry1n/WUTA-FSD1/ros2_ws/build/kiss_icp
+[113.525s] -- Install configuration: "Release"
+[113.526s] -- Execute custom install script
+[113.527s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/lib/kiss_icp/kiss_icp_node
+[113.545s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/lib/libodometry_component.so
+[113.555s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/share/kiss_icp//launch/odometry.launch.py
+[113.564s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/share/kiss_icp//rviz/kiss_icp.rviz
+[113.579s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/share/kiss_icp//config/config.yaml
+[113.600s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/share/ament_index/resource_index/package_run_dependencies/kiss_icp
+[113.612s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/share/ament_index/resource_index/parent_prefix_path/kiss_icp
+[113.621s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/share/kiss_icp/environment/ament_prefix_path.sh
+[113.632s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/share/kiss_icp/environment/ament_prefix_path.dsv
+[113.640s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/share/kiss_icp/environment/path.sh
+[113.653s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/share/kiss_icp/environment/path.dsv
+[113.661s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/share/kiss_icp/local_setup.bash
+[113.672s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/share/kiss_icp/local_setup.sh
+[113.683s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/share/kiss_icp/local_setup.zsh
+[113.695s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/share/kiss_icp/local_setup.dsv
+[113.703s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/share/kiss_icp/package.dsv
+[113.710s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/share/ament_index/resource_index/packages/kiss_icp
+[113.719s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/share/ament_index/resource_index/rclcpp_components/kiss_icp
+[113.728s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/share/kiss_icp/cmake/kiss_icpConfig.cmake
+[113.742s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/share/kiss_icp/cmake/kiss_icpConfig-version.cmake
+[113.751s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/share/kiss_icp/package.xml
+[113.763s] Invoked command in '/home/starry1n/WUTA-FSD1/ros2_ws/build/kiss_icp' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/starry1n/WUTA-FSD1/ros2_ws/build/kiss_icp

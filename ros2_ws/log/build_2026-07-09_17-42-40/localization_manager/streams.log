@@ -1,0 +1,72 @@
+[0.025s] Invoking command in '/home/starry1n/WUTA-FSD1/ros2_ws/build/localization_manager': AMENT_PREFIX_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization:/home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization:/home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/lib:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization/lib:/home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake /home/starry1n/WUTA-FSD1/ros2_ws/src/localization/localization_manager -DCMAKE_MODULE_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/cmake -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/starry1n/WUTA-FSD1/ros2_ws/install/localization_manager
+[0.033s] [0mCMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+[0.033s]   Compatibility with CMake < 3.10 will be removed from a future version of
+[0.033s]   CMake.
+[0.033s] 
+[0.033s]   Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+[0.033s]   to tell CMake that the project requires at least <min> but has been updated
+[0.033s]   to work with policies introduced by <max> or earlier.
+[0.033s] 
+[0.033s] [0m
+[0.116s] -- The C compiler identification is GNU 11.4.0
+[0.222s] -- The CXX compiler identification is GNU 11.4.0
+[0.234s] -- Detecting C compiler ABI info
+[0.358s] -- Detecting C compiler ABI info - done
+[0.374s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.375s] -- Detecting C compile features
+[0.376s] -- Detecting C compile features - done
+[0.394s] -- Detecting CXX compiler ABI info
+[0.513s] -- Detecting CXX compiler ABI info - done
+[0.529s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.529s] -- Detecting CXX compile features
+[0.529s] -- Detecting CXX compile features - done
+[0.542s] -- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+[0.707s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter
+[0.787s] -- Override CMake install command with custom implementation using symlinks instead of copying resources
+[0.826s] -- Found rclcpp: 16.0.19 (/opt/ros/humble/share/rclcpp/cmake)
+[0.896s] -- Found rosidl_generator_c: 3.1.9 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[0.903s] -- Found rosidl_adapter: 3.1.9 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[0.914s] -- Found rosidl_generator_cpp: 3.1.9 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[0.930s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[0.948s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[1.009s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[1.012s] -- Found rmw_fastrtps_cpp: 6.2.10 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[1.154s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")
+[1.191s] -- Found FastRTPS: /opt/ros/humble/include
+[1.244s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[1.259s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[1.385s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[1.386s] -- Found Threads: TRUE
+[1.481s] -- Found nav_msgs: 4.9.1 (/opt/ros/humble/share/nav_msgs/cmake)
+[1.529s] -- Found wuta_msgs: 1.0.0 (/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake)
+[1.658s] -- Configuring done (1.6s)
+[1.674s] -- Generating done (0.0s)
+[1.707s] -- Build files have been written to: /home/starry1n/WUTA-FSD1/ros2_ws/build/localization_manager
+[1.720s] Invoked command in '/home/starry1n/WUTA-FSD1/ros2_ws/build/localization_manager' returned '0': AMENT_PREFIX_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization:/home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization:/home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/lib:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization/lib:/home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake /home/starry1n/WUTA-FSD1/ros2_ws/src/localization/localization_manager -DCMAKE_MODULE_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/cmake -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/starry1n/WUTA-FSD1/ros2_ws/install/localization_manager
+[1.722s] Invoking command in '/home/starry1n/WUTA-FSD1/ros2_ws/build/localization_manager': AMENT_PREFIX_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization:/home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization:/home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/lib:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization/lib:/home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --build /home/starry1n/WUTA-FSD1/ros2_ws/build/localization_manager -- -j8 -l8
+[1.789s] [ 50%] [32mBuilding CXX object CMakeFiles/localization_manager_node.dir/src/localization_manager.cpp.o[0m
+[16.163s] [100%] [1m[32mLinking CXX executable localization_manager_node[0m
+[17.244s] [100%] Built target localization_manager_node
+[17.261s] Invoked command in '/home/starry1n/WUTA-FSD1/ros2_ws/build/localization_manager' returned '0': AMENT_PREFIX_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization:/home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization:/home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/lib:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization/lib:/home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --build /home/starry1n/WUTA-FSD1/ros2_ws/build/localization_manager -- -j8 -l8
+[17.264s] Invoking command in '/home/starry1n/WUTA-FSD1/ros2_ws/build/localization_manager': AMENT_PREFIX_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization:/home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization:/home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/lib:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization/lib:/home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --install /home/starry1n/WUTA-FSD1/ros2_ws/build/localization_manager
+[17.277s] -- Install configuration: ""
+[17.278s] -- Execute custom install script
+[17.278s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/localization_manager/lib/localization_manager/localization_manager_node
+[17.294s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/localization_manager/share/localization_manager/ekf.yaml
+[17.311s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/localization_manager/share/localization_manager/localization.launch.py
+[17.323s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/localization_manager/share/ament_index/resource_index/package_run_dependencies/localization_manager
+[17.339s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/localization_manager/share/ament_index/resource_index/parent_prefix_path/localization_manager
+[17.348s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/localization_manager/share/localization_manager/environment/ament_prefix_path.sh
+[17.357s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/localization_manager/share/localization_manager/environment/ament_prefix_path.dsv
+[17.369s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/localization_manager/share/localization_manager/environment/path.sh
+[17.378s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/localization_manager/share/localization_manager/environment/path.dsv
+[17.388s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/localization_manager/share/localization_manager/local_setup.bash
+[17.404s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/localization_manager/share/localization_manager/local_setup.sh
+[17.412s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/localization_manager/share/localization_manager/local_setup.zsh
+[17.420s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/localization_manager/share/localization_manager/local_setup.dsv
+[17.430s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/localization_manager/share/localization_manager/package.dsv
+[17.442s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/localization_manager/share/ament_index/resource_index/packages/localization_manager
+[17.453s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/localization_manager/share/localization_manager/cmake/localization_managerConfig.cmake
+[17.467s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/localization_manager/share/localization_manager/cmake/localization_managerConfig-version.cmake
+[17.479s] -- Symlinking: /home/starry1n/WUTA-FSD1/ros2_ws/install/localization_manager/share/localization_manager/package.xml
+[17.493s] Invoked command in '/home/starry1n/WUTA-FSD1/ros2_ws/build/localization_manager' returned '0': AMENT_PREFIX_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization:/home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization:/home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/lib:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization/lib:/home/starry1n/WUTA-FSD1/ros2_ws/install/kiss_icp/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA-FSD1/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:/home/starry1n/WUTA-FSD1/ros2_ws/install/robot_localization/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --install /home/starry1n/WUTA-FSD1/ros2_ws/build/localization_manager

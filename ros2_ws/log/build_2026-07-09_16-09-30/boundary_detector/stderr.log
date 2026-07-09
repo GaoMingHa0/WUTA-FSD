@@ -1,8 +1,0 @@
-In file included from /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector/src/boundary_detector_node.cpp:1:
-/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector/include/boundary_detector/boundary_detector_node.hpp:15:10: fatal error: autoware_msgs/msg/lane.hpp: No such file or directory
-   15 | #include <autoware_msgs/msg/lane.hpp>
-      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-compilation terminated.
-gmake[2]: *** [CMakeFiles/boundary_detector_node.dir/build.make:79: CMakeFiles/boundary_detector_node.dir/src/boundary_detector_node.cpp.o] Error 1
-gmake[1]: *** [CMakeFiles/Makefile2:188: CMakeFiles/boundary_detector_node.dir/all] Error 2
-gmake: *** [Makefile:146: all] Error 2

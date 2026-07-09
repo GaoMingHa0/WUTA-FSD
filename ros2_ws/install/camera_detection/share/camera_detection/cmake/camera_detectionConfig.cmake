@@ -1,1 +1,1 @@
-/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/camera_detection/ament_cmake_core/camera_detectionConfig.cmake
+/home/starry1n/WUTA-FSD1/ros2_ws/build/camera_detection/ament_cmake_core/camera_detectionConfig.cmake

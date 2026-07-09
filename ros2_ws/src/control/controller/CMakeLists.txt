@@ -32,8 +32,14 @@ install(TARGETS controller_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
-install(DIRECTORY config/ launch/
+install(DIRECTORY config/
   DESTINATION share/${PROJECT_NAME}
 )
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/launch")
+  install(DIRECTORY launch/
+    DESTINATION share/${PROJECT_NAME}
+  )
+endif()
 
 ament_package()
