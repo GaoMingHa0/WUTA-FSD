@@ -1,0 +1,4 @@
+Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/kiss_icp': CMAKE_PREFIX_PATH=/opt/ros/humble /home/g2909/.local/bin/cmake --build /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/kiss_icp -- -j16 -l16
+Invoked command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/kiss_icp' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /home/g2909/.local/bin/cmake --build /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/kiss_icp -- -j16 -l16
+Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/kiss_icp': CMAKE_PREFIX_PATH=/opt/ros/humble /home/g2909/.local/bin/cmake --install /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/kiss_icp
+Invoked command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/kiss_icp' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /home/g2909/.local/bin/cmake --install /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/kiss_icp

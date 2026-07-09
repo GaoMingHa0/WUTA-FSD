@@ -13,8 +13,8 @@ set_target_properties(wuta_msgs::wuta_msgs__rosidl_typesupport_c PROPERTIES
   IMPORTED_SONAME_NOCONFIG "libwuta_msgs__rosidl_typesupport_c.so"
   )
 
-list(APPEND _IMPORT_CHECK_TARGETS wuta_msgs::wuta_msgs__rosidl_typesupport_c )
-list(APPEND _IMPORT_CHECK_FILES_FOR_wuta_msgs::wuta_msgs__rosidl_typesupport_c "${_IMPORT_PREFIX}/lib/libwuta_msgs__rosidl_typesupport_c.so" )
+list(APPEND _cmake_import_check_targets wuta_msgs::wuta_msgs__rosidl_typesupport_c )
+list(APPEND _cmake_import_check_files_for_wuta_msgs::wuta_msgs__rosidl_typesupport_c "${_IMPORT_PREFIX}/lib/libwuta_msgs__rosidl_typesupport_c.so" )
 
 # Commands beyond this point should not need to know the version.
 set(CMAKE_IMPORT_FILE_VERSION)

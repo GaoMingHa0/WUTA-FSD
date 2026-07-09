@@ -1,6 +1,0 @@
-[0.068s] Invoking command in '/home/wuta/WUTA/WUTA-FSD/ros2_ws/build/lidar_detection': CMAKE_PREFIX_PATH=/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/detection_fusion:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/camera_detection:/home/wuta/WUTA/WUTA-FSD/ros2_ws/install/autoware_msgs:/opt/ros/humble /home/wuta/.local/bin/cmake --build /home/wuta/WUTA/WUTA-FSD/ros2_ws/build/lidar_detection -- -j12 -l12
-[0.347s] [ 25%] Building CXX object CMakeFiles/lidar_detection_node.dir/src/traditional_detector.cpp.o
-[0.347s] [ 50%] Building CXX object CMakeFiles/lidar_detection_node.dir/src/lidar_detection_node.cpp.o
-[0.358s] [ 75%] Building CXX object CMakeFiles/lidar_detection_node.dir/src/dl_detector.cpp.o
-[30.623s] [100%] Linking CXX executable lidar_detection_node
-[32.874s] [100%] Built target lidar_detection_node

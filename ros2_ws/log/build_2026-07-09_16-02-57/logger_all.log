@@ -1,0 +1,813 @@
+[0.242s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'build', '--symlink-install']
+[0.242s] DEBUG:colcon:Parsed command line arguments: Namespace(log_base=None, log_level=None, verb_name='build', build_base='build', install_base='install', merge_install=False, symlink_install=True, test_result_base=None, continue_on_error=False, executor='parallel', parallel_workers=16, event_handlers=None, ignore_user_meta=False, metas=['./colcon.meta'], base_paths=['.'], packages_ignore=None, packages_ignore_regex=None, paths=None, packages_up_to=None, packages_up_to_regex=None, packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_select_by_dep=None, packages_skip_by_dep=None, packages_skip_up_to=None, packages_select_build_failed=False, packages_skip_build_finished=False, packages_select_test_failures=False, packages_skip_test_passed=False, packages_select=None, packages_skip=None, packages_select_regex=None, packages_skip_regex=None, packages_start=None, packages_end=None, allow_overriding=[], cmake_args=None, cmake_target=None, cmake_target_skip_unavailable=False, cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, ament_cmake_args=None, catkin_cmake_args=None, catkin_skip_building_tests=False, verb_parser=<colcon_defaults.argument_parser.defaults.DefaultArgumentsDecorator object at 0x7ba63e8e7610>, verb_extension=<colcon_core.verb.build.BuildVerb object at 0x7ba63eacc430>, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0x7ba63eacc430>>)
+[0.325s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[0.325s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[0.325s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[0.325s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[0.325s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) discover
+[0.325s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[0.325s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws'
+[0.325s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ignore', 'ignore_ament_install']
+[0.326s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore'
+[0.326s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore_ament_install'
+[0.326s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_pkg']
+[0.326s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_pkg'
+[0.326s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_meta']
+[0.326s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_meta'
+[0.326s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros']
+[0.326s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros'
+[0.333s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['cmake', 'python']
+[0.333s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'cmake'
+[0.333s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python'
+[0.333s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['python_setup_py']
+[0.333s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python_setup_py'
+[0.333s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extensions ['ignore', 'ignore_ament_install']
+[0.333s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extension 'ignore'
+[0.333s] Level 1:colcon.colcon_core.package_identification:_identify(build) ignored
+[0.333s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extensions ['ignore', 'ignore_ament_install']
+[0.333s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extension 'ignore'
+[0.333s] Level 1:colcon.colcon_core.package_identification:_identify(install) ignored
+[0.333s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extensions ['ignore', 'ignore_ament_install']
+[0.333s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extension 'ignore'
+[0.333s] Level 1:colcon.colcon_core.package_identification:_identify(log) ignored
+[0.333s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['ignore', 'ignore_ament_install']
+[0.333s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'ignore'
+[0.333s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'ignore_ament_install'
+[0.333s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['colcon_pkg']
+[0.333s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'colcon_pkg'
+[0.333s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['colcon_meta']
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'colcon_meta'
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['ros']
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'ros'
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['cmake', 'python']
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'cmake'
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'python'
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['python_setup_py']
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'python_setup_py'
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src/common) by extensions ['ignore', 'ignore_ament_install']
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src/common) by extension 'ignore'
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src/common) by extension 'ignore_ament_install'
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src/common) by extensions ['colcon_pkg']
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src/common) by extension 'colcon_pkg'
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src/common) by extensions ['colcon_meta']
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src/common) by extension 'colcon_meta'
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src/common) by extensions ['ros']
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src/common) by extension 'ros'
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src/common) by extensions ['cmake', 'python']
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src/common) by extension 'cmake'
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src/common) by extension 'python'
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src/common) by extensions ['python_setup_py']
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src/common) by extension 'python_setup_py'
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/autoware_msgs) by extensions ['ignore', 'ignore_ament_install']
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/autoware_msgs) by extension 'ignore'
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/autoware_msgs) by extension 'ignore_ament_install'
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/autoware_msgs) by extensions ['colcon_pkg']
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/autoware_msgs) by extension 'colcon_pkg'
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/autoware_msgs) by extensions ['colcon_meta']
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/autoware_msgs) by extension 'colcon_meta'
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/autoware_msgs) by extensions ['ros']
+[0.334s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/autoware_msgs) by extension 'ros'
+[0.336s] DEBUG:colcon.colcon_core.package_identification:Package 'src/common/autoware_msgs' with type 'ros.ament_cmake' and name 'autoware_msgs'
+[0.336s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/wuta_msgs) by extensions ['ignore', 'ignore_ament_install']
+[0.336s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/wuta_msgs) by extension 'ignore'
+[0.336s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/wuta_msgs) by extension 'ignore_ament_install'
+[0.336s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/wuta_msgs) by extensions ['colcon_pkg']
+[0.336s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/wuta_msgs) by extension 'colcon_pkg'
+[0.336s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/wuta_msgs) by extensions ['colcon_meta']
+[0.336s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/wuta_msgs) by extension 'colcon_meta'
+[0.336s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/wuta_msgs) by extensions ['ros']
+[0.336s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/wuta_msgs) by extension 'ros'
+[0.336s] DEBUG:colcon.colcon_core.package_identification:Package 'src/common/wuta_msgs' with type 'ros.ament_cmake' and name 'wuta_msgs'
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/wuta_tools) by extensions ['ignore', 'ignore_ament_install']
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/wuta_tools) by extension 'ignore'
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/wuta_tools) by extension 'ignore_ament_install'
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/wuta_tools) by extensions ['colcon_pkg']
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/wuta_tools) by extension 'colcon_pkg'
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/wuta_tools) by extensions ['colcon_meta']
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/wuta_tools) by extension 'colcon_meta'
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/wuta_tools) by extensions ['ros']
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/common/wuta_tools) by extension 'ros'
+[0.337s] DEBUG:colcon.colcon_core.package_identification:Package 'src/common/wuta_tools' with type 'ros.ament_cmake' and name 'wuta_tools'
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/control) by extensions ['ignore', 'ignore_ament_install']
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/control) by extension 'ignore'
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/control) by extension 'ignore_ament_install'
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/control) by extensions ['colcon_pkg']
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/control) by extension 'colcon_pkg'
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/control) by extensions ['colcon_meta']
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/control) by extension 'colcon_meta'
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/control) by extensions ['ros']
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/control) by extension 'ros'
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/control) by extensions ['cmake', 'python']
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/control) by extension 'cmake'
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/control) by extension 'python'
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/control) by extensions ['python_setup_py']
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/control) by extension 'python_setup_py'
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/control/controller) by extensions ['ignore', 'ignore_ament_install']
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/control/controller) by extension 'ignore'
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/control/controller) by extension 'ignore_ament_install'
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/control/controller) by extensions ['colcon_pkg']
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/control/controller) by extension 'colcon_pkg'
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/control/controller) by extensions ['colcon_meta']
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/control/controller) by extension 'colcon_meta'
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/control/controller) by extensions ['ros']
+[0.337s] Level 1:colcon.colcon_core.package_identification:_identify(src/control/controller) by extension 'ros'
+[0.338s] DEBUG:colcon.colcon_core.package_identification:Package 'src/control/controller' with type 'ros.ament_cmake' and name 'controller'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization) by extensions ['ignore', 'ignore_ament_install']
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization) by extension 'ignore'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization) by extension 'ignore_ament_install'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization) by extensions ['colcon_pkg']
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization) by extension 'colcon_pkg'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization) by extensions ['colcon_meta']
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization) by extension 'colcon_meta'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization) by extensions ['ros']
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization) by extension 'ros'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization) by extensions ['cmake', 'python']
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization) by extension 'cmake'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization) by extension 'python'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization) by extensions ['python_setup_py']
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization) by extension 'python_setup_py'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp) by extensions ['ignore', 'ignore_ament_install']
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp) by extension 'ignore'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp) by extension 'ignore_ament_install'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp) by extensions ['colcon_pkg']
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp) by extension 'colcon_pkg'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp) by extensions ['colcon_meta']
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp) by extension 'colcon_meta'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp) by extensions ['ros']
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp) by extension 'ros'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp) by extensions ['cmake', 'python']
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp) by extension 'cmake'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp) by extension 'python'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp) by extensions ['python_setup_py']
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp) by extension 'python_setup_py'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/config) by extensions ['ignore', 'ignore_ament_install']
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/config) by extension 'ignore'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/config) by extension 'ignore_ament_install'
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/config) by extensions ['colcon_pkg']
+[0.338s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/config) by extension 'colcon_pkg'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/config) by extensions ['colcon_meta']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/config) by extension 'colcon_meta'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/config) by extensions ['ros']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/config) by extension 'ros'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/config) by extensions ['cmake', 'python']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/config) by extension 'cmake'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/config) by extension 'python'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/config) by extensions ['python_setup_py']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/config) by extension 'python_setup_py'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/cpp) by extensions ['ignore', 'ignore_ament_install']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/cpp) by extension 'ignore'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/cpp) ignored
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/eval) by extensions ['ignore', 'ignore_ament_install']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/eval) by extension 'ignore'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/eval) by extension 'ignore_ament_install'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/eval) by extensions ['colcon_pkg']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/eval) by extension 'colcon_pkg'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/eval) by extensions ['colcon_meta']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/eval) by extension 'colcon_meta'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/eval) by extensions ['ros']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/eval) by extension 'ros'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/eval) by extensions ['cmake', 'python']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/eval) by extension 'cmake'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/eval) by extension 'python'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/eval) by extensions ['python_setup_py']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/eval) by extension 'python_setup_py'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/python) by extensions ['ignore', 'ignore_ament_install']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/python) by extension 'ignore'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/python) ignored
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/ros) by extensions ['ignore', 'ignore_ament_install']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/ros) by extension 'ignore'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/ros) by extension 'ignore_ament_install'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/ros) by extensions ['colcon_pkg']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/ros) by extension 'colcon_pkg'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/ros) by extensions ['colcon_meta']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/ros) by extension 'colcon_meta'
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/ros) by extensions ['ros']
+[0.339s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss-icp/ros) by extension 'ros'
+[0.340s] DEBUG:colcon.colcon_core.package_identification:Package 'src/localization/kiss-icp/ros' with type 'ros.ament_cmake' and name 'kiss_icp'
+[0.340s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss_icp_wrapper) by extensions ['ignore', 'ignore_ament_install']
+[0.340s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss_icp_wrapper) by extension 'ignore'
+[0.340s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss_icp_wrapper) by extension 'ignore_ament_install'
+[0.340s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss_icp_wrapper) by extensions ['colcon_pkg']
+[0.340s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss_icp_wrapper) by extension 'colcon_pkg'
+[0.340s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss_icp_wrapper) by extensions ['colcon_meta']
+[0.340s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss_icp_wrapper) by extension 'colcon_meta'
+[0.340s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss_icp_wrapper) by extensions ['ros']
+[0.340s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/kiss_icp_wrapper) by extension 'ros'
+[0.340s] DEBUG:colcon.colcon_core.package_identification:Package 'src/localization/kiss_icp_wrapper' with type 'ros.ament_cmake' and name 'kiss_icp_wrapper'
+[0.340s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/localization_manager) by extensions ['ignore', 'ignore_ament_install']
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/localization_manager) by extension 'ignore'
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/localization_manager) by extension 'ignore_ament_install'
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/localization_manager) by extensions ['colcon_pkg']
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/localization_manager) by extension 'colcon_pkg'
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/localization_manager) by extensions ['colcon_meta']
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/localization_manager) by extension 'colcon_meta'
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/localization_manager) by extensions ['ros']
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/localization_manager) by extension 'ros'
+[0.341s] DEBUG:colcon.colcon_core.package_identification:Package 'src/localization/localization_manager' with type 'ros.ament_cmake' and name 'localization_manager'
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/ndt_localization) by extensions ['ignore', 'ignore_ament_install']
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/ndt_localization) by extension 'ignore'
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/ndt_localization) by extension 'ignore_ament_install'
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/ndt_localization) by extensions ['colcon_pkg']
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/ndt_localization) by extension 'colcon_pkg'
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/ndt_localization) by extensions ['colcon_meta']
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/ndt_localization) by extension 'colcon_meta'
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/ndt_localization) by extensions ['ros']
+[0.341s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/ndt_localization) by extension 'ros'
+[0.342s] DEBUG:colcon.colcon_core.package_identification:Package 'src/localization/ndt_localization' with type 'ros.ament_cmake' and name 'ndt_localization'
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/robot_localization) by extensions ['ignore', 'ignore_ament_install']
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/robot_localization) by extension 'ignore'
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/robot_localization) by extension 'ignore_ament_install'
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/robot_localization) by extensions ['colcon_pkg']
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/robot_localization) by extension 'colcon_pkg'
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/robot_localization) by extensions ['colcon_meta']
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/robot_localization) by extension 'colcon_meta'
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/robot_localization) by extensions ['ros']
+[0.342s] Level 1:colcon.colcon_core.package_identification:_identify(src/localization/robot_localization) by extension 'ros'
+[0.343s] DEBUG:colcon.colcon_core.package_identification:Package 'src/localization/robot_localization' with type 'ros.ament_cmake' and name 'robot_localization'
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(src/mapping) by extensions ['ignore', 'ignore_ament_install']
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(src/mapping) by extension 'ignore'
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(src/mapping) by extension 'ignore_ament_install'
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(src/mapping) by extensions ['colcon_pkg']
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(src/mapping) by extension 'colcon_pkg'
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(src/mapping) by extensions ['colcon_meta']
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(src/mapping) by extension 'colcon_meta'
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(src/mapping) by extensions ['ros']
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(src/mapping) by extension 'ros'
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(src/mapping) by extensions ['cmake', 'python']
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(src/mapping) by extension 'cmake'
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(src/mapping) by extension 'python'
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(src/mapping) by extensions ['python_setup_py']
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(src/mapping) by extension 'python_setup_py'
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(src/mapping/cone_map_builder) by extensions ['ignore', 'ignore_ament_install']
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(src/mapping/cone_map_builder) by extension 'ignore'
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(src/mapping/cone_map_builder) by extension 'ignore_ament_install'
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(src/mapping/cone_map_builder) by extensions ['colcon_pkg']
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(src/mapping/cone_map_builder) by extension 'colcon_pkg'
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(src/mapping/cone_map_builder) by extensions ['colcon_meta']
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(src/mapping/cone_map_builder) by extension 'colcon_meta'
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(src/mapping/cone_map_builder) by extensions ['ros']
+[0.343s] Level 1:colcon.colcon_core.package_identification:_identify(src/mapping/cone_map_builder) by extension 'ros'
+[0.344s] DEBUG:colcon.colcon_core.package_identification:Package 'src/mapping/cone_map_builder' with type 'ros.ament_cmake' and name 'cone_map_builder'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception) by extensions ['ignore', 'ignore_ament_install']
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception) by extension 'ignore'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception) by extension 'ignore_ament_install'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception) by extensions ['colcon_pkg']
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception) by extension 'colcon_pkg'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception) by extensions ['colcon_meta']
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception) by extension 'colcon_meta'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception) by extensions ['ros']
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception) by extension 'ros'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception) by extensions ['cmake', 'python']
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception) by extension 'cmake'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception) by extension 'python'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception) by extensions ['python_setup_py']
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception) by extension 'python_setup_py'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/camera_detection) by extensions ['ignore', 'ignore_ament_install']
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/camera_detection) by extension 'ignore'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/camera_detection) by extension 'ignore_ament_install'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/camera_detection) by extensions ['colcon_pkg']
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/camera_detection) by extension 'colcon_pkg'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/camera_detection) by extensions ['colcon_meta']
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/camera_detection) by extension 'colcon_meta'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/camera_detection) by extensions ['ros']
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/camera_detection) by extension 'ros'
+[0.344s] DEBUG:colcon.colcon_core.package_identification:Package 'src/perception/camera_detection' with type 'ros.ament_cmake' and name 'camera_detection'
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/detection_fusion) by extensions ['ignore', 'ignore_ament_install']
+[0.344s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/detection_fusion) by extension 'ignore'
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/detection_fusion) by extension 'ignore_ament_install'
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/detection_fusion) by extensions ['colcon_pkg']
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/detection_fusion) by extension 'colcon_pkg'
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/detection_fusion) by extensions ['colcon_meta']
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/detection_fusion) by extension 'colcon_meta'
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/detection_fusion) by extensions ['ros']
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/detection_fusion) by extension 'ros'
+[0.345s] DEBUG:colcon.colcon_core.package_identification:Package 'src/perception/detection_fusion' with type 'ros.ament_cmake' and name 'detection_fusion'
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/lidar_detection) by extensions ['ignore', 'ignore_ament_install']
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/lidar_detection) by extension 'ignore'
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/lidar_detection) by extension 'ignore_ament_install'
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/lidar_detection) by extensions ['colcon_pkg']
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/lidar_detection) by extension 'colcon_pkg'
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/lidar_detection) by extensions ['colcon_meta']
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/lidar_detection) by extension 'colcon_meta'
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/lidar_detection) by extensions ['ros']
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(src/perception/lidar_detection) by extension 'ros'
+[0.345s] DEBUG:colcon.colcon_core.package_identification:Package 'src/perception/lidar_detection' with type 'ros.ament_cmake' and name 'lidar_detection'
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning) by extensions ['ignore', 'ignore_ament_install']
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning) by extension 'ignore'
+[0.345s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning) by extension 'ignore_ament_install'
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning) by extensions ['colcon_pkg']
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning) by extension 'colcon_pkg'
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning) by extensions ['colcon_meta']
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning) by extension 'colcon_meta'
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning) by extensions ['ros']
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning) by extension 'ros'
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning) by extensions ['cmake', 'python']
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning) by extension 'cmake'
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning) by extension 'python'
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning) by extensions ['python_setup_py']
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning) by extension 'python_setup_py'
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning/boundary_detector) by extensions ['ignore', 'ignore_ament_install']
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning/boundary_detector) by extension 'ignore'
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning/boundary_detector) by extension 'ignore_ament_install'
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning/boundary_detector) by extensions ['colcon_pkg']
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning/boundary_detector) by extension 'colcon_pkg'
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning/boundary_detector) by extensions ['colcon_meta']
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning/boundary_detector) by extension 'colcon_meta'
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning/boundary_detector) by extensions ['ros']
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning/boundary_detector) by extension 'ros'
+[0.346s] DEBUG:colcon.colcon_core.package_identification:Package 'src/planning/boundary_detector' with type 'ros.ament_cmake' and name 'boundary_detector'
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning/path_generator) by extensions ['ignore', 'ignore_ament_install']
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning/path_generator) by extension 'ignore'
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning/path_generator) by extension 'ignore_ament_install'
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning/path_generator) by extensions ['colcon_pkg']
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning/path_generator) by extension 'colcon_pkg'
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning/path_generator) by extensions ['colcon_meta']
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning/path_generator) by extension 'colcon_meta'
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning/path_generator) by extensions ['ros']
+[0.346s] Level 1:colcon.colcon_core.package_identification:_identify(src/planning/path_generator) by extension 'ros'
+[0.347s] DEBUG:colcon.colcon_core.package_identification:Package 'src/planning/path_generator' with type 'ros.ament_cmake' and name 'path_generator'
+[0.347s] Level 1:colcon.colcon_core.package_identification:_identify(src/system) by extensions ['ignore', 'ignore_ament_install']
+[0.347s] Level 1:colcon.colcon_core.package_identification:_identify(src/system) by extension 'ignore'
+[0.347s] Level 1:colcon.colcon_core.package_identification:_identify(src/system) by extension 'ignore_ament_install'
+[0.347s] Level 1:colcon.colcon_core.package_identification:_identify(src/system) by extensions ['colcon_pkg']
+[0.347s] Level 1:colcon.colcon_core.package_identification:_identify(src/system) by extension 'colcon_pkg'
+[0.347s] Level 1:colcon.colcon_core.package_identification:_identify(src/system) by extensions ['colcon_meta']
+[0.347s] Level 1:colcon.colcon_core.package_identification:_identify(src/system) by extension 'colcon_meta'
+[0.347s] Level 1:colcon.colcon_core.package_identification:_identify(src/system) by extensions ['ros']
+[0.347s] Level 1:colcon.colcon_core.package_identification:_identify(src/system) by extension 'ros'
+[0.347s] Level 1:colcon.colcon_core.package_identification:_identify(src/system) by extensions ['cmake', 'python']
+[0.347s] Level 1:colcon.colcon_core.package_identification:_identify(src/system) by extension 'cmake'
+[0.347s] Level 1:colcon.colcon_core.package_identification:_identify(src/system) by extension 'python'
+[0.347s] Level 1:colcon.colcon_core.package_identification:_identify(src/system) by extensions ['python_setup_py']
+[0.347s] Level 1:colcon.colcon_core.package_identification:_identify(src/system) by extension 'python_setup_py'
+[0.347s] Level 1:colcon.colcon_core.package_identification:_identify(src/system/mission_manager) by extensions ['ignore', 'ignore_ament_install']
+[0.347s] Level 1:colcon.colcon_core.package_identification:_identify(src/system/mission_manager) by extension 'ignore'
+[0.347s] Level 1:colcon.colcon_core.package_identification:_identify(src/system/mission_manager) by extension 'ignore_ament_install'
+[0.347s] Level 1:colcon.colcon_core.package_identification:_identify(src/system/mission_manager) by extensions ['colcon_pkg']
+[0.347s] Level 1:colcon.colcon_core.package_identification:_identify(src/system/mission_manager) by extension 'colcon_pkg'
+[0.347s] Level 1:colcon.colcon_core.package_identification:_identify(src/system/mission_manager) by extensions ['colcon_meta']
+[0.347s] Level 1:colcon.colcon_core.package_identification:_identify(src/system/mission_manager) by extension 'colcon_meta'
+[0.347s] Level 1:colcon.colcon_core.package_identification:_identify(src/system/mission_manager) by extensions ['ros']
+[0.347s] Level 1:colcon.colcon_core.package_identification:_identify(src/system/mission_manager) by extension 'ros'
+[0.347s] DEBUG:colcon.colcon_core.package_identification:Package 'src/system/mission_manager' with type 'ros.ament_cmake' and name 'mission_manager'
+[0.348s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[0.348s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) discover
+[0.348s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) using defaults
+[0.348s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) discover
+[0.348s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) using defaults
+[0.371s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) check parameters
+[0.371s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) discover
+[0.372s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 292 installed packages in /opt/ros/humble
+[0.373s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) using defaults
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'autoware_msgs' build argument 'cmake_args' from command line to 'None'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'autoware_msgs' build argument 'cmake_target' from command line to 'None'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'autoware_msgs' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'autoware_msgs' build argument 'cmake_clean_cache' from command line to 'False'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'autoware_msgs' build argument 'cmake_clean_first' from command line to 'False'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'autoware_msgs' build argument 'cmake_force_configure' from command line to 'False'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'autoware_msgs' build argument 'ament_cmake_args' from command line to 'None'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'autoware_msgs' build argument 'catkin_cmake_args' from command line to 'None'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'autoware_msgs' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.393s] DEBUG:colcon.colcon_core.verb:Building package 'autoware_msgs' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/autoware_msgs', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs', 'merge_install': False, 'path': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/common/autoware_msgs', 'symlink_install': True, 'test_result_base': None}
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'kiss_icp' build argument 'cmake_args' from command line to 'None'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'kiss_icp' build argument 'cmake_target' from command line to 'None'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'kiss_icp' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'kiss_icp' build argument 'cmake_clean_cache' from command line to 'False'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'kiss_icp' build argument 'cmake_clean_first' from command line to 'False'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'kiss_icp' build argument 'cmake_force_configure' from command line to 'False'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'kiss_icp' build argument 'ament_cmake_args' from command line to 'None'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'kiss_icp' build argument 'catkin_cmake_args' from command line to 'None'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'kiss_icp' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.393s] DEBUG:colcon.colcon_core.verb:Building package 'kiss_icp' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/kiss_icp', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp', 'merge_install': False, 'path': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/localization/kiss-icp/ros', 'symlink_install': True, 'test_result_base': None}
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'robot_localization' build argument 'cmake_args' from command line to 'None'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'robot_localization' build argument 'cmake_target' from command line to 'None'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'robot_localization' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'robot_localization' build argument 'cmake_clean_cache' from command line to 'False'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'robot_localization' build argument 'cmake_clean_first' from command line to 'False'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'robot_localization' build argument 'cmake_force_configure' from command line to 'False'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'robot_localization' build argument 'ament_cmake_args' from command line to 'None'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'robot_localization' build argument 'catkin_cmake_args' from command line to 'None'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'robot_localization' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.393s] DEBUG:colcon.colcon_core.verb:Building package 'robot_localization' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/robot_localization', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/robot_localization', 'merge_install': False, 'path': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/localization/robot_localization', 'symlink_install': True, 'test_result_base': None}
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'wuta_msgs' build argument 'cmake_args' from command line to 'None'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'wuta_msgs' build argument 'cmake_target' from command line to 'None'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'wuta_msgs' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'wuta_msgs' build argument 'cmake_clean_cache' from command line to 'False'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'wuta_msgs' build argument 'cmake_clean_first' from command line to 'False'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'wuta_msgs' build argument 'cmake_force_configure' from command line to 'False'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'wuta_msgs' build argument 'ament_cmake_args' from command line to 'None'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'wuta_msgs' build argument 'catkin_cmake_args' from command line to 'None'
+[0.393s] Level 5:colcon.colcon_core.verb:set package 'wuta_msgs' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.393s] DEBUG:colcon.colcon_core.verb:Building package 'wuta_msgs' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/wuta_msgs', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs', 'merge_install': False, 'path': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/common/wuta_msgs', 'symlink_install': True, 'test_result_base': None}
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'boundary_detector' build argument 'cmake_args' from command line to 'None'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'boundary_detector' build argument 'cmake_target' from command line to 'None'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'boundary_detector' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'boundary_detector' build argument 'cmake_clean_cache' from command line to 'False'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'boundary_detector' build argument 'cmake_clean_first' from command line to 'False'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'boundary_detector' build argument 'cmake_force_configure' from command line to 'False'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'boundary_detector' build argument 'ament_cmake_args' from command line to 'None'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'boundary_detector' build argument 'catkin_cmake_args' from command line to 'None'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'boundary_detector' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.394s] DEBUG:colcon.colcon_core.verb:Building package 'boundary_detector' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/boundary_detector', 'merge_install': False, 'path': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector', 'symlink_install': True, 'test_result_base': None}
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'camera_detection' build argument 'cmake_args' from command line to 'None'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'camera_detection' build argument 'cmake_target' from command line to 'None'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'camera_detection' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'camera_detection' build argument 'cmake_clean_cache' from command line to 'False'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'camera_detection' build argument 'cmake_clean_first' from command line to 'False'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'camera_detection' build argument 'cmake_force_configure' from command line to 'False'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'camera_detection' build argument 'ament_cmake_args' from command line to 'None'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'camera_detection' build argument 'catkin_cmake_args' from command line to 'None'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'camera_detection' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.394s] DEBUG:colcon.colcon_core.verb:Building package 'camera_detection' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/camera_detection', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/camera_detection', 'merge_install': False, 'path': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/perception/camera_detection', 'symlink_install': True, 'test_result_base': None}
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'cone_map_builder' build argument 'cmake_args' from command line to 'None'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'cone_map_builder' build argument 'cmake_target' from command line to 'None'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'cone_map_builder' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'cone_map_builder' build argument 'cmake_clean_cache' from command line to 'False'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'cone_map_builder' build argument 'cmake_clean_first' from command line to 'False'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'cone_map_builder' build argument 'cmake_force_configure' from command line to 'False'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'cone_map_builder' build argument 'ament_cmake_args' from command line to 'None'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'cone_map_builder' build argument 'catkin_cmake_args' from command line to 'None'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'cone_map_builder' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.394s] DEBUG:colcon.colcon_core.verb:Building package 'cone_map_builder' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/cone_map_builder', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/cone_map_builder', 'merge_install': False, 'path': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/mapping/cone_map_builder', 'symlink_install': True, 'test_result_base': None}
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'controller' build argument 'cmake_args' from command line to 'None'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'controller' build argument 'cmake_target' from command line to 'None'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'controller' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'controller' build argument 'cmake_clean_cache' from command line to 'False'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'controller' build argument 'cmake_clean_first' from command line to 'False'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'controller' build argument 'cmake_force_configure' from command line to 'False'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'controller' build argument 'ament_cmake_args' from command line to 'None'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'controller' build argument 'catkin_cmake_args' from command line to 'None'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'controller' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.394s] DEBUG:colcon.colcon_core.verb:Building package 'controller' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/controller', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/controller', 'merge_install': False, 'path': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/control/controller', 'symlink_install': True, 'test_result_base': None}
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'detection_fusion' build argument 'cmake_args' from command line to 'None'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'detection_fusion' build argument 'cmake_target' from command line to 'None'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'detection_fusion' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'detection_fusion' build argument 'cmake_clean_cache' from command line to 'False'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'detection_fusion' build argument 'cmake_clean_first' from command line to 'False'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'detection_fusion' build argument 'cmake_force_configure' from command line to 'False'
+[0.394s] Level 5:colcon.colcon_core.verb:set package 'detection_fusion' build argument 'ament_cmake_args' from command line to 'None'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'detection_fusion' build argument 'catkin_cmake_args' from command line to 'None'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'detection_fusion' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.395s] DEBUG:colcon.colcon_core.verb:Building package 'detection_fusion' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/detection_fusion', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/detection_fusion', 'merge_install': False, 'path': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/perception/detection_fusion', 'symlink_install': True, 'test_result_base': None}
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'kiss_icp_wrapper' build argument 'cmake_args' from command line to 'None'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'kiss_icp_wrapper' build argument 'cmake_target' from command line to 'None'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'kiss_icp_wrapper' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'kiss_icp_wrapper' build argument 'cmake_clean_cache' from command line to 'False'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'kiss_icp_wrapper' build argument 'cmake_clean_first' from command line to 'False'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'kiss_icp_wrapper' build argument 'cmake_force_configure' from command line to 'False'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'kiss_icp_wrapper' build argument 'ament_cmake_args' from command line to 'None'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'kiss_icp_wrapper' build argument 'catkin_cmake_args' from command line to 'None'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'kiss_icp_wrapper' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.395s] DEBUG:colcon.colcon_core.verb:Building package 'kiss_icp_wrapper' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/kiss_icp_wrapper', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper', 'merge_install': False, 'path': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/localization/kiss_icp_wrapper', 'symlink_install': True, 'test_result_base': None}
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'lidar_detection' build argument 'cmake_args' from command line to 'None'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'lidar_detection' build argument 'cmake_target' from command line to 'None'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'lidar_detection' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'lidar_detection' build argument 'cmake_clean_cache' from command line to 'False'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'lidar_detection' build argument 'cmake_clean_first' from command line to 'False'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'lidar_detection' build argument 'cmake_force_configure' from command line to 'False'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'lidar_detection' build argument 'ament_cmake_args' from command line to 'None'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'lidar_detection' build argument 'catkin_cmake_args' from command line to 'None'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'lidar_detection' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.395s] DEBUG:colcon.colcon_core.verb:Building package 'lidar_detection' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/lidar_detection', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/lidar_detection', 'merge_install': False, 'path': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/perception/lidar_detection', 'symlink_install': True, 'test_result_base': None}
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'localization_manager' build argument 'cmake_args' from command line to 'None'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'localization_manager' build argument 'cmake_target' from command line to 'None'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'localization_manager' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'localization_manager' build argument 'cmake_clean_cache' from command line to 'False'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'localization_manager' build argument 'cmake_clean_first' from command line to 'False'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'localization_manager' build argument 'cmake_force_configure' from command line to 'False'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'localization_manager' build argument 'ament_cmake_args' from command line to 'None'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'localization_manager' build argument 'catkin_cmake_args' from command line to 'None'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'localization_manager' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.395s] DEBUG:colcon.colcon_core.verb:Building package 'localization_manager' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/localization_manager', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/localization_manager', 'merge_install': False, 'path': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/localization/localization_manager', 'symlink_install': True, 'test_result_base': None}
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'mission_manager' build argument 'cmake_args' from command line to 'None'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'mission_manager' build argument 'cmake_target' from command line to 'None'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'mission_manager' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'mission_manager' build argument 'cmake_clean_cache' from command line to 'False'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'mission_manager' build argument 'cmake_clean_first' from command line to 'False'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'mission_manager' build argument 'cmake_force_configure' from command line to 'False'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'mission_manager' build argument 'ament_cmake_args' from command line to 'None'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'mission_manager' build argument 'catkin_cmake_args' from command line to 'None'
+[0.395s] Level 5:colcon.colcon_core.verb:set package 'mission_manager' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.395s] DEBUG:colcon.colcon_core.verb:Building package 'mission_manager' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/mission_manager', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/mission_manager', 'merge_install': False, 'path': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/system/mission_manager', 'symlink_install': True, 'test_result_base': None}
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'ndt_localization' build argument 'cmake_args' from command line to 'None'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'ndt_localization' build argument 'cmake_target' from command line to 'None'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'ndt_localization' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'ndt_localization' build argument 'cmake_clean_cache' from command line to 'False'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'ndt_localization' build argument 'cmake_clean_first' from command line to 'False'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'ndt_localization' build argument 'cmake_force_configure' from command line to 'False'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'ndt_localization' build argument 'ament_cmake_args' from command line to 'None'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'ndt_localization' build argument 'catkin_cmake_args' from command line to 'None'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'ndt_localization' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.396s] DEBUG:colcon.colcon_core.verb:Building package 'ndt_localization' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/ndt_localization', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/ndt_localization', 'merge_install': False, 'path': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/localization/ndt_localization', 'symlink_install': True, 'test_result_base': None}
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'path_generator' build argument 'cmake_args' from command line to 'None'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'path_generator' build argument 'cmake_target' from command line to 'None'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'path_generator' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'path_generator' build argument 'cmake_clean_cache' from command line to 'False'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'path_generator' build argument 'cmake_clean_first' from command line to 'False'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'path_generator' build argument 'cmake_force_configure' from command line to 'False'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'path_generator' build argument 'ament_cmake_args' from command line to 'None'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'path_generator' build argument 'catkin_cmake_args' from command line to 'None'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'path_generator' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.396s] DEBUG:colcon.colcon_core.verb:Building package 'path_generator' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/path_generator', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/path_generator', 'merge_install': False, 'path': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/path_generator', 'symlink_install': True, 'test_result_base': None}
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'wuta_tools' build argument 'cmake_args' from command line to 'None'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'wuta_tools' build argument 'cmake_target' from command line to 'None'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'wuta_tools' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'wuta_tools' build argument 'cmake_clean_cache' from command line to 'False'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'wuta_tools' build argument 'cmake_clean_first' from command line to 'False'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'wuta_tools' build argument 'cmake_force_configure' from command line to 'False'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'wuta_tools' build argument 'ament_cmake_args' from command line to 'None'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'wuta_tools' build argument 'catkin_cmake_args' from command line to 'None'
+[0.396s] Level 5:colcon.colcon_core.verb:set package 'wuta_tools' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.396s] DEBUG:colcon.colcon_core.verb:Building package 'wuta_tools' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/wuta_tools', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools', 'merge_install': False, 'path': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/common/wuta_tools', 'symlink_install': True, 'test_result_base': None}
+[0.396s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[0.397s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[0.398s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/common/wuta_msgs' with build type 'ament_cmake'
+[0.398s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/common/wuta_msgs'
+[0.399s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[0.399s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.399s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.401s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/common/autoware_msgs' with build type 'ament_cmake'
+[0.401s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/common/autoware_msgs'
+[0.401s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.401s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.403s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/localization/kiss-icp/ros' with build type 'ament_cmake'
+[0.403s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/localization/kiss-icp/ros'
+[0.404s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.404s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.405s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/localization/robot_localization' with build type 'ament_cmake'
+[0.405s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/localization/robot_localization'
+[0.405s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.405s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.410s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/wuta_msgs': CMAKE_PREFIX_PATH=/opt/ros/humble /home/g2909/.local/bin/cmake /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/common/wuta_msgs -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs
+[0.412s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/autoware_msgs': CMAKE_PREFIX_PATH=/opt/ros/humble /home/g2909/.local/bin/cmake /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/common/autoware_msgs -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs
+[0.414s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/kiss_icp': CMAKE_PREFIX_PATH=/opt/ros/humble /home/g2909/.local/bin/cmake /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/localization/kiss-icp/ros -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp
+[0.416s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/robot_localization': CMAKE_PREFIX_PATH=/opt/ros/humble /home/g2909/.local/bin/cmake /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/localization/robot_localization -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/robot_localization
+[5.383s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/wuta_msgs' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /home/g2909/.local/bin/cmake /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/common/wuta_msgs -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs
+[5.385s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/wuta_msgs': CMAKE_PREFIX_PATH=/opt/ros/humble /home/g2909/.local/bin/cmake --build /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/wuta_msgs -- -j16 -l16
+[5.660s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/autoware_msgs' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /home/g2909/.local/bin/cmake /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/common/autoware_msgs -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs
+[5.660s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/autoware_msgs': CMAKE_PREFIX_PATH=/opt/ros/humble /home/g2909/.local/bin/cmake --build /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/autoware_msgs -- -j16 -l16
+[8.320s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/autoware_msgs' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /home/g2909/.local/bin/cmake --build /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/autoware_msgs -- -j16 -l16
+[8.376s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/autoware_msgs': CMAKE_PREFIX_PATH=/opt/ros/humble /home/g2909/.local/bin/cmake --install /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/autoware_msgs
+[8.557s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/wuta_msgs' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /home/g2909/.local/bin/cmake --build /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/wuta_msgs -- -j16 -l16
+[8.558s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/wuta_msgs': CMAKE_PREFIX_PATH=/opt/ros/humble /home/g2909/.local/bin/cmake --install /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/wuta_msgs
+[8.854s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(autoware_msgs)
+[8.854s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/autoware_msgs' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /home/g2909/.local/bin/cmake --install /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/autoware_msgs
+[8.856s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs' for CMake module files
+[8.857s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs' for CMake config files
+[8.858s] Level 1:colcon.colcon_core.shell:create_environment_hook('autoware_msgs', 'cmake_prefix_path')
+[8.858s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/autoware_msgs/hook/cmake_prefix_path.ps1'
+[8.858s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/autoware_msgs/hook/cmake_prefix_path.dsv'
+[8.858s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/autoware_msgs/hook/cmake_prefix_path.sh'
+[8.859s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/lib'
+[8.859s] Level 1:colcon.colcon_core.shell:create_environment_hook('autoware_msgs', 'ld_library_path_lib')
+[8.859s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/autoware_msgs/hook/ld_library_path_lib.ps1'
+[8.859s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/autoware_msgs/hook/ld_library_path_lib.dsv'
+[8.860s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/autoware_msgs/hook/ld_library_path_lib.sh'
+[8.860s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/bin'
+[8.860s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/lib/pkgconfig/autoware_msgs.pc'
+[8.860s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/lib/python3.10/site-packages'
+[8.860s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/bin'
+[8.860s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/autoware_msgs/package.ps1'
+[8.861s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/autoware_msgs/package.dsv'
+[8.861s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/autoware_msgs/package.sh'
+[8.861s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/autoware_msgs/package.bash'
+[8.862s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/autoware_msgs/package.zsh'
+[8.863s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/colcon-core/packages/autoware_msgs)
+[8.863s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(autoware_msgs)
+[8.864s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs' for CMake module files
+[8.864s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs' for CMake config files
+[8.865s] Level 1:colcon.colcon_core.shell:create_environment_hook('autoware_msgs', 'cmake_prefix_path')
+[8.865s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/autoware_msgs/hook/cmake_prefix_path.ps1'
+[8.865s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/autoware_msgs/hook/cmake_prefix_path.dsv'
+[8.866s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/autoware_msgs/hook/cmake_prefix_path.sh'
+[8.866s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/lib'
+[8.866s] Level 1:colcon.colcon_core.shell:create_environment_hook('autoware_msgs', 'ld_library_path_lib')
+[8.866s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/autoware_msgs/hook/ld_library_path_lib.ps1'
+[8.867s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/autoware_msgs/hook/ld_library_path_lib.dsv'
+[8.867s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/autoware_msgs/hook/ld_library_path_lib.sh'
+[8.867s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/bin'
+[8.867s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/lib/pkgconfig/autoware_msgs.pc'
+[8.867s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/lib/python3.10/site-packages'
+[8.868s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/bin'
+[8.868s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/autoware_msgs/package.ps1'
+[8.869s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/autoware_msgs/package.dsv'
+[8.870s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/autoware_msgs/package.sh'
+[8.870s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/autoware_msgs/package.bash'
+[8.870s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/autoware_msgs/package.zsh'
+[8.870s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/share/colcon-core/packages/autoware_msgs)
+[9.111s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(wuta_msgs)
+[9.111s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/wuta_msgs' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /home/g2909/.local/bin/cmake --install /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/wuta_msgs
+[9.111s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs' for CMake module files
+[9.112s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs' for CMake config files
+[9.112s] Level 1:colcon.colcon_core.shell:create_environment_hook('wuta_msgs', 'cmake_prefix_path')
+[9.113s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/hook/cmake_prefix_path.ps1'
+[9.113s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/hook/cmake_prefix_path.dsv'
+[9.113s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/hook/cmake_prefix_path.sh'
+[9.114s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib'
+[9.114s] Level 1:colcon.colcon_core.shell:create_environment_hook('wuta_msgs', 'ld_library_path_lib')
+[9.114s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/hook/ld_library_path_lib.ps1'
+[9.114s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/hook/ld_library_path_lib.dsv'
+[9.114s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/hook/ld_library_path_lib.sh'
+[9.114s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/bin'
+[9.114s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib/pkgconfig/wuta_msgs.pc'
+[9.115s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib/python3.10/site-packages'
+[9.115s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/bin'
+[9.115s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/package.ps1'
+[9.115s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/package.dsv'
+[9.115s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/package.sh'
+[9.116s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/package.bash'
+[9.116s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/package.zsh'
+[9.116s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/colcon-core/packages/wuta_msgs)
+[9.117s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(wuta_msgs)
+[9.117s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs' for CMake module files
+[9.117s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs' for CMake config files
+[9.117s] Level 1:colcon.colcon_core.shell:create_environment_hook('wuta_msgs', 'cmake_prefix_path')
+[9.118s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/hook/cmake_prefix_path.ps1'
+[9.118s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/hook/cmake_prefix_path.dsv'
+[9.118s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/hook/cmake_prefix_path.sh'
+[9.118s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib'
+[9.118s] Level 1:colcon.colcon_core.shell:create_environment_hook('wuta_msgs', 'ld_library_path_lib')
+[9.118s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/hook/ld_library_path_lib.ps1'
+[9.118s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/hook/ld_library_path_lib.dsv'
+[9.119s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/hook/ld_library_path_lib.sh'
+[9.119s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/bin'
+[9.119s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib/pkgconfig/wuta_msgs.pc'
+[9.119s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib/python3.10/site-packages'
+[9.119s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/bin'
+[9.119s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/package.ps1'
+[9.119s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/package.dsv'
+[9.120s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/package.sh'
+[9.120s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/package.bash'
+[9.120s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/package.zsh'
+[9.120s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/colcon-core/packages/wuta_msgs)
+[9.120s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector' with build type 'ament_cmake'
+[9.120s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector'
+[9.121s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[9.121s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[9.123s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/perception/camera_detection' with build type 'ament_cmake'
+[9.123s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/perception/camera_detection'
+[9.123s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[9.124s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[9.125s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/mapping/cone_map_builder' with build type 'ament_cmake'
+[9.125s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/mapping/cone_map_builder'
+[9.125s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[9.125s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[9.128s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/control/controller' with build type 'ament_cmake'
+[9.128s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/control/controller'
+[9.128s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[9.128s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[9.130s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/perception/detection_fusion' with build type 'ament_cmake'
+[9.130s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/perception/detection_fusion'
+[9.130s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[9.130s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[9.132s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/localization/kiss_icp_wrapper' with build type 'ament_cmake'
+[9.132s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/localization/kiss_icp_wrapper'
+[9.132s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[9.132s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[9.134s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/perception/lidar_detection' with build type 'ament_cmake'
+[9.134s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/perception/lidar_detection'
+[9.134s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[9.134s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[9.136s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/system/mission_manager' with build type 'ament_cmake'
+[9.136s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/system/mission_manager'
+[9.136s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[9.136s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[9.138s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/localization/ndt_localization' with build type 'ament_cmake'
+[9.138s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/localization/ndt_localization'
+[9.138s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[9.138s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[9.141s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/path_generator' with build type 'ament_cmake'
+[9.141s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/path_generator'
+[9.141s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[9.141s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[9.145s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/common/wuta_tools' with build type 'ament_cmake'
+[9.145s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/common/wuta_tools'
+[9.145s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[9.145s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[9.288s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/cone_map_builder': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/mapping/cone_map_builder -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/cone_map_builder
+[9.291s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/camera_detection': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/perception/camera_detection -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/camera_detection
+[9.294s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/boundary_detector
+[9.301s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/detection_fusion': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/perception/detection_fusion -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/detection_fusion
+[9.345s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/kiss_icp_wrapper': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/localization/kiss_icp_wrapper -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper
+[9.351s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/lidar_detection': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/perception/lidar_detection -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/lidar_detection
+[9.354s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/mission_manager': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/system/mission_manager -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/mission_manager
+[9.357s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/ndt_localization': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/localization/ndt_localization -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/ndt_localization
+[9.360s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/path_generator': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/path_generator -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/path_generator
+[9.384s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/wuta_tools': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/common/wuta_tools -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools
+[9.508s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/controller': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/autoware_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/control/controller -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/controller
+[19.197s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/robot_localization' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /home/g2909/.local/bin/cmake /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/localization/robot_localization -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/robot_localization
+[19.197s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/robot_localization': CMAKE_PREFIX_PATH=/opt/ros/humble /home/g2909/.local/bin/cmake --build /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/robot_localization -- -j16 -l16
+[25.124s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/kiss_icp_wrapper' returned '0': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/localization/kiss_icp_wrapper -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper
+[25.124s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/kiss_icp_wrapper': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake --build /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/kiss_icp_wrapper -- -j16 -l16
+[25.244s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/kiss_icp_wrapper' returned '0': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake --build /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/kiss_icp_wrapper -- -j16 -l16
+[25.245s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/kiss_icp_wrapper': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake --install /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/kiss_icp_wrapper
+[25.427s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(kiss_icp_wrapper)
+[25.427s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper' for CMake module files
+[25.428s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper' for CMake config files
+[25.428s] Level 1:colcon.colcon_core.shell:create_environment_hook('kiss_icp_wrapper', 'cmake_prefix_path')
+[25.428s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/share/kiss_icp_wrapper/hook/cmake_prefix_path.ps1'
+[25.429s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/share/kiss_icp_wrapper/hook/cmake_prefix_path.dsv'
+[25.429s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/share/kiss_icp_wrapper/hook/cmake_prefix_path.sh'
+[25.429s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/bin'
+[25.429s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/lib/pkgconfig/kiss_icp_wrapper.pc'
+[25.429s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/lib/python3.10/site-packages'
+[25.430s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/bin'
+[25.430s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/share/kiss_icp_wrapper/package.ps1'
+[25.430s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/share/kiss_icp_wrapper/package.dsv'
+[25.430s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/share/kiss_icp_wrapper/package.sh'
+[25.431s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/share/kiss_icp_wrapper/package.bash'
+[25.431s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/share/kiss_icp_wrapper/package.zsh'
+[25.431s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/share/colcon-core/packages/kiss_icp_wrapper)
+[25.432s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(kiss_icp_wrapper)
+[25.433s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/kiss_icp_wrapper' returned '0': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake --install /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/kiss_icp_wrapper
+[25.433s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper' for CMake module files
+[25.433s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper' for CMake config files
+[25.434s] Level 1:colcon.colcon_core.shell:create_environment_hook('kiss_icp_wrapper', 'cmake_prefix_path')
+[25.434s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/share/kiss_icp_wrapper/hook/cmake_prefix_path.ps1'
+[25.435s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/share/kiss_icp_wrapper/hook/cmake_prefix_path.dsv'
+[25.436s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/share/kiss_icp_wrapper/hook/cmake_prefix_path.sh'
+[25.437s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/bin'
+[25.437s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/lib/pkgconfig/kiss_icp_wrapper.pc'
+[25.438s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/lib/python3.10/site-packages'
+[25.438s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/bin'
+[25.439s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/share/kiss_icp_wrapper/package.ps1'
+[25.441s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/share/kiss_icp_wrapper/package.dsv'
+[25.442s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/share/kiss_icp_wrapper/package.sh'
+[25.444s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/share/kiss_icp_wrapper/package.bash'
+[25.444s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/share/kiss_icp_wrapper/package.zsh'
+[25.444s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/kiss_icp_wrapper/share/colcon-core/packages/kiss_icp_wrapper)
+[26.794s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector' returned '0': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/boundary_detector
+[26.799s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake --build /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector -- -j16 -l16
+[28.013s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/wuta_tools' returned '0': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/common/wuta_tools -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools
+[28.014s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/wuta_tools': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake --build /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/wuta_tools -- -j16 -l16
+[28.147s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/wuta_tools' returned '0': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake --build /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/wuta_tools -- -j16 -l16
+[28.148s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/wuta_tools': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake --install /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/wuta_tools
+[28.446s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(wuta_tools)
+[28.446s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools' for CMake module files
+[28.447s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools' for CMake config files
+[28.447s] Level 1:colcon.colcon_core.shell:create_environment_hook('wuta_tools', 'cmake_prefix_path')
+[28.447s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/hook/cmake_prefix_path.ps1'
+[28.448s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/hook/cmake_prefix_path.dsv'
+[28.448s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/wuta_tools' returned '0': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake --install /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/wuta_tools
+[28.449s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/hook/cmake_prefix_path.sh'
+[28.450s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/bin'
+[28.450s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/lib/pkgconfig/wuta_tools.pc'
+[28.451s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/lib/python3.10/site-packages'
+[28.451s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/bin'
+[28.451s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/package.ps1'
+[28.453s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/package.dsv'
+[28.453s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/package.sh'
+[28.454s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/package.bash'
+[28.454s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/package.zsh'
+[28.455s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/share/colcon-core/packages/wuta_tools)
+[28.456s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(wuta_tools)
+[28.456s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools' for CMake module files
+[28.456s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools' for CMake config files
+[28.457s] Level 1:colcon.colcon_core.shell:create_environment_hook('wuta_tools', 'cmake_prefix_path')
+[28.457s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/hook/cmake_prefix_path.ps1'
+[28.457s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/hook/cmake_prefix_path.dsv'
+[28.458s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/hook/cmake_prefix_path.sh'
+[28.458s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/bin'
+[28.458s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/lib/pkgconfig/wuta_tools.pc'
+[28.458s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/lib/python3.10/site-packages'
+[28.459s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/bin'
+[28.459s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/package.ps1'
+[28.459s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/package.dsv'
+[28.460s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/package.sh'
+[28.460s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/package.bash'
+[28.460s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/package.zsh'
+[28.461s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_tools/share/colcon-core/packages/wuta_tools)
+[29.361s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(boundary_detector)
+[29.361s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/boundary_detector' for CMake module files
+[29.361s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/boundary_detector' for CMake config files
+[29.362s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/boundary_detector/bin'
+[29.362s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/boundary_detector/lib/pkgconfig/boundary_detector.pc'
+[29.362s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/boundary_detector/lib/python3.10/site-packages'
+[29.362s] Level 1:colcon.colcon_core.environment:checking '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/boundary_detector/bin'
+[29.362s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/boundary_detector/share/boundary_detector/package.ps1'
+[29.365s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector' returned '2': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake --build /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector -- -j16 -l16
+[29.368s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/boundary_detector/share/boundary_detector/package.dsv'
+[29.369s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/boundary_detector/share/boundary_detector/package.sh'
+[29.369s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/boundary_detector/share/boundary_detector/package.bash'
+[29.370s] INFO:colcon.colcon_core.shell:Creating package script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/boundary_detector/share/boundary_detector/package.zsh'
+[29.371s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/boundary_detector/share/colcon-core/packages/boundary_detector)
+[123.914s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[123.914s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[123.914s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished with '2'
+[123.914s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[123.972s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.notify_send': Could not find 'notify-send'
+[123.973s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[123.973s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[123.973s] INFO:colcon.colcon_notification.desktop_notification:Sending desktop notification using 'notify2'
+[123.973s] DEBUG:colcon.colcon_notification.desktop_notification.notify2:Failed to initialize notify2: org.freedesktop.DBus.Error.FileNotFound: Failed to connect to socket /run/user/1000/bus: No such file or directory
+[123.973s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[123.973s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/local_setup.ps1'
+[123.974s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/_local_setup_util_ps1.py'
+[123.974s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/setup.ps1'
+[123.975s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/local_setup.sh'
+[123.975s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/_local_setup_util_sh.py'
+[123.975s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/setup.sh'
+[123.976s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/local_setup.bash'
+[123.976s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/setup.bash'
+[123.976s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/local_setup.zsh'
+[123.977s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/setup.zsh'

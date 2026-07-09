@@ -1,0 +1,43 @@
+[0.171s] Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/detection_fusion': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/perception/detection_fusion -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/detection_fusion
+[0.230s] CMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+[0.230s]   Compatibility with CMake < 3.10 will be removed from a future version of
+[0.230s]   CMake.
+[0.230s] 
+[0.230s]   Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+[0.230s]   to tell CMake that the project requires at least <min> but has been updated
+[0.230s]   to work with policies introduced by <max> or earlier.
+[0.231s] 
+[0.231s] 
+[0.461s] -- The C compiler identification is GNU 11.4.0
+[1.339s] -- The CXX compiler identification is GNU 11.4.0
+[1.906s] -- Detecting C compiler ABI info
+[2.118s] -- Detecting C compiler ABI info - done
+[2.127s] -- Check for working C compiler: /usr/bin/cc - skipped
+[2.127s] -- Detecting C compile features
+[2.127s] -- Detecting C compile features - done
+[2.134s] -- Detecting CXX compiler ABI info
+[2.379s] -- Detecting CXX compiler ABI info - done
+[2.389s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[2.389s] -- Detecting CXX compile features
+[2.390s] -- Detecting CXX compile features - done
+[2.400s] -- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+[2.510s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter
+[2.558s] -- Override CMake install command with custom implementation using symlinks instead of copying resources
+[2.580s] -- Found rclcpp: 16.0.19 (/opt/ros/humble/share/rclcpp/cmake)
+[2.884s] -- Found rosidl_generator_c: 3.1.9 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[2.886s] -- Found rosidl_adapter: 3.1.9 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[2.893s] -- Found rosidl_generator_cpp: 3.1.9 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[2.904s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[2.916s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[2.954s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[2.958s] -- Found rmw_fastrtps_cpp: 6.2.10 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[5.941s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")
+[8.101s] -- Found FastRTPS: /opt/ros/humble/include
+[21.583s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[21.592s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[22.003s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[22.004s] -- Found Threads: TRUE
+[22.073s] -- Found wuta_msgs: 1.0.0 (/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake)
+[22.167s] -- Configuring done (21.9s)
+[22.177s] -- Generating done (0.0s)
+[22.204s] -- Build files have been written to: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/detection_fusion

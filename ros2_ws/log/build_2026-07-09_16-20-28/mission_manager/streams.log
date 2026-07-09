@@ -1,0 +1,26 @@
+[0.294s] Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/mission_manager': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake --build /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/mission_manager -- -j16 -l16
+[0.492s] [ 50%] Building CXX object CMakeFiles/mission_manager_node.dir/src/mission_manager.cpp.o
+[14.632s] [100%] Linking CXX executable mission_manager_node
+[15.407s] [100%] Built target mission_manager_node
+[15.413s] Invoked command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/mission_manager' returned '0': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake --build /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/mission_manager -- -j16 -l16
+[15.415s] Invoking command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/mission_manager': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake --install /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/mission_manager
+[15.461s] -- Install configuration: ""
+[15.461s] -- Execute custom install script
+[15.462s] -- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/mission_manager/lib/mission_manager/mission_manager_node
+[15.467s] -- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/config/.gitkeep
+[15.471s] -- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/mission_manager/share/ament_index/resource_index/package_run_dependencies/mission_manager
+[15.474s] -- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/mission_manager/share/ament_index/resource_index/parent_prefix_path/mission_manager
+[15.477s] -- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/environment/ament_prefix_path.sh
+[15.481s] -- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/environment/ament_prefix_path.dsv
+[15.484s] -- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/environment/path.sh
+[15.487s] -- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/environment/path.dsv
+[15.490s] -- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/local_setup.bash
+[15.493s] -- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/local_setup.sh
+[15.496s] -- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/local_setup.zsh
+[15.499s] -- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/local_setup.dsv
+[15.502s] -- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/package.dsv
+[15.505s] -- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/mission_manager/share/ament_index/resource_index/packages/mission_manager
+[15.509s] -- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/cmake/mission_managerConfig.cmake
+[15.512s] -- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/cmake/mission_managerConfig-version.cmake
+[15.515s] -- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/mission_manager/share/mission_manager/package.xml
+[15.519s] Invoked command in '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/mission_manager' returned '0': AMENT_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /home/g2909/.local/bin/cmake --install /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/mission_manager

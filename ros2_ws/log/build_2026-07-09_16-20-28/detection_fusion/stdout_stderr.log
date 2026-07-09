@@ -1,0 +1,17 @@
+-- Install configuration: ""
+-- Execute custom install script
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/detection_fusion/share/ament_index/resource_index/package_run_dependencies/detection_fusion
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/detection_fusion/share/ament_index/resource_index/parent_prefix_path/detection_fusion
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/environment/ament_prefix_path.sh
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/environment/ament_prefix_path.dsv
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/environment/path.sh
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/environment/path.dsv
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/local_setup.bash
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/local_setup.sh
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/local_setup.zsh
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/local_setup.dsv
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/package.dsv
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/detection_fusion/share/ament_index/resource_index/packages/detection_fusion
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/cmake/detection_fusionConfig.cmake
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/cmake/detection_fusionConfig-version.cmake
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/detection_fusion/share/detection_fusion/package.xml

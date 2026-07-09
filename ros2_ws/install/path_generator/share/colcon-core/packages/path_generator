@@ -1,1 +1,1 @@
-rclcpp:wuta_msgs
+autoware_msgs:rclcpp:wuta_msgs

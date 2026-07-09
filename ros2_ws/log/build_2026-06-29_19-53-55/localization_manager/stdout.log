@@ -1,3 +1,0 @@
-[ 50%] Building CXX object CMakeFiles/localization_manager_node.dir/src/localization_manager.cpp.o
-[100%] Linking CXX executable localization_manager_node
-[100%] Built target localization_manager_node

@@ -1,0 +1,24 @@
+[ 25%] Building CXX object CMakeFiles/lidar_detection_node.dir/src/traditional_detector.cpp.o
+[ 50%] Building CXX object CMakeFiles/lidar_detection_node.dir/src/dl_detector.cpp.o
+[ 75%] Building CXX object CMakeFiles/lidar_detection_node.dir/src/lidar_detection_node.cpp.o
+[100%] Linking CXX executable lidar_detection_node
+[100%] Built target lidar_detection_node
+-- Install configuration: ""
+-- Execute custom install script
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/lidar_detection/lib/lidar_detection/lidar_detection_node
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/config/lidar_detection.yaml
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/lidar_detection/share/ament_index/resource_index/package_run_dependencies/lidar_detection
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/lidar_detection/share/ament_index/resource_index/parent_prefix_path/lidar_detection
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/environment/ament_prefix_path.sh
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/environment/ament_prefix_path.dsv
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/environment/path.sh
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/environment/path.dsv
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/local_setup.bash
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/local_setup.sh
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/local_setup.zsh
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/local_setup.dsv
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/package.dsv
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/lidar_detection/share/ament_index/resource_index/packages/lidar_detection
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/cmake/lidar_detectionConfig.cmake
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/cmake/lidar_detectionConfig-version.cmake
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/package.xml

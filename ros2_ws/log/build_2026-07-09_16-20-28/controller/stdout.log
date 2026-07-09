@@ -1,0 +1,24 @@
+[ 25%] Building CXX object CMakeFiles/controller_node.dir/src/pure_pursuit.cpp.o
+[ 50%] Building CXX object CMakeFiles/controller_node.dir/src/controller_node.cpp.o
+[ 75%] Building CXX object CMakeFiles/controller_node.dir/src/twist_filter.cpp.o
+[100%] Linking CXX executable controller_node
+[100%] Built target controller_node
+-- Install configuration: ""
+-- Execute custom install script
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/controller/lib/controller/controller_node
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/controller/share/controller/controller.yaml
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/controller/share/ament_index/resource_index/package_run_dependencies/controller
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/controller/share/ament_index/resource_index/parent_prefix_path/controller
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/controller/share/controller/environment/ament_prefix_path.sh
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/controller/share/controller/environment/ament_prefix_path.dsv
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/controller/share/controller/environment/path.sh
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/controller/share/controller/environment/path.dsv
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/controller/share/controller/local_setup.bash
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/controller/share/controller/local_setup.sh
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/controller/share/controller/local_setup.zsh
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/controller/share/controller/local_setup.dsv
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/controller/share/controller/package.dsv
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/controller/share/ament_index/resource_index/packages/controller
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/controller/share/controller/cmake/controllerConfig.cmake
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/controller/share/controller/cmake/controllerConfig-version.cmake
+-- Symlinking: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/controller/share/controller/package.xml
