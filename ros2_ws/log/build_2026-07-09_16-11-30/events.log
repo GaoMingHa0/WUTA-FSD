@@ -1,0 +1,267 @@
+[0.000000] (-) TimerEvent: {}
+[0.000157] (-) JobUnselected: {'identifier': 'autoware_msgs'}
+[0.000179] (-) JobUnselected: {'identifier': 'camera_detection'}
+[0.000187] (-) JobUnselected: {'identifier': 'cone_map_builder'}
+[0.000193] (-) JobUnselected: {'identifier': 'controller'}
+[0.000198] (-) JobUnselected: {'identifier': 'detection_fusion'}
+[0.000203] (-) JobUnselected: {'identifier': 'kiss_icp'}
+[0.000208] (-) JobUnselected: {'identifier': 'kiss_icp_wrapper'}
+[0.000212] (-) JobUnselected: {'identifier': 'lidar_detection'}
+[0.000218] (-) JobUnselected: {'identifier': 'localization_manager'}
+[0.000225] (-) JobUnselected: {'identifier': 'mission_manager'}
+[0.000230] (-) JobUnselected: {'identifier': 'ndt_localization'}
+[0.000235] (-) JobUnselected: {'identifier': 'path_generator'}
+[0.000240] (-) JobUnselected: {'identifier': 'robot_localization'}
+[0.000245] (-) JobUnselected: {'identifier': 'wuta_msgs'}
+[0.000252] (-) JobUnselected: {'identifier': 'wuta_tools'}
+[0.000260] (boundary_detector) JobQueued: {'identifier': 'boundary_detector', 'dependencies': OrderedDict([('wuta_msgs', '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs')])}
+[0.000271] (boundary_detector) JobStarted: {'identifier': 'boundary_detector'}
+[0.099351] (-) TimerEvent: {}
+[0.199622] (-) TimerEvent: {}
+[0.299882] (-) TimerEvent: {}
+[0.370683] (boundary_detector) JobProgress: {'identifier': 'boundary_detector', 'progress': 'cmake'}
+[0.371404] (boundary_detector) Command: {'cmd': ['/home/g2909/.local/bin/cmake', '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector', '-DCMAKE_VERBOSE_MAKEFILE=ON', '-DAMENT_CMAKE_SYMLINK_INSTALL=1', '-DCMAKE_INSTALL_PREFIX=/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/boundary_detector'], 'cwd': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector', 'env': OrderedDict([('USER', 'g2909'), ('VSCODE_WSL_EXT_LOCATION', '/mnt/c/Users/g2909/.vscode/extensions/ms-vscode-remote.remote-wsl-0.104.3'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/g2909'), ('OLDPWD', '/home/g2909/WUTA-FSD'), ('ROS_PYTHON_VERSION', '3'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('WSL_DISTRO_NAME', 'Ubuntu-22.04'), ('WAYLAND_DISPLAY', 'wayland-0'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'g2909'), ('NAME', 'GaoMing'), ('WSL_INTEROP', '/run/WSL/47441_interop'), ('PULSE_SERVER', 'unix:/mnt/wslg/PulseServer'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('TERM', 'xterm-256color'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/home/g2909/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Users/g2909/bin:/mnt/c/Program Files/Git/mingw64/bin:/mnt/c/Program Files/Git/usr/local/bin:/mnt/c/Program Files/Git/usr/bin:/mnt/c/Program Files/Git/usr/bin:/mnt/c/Program Files/Git/mingw64/bin:/mnt/c/Program Files/Git/usr/bin:/mnt/c/Users/g2909/bin:/mnt/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.9/bin:/mnt/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.9/libnvvp:/mnt/c/Program Files/Common Files/Oracle/Java/javapath:/mnt/c/Users/g2909/miniconda3:/mnt/c/Users/g2909/miniconda3/Scripts:/mnt/c/Users/g2909/miniconda3/Library/bin:/mnt/c/Windows/system32:/mnt/c/Windows:/mnt/c/Windows/System32/Wbem:/mnt/c/Windows/System32/WindowsPowerShell/v1.0:/mnt/c/mingw64/bin:/mnt/c/Users/g2909/AppData/Local/Programs/Python/Python313:/mnt/c/Users/g2909/AppData/Local/Programs/Python/Python313/Scripts:/mnt/c/Windows/System32/OpenSSH:/mnt/c/Program Files/NVIDIA Corporation/NVIDIA App/NvDLISR:/mnt/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/mnt/c/Program Files/dotnet:/mnt/c/Users/g2909/AppData/Local/Android/Sdk/platform-tools:/mnt/c/Program Files/Git/cmd:/mnt/d/SVN/bin:/mnt/c/Program Files/NVIDIA Corporation/Nsight Compute 2025.2.1:/mnt/c/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit:/mnt/c/Program Files (x86)/Microsoft SQL Server/160/Tools/Binn:/mnt/c/Program Files/Microsoft SQL Server/160/Tools/Binn:/mnt/c/Program Files/Microsoft SQL Server/Client SDK/ODBC/170/Tools/Binn:/mnt/c/Program Files/Microsoft SQL Server/160/DTS/Binn:/mnt/c/Program Files (x86)/Windows Kits/8.1/Windows Performance Toolkit:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0:/mnt/c/WINDOWS/System32/OpenSSH:/mnt/c/Program Files/usbipd-win:/mnt/c/Program Files/MATLAB/R2025b/bin:/mnt/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.9/bin:/mnt/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.9/libnvvp:/mnt/c/Program Files/Common Files/Oracle/Java/javapath:/mnt/c/Users/g2909/miniconda3:/mnt/c/Users/g2909/miniconda3/Scripts:/mnt/c/Users/g2909/miniconda3/Library/bin:/mnt/c/Windows/system32:/mnt/c/Windows:/mnt/c/Windows/System32/Wbem:/mnt/c/Windows/System32/WindowsPowerShell/v1.0:/mnt/c/mingw64/bin:/mnt/c/Users/g2909/AppData/Local/Programs/Python/Python313:/mnt/c/Users/g2909/AppData/Local/Programs/Python/Python313/Scripts:/mnt/c/Windows/System32/OpenSSH:/mnt/c/Program Files/NVIDIA Corporation/NVIDIA App/NvDLISR:/mnt/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/mnt/c/Program Files/dotnet:/mnt/c/Users/g2909/AppData/Local/Android/Sdk/platform-tools:/mnt/c/Program Files/Git/cmd:/mnt/d/SVN/bin:/mnt/c/Program Files/NVIDIA Corporation/Nsight Compute 2025.2.1:/mnt/c/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit:/mnt/c/Program Files (x86)/Microsoft SQL Server/160/Tools/Binn:/mnt/c/Program Files/Microsoft SQL Server/160/Tools/Binn:/mnt/c/Program Files/Microsoft SQL Server/Client SDK/ODBC/170/Tools/Binn:/mnt/c/Program Files/Microsoft SQL Server/160/DTS/Binn:/mnt/c/Program Files (x86)/Windows Kits/8.1/Windows Performance Toolkit:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0:/mnt/c/WINDOWS/System32/OpenSSH:/mnt/c/Program Files/usbipd-win:/mnt/c/Program Files/MATLAB/R2025b/bin:/mnt/c/Users/g2909/AppData/Local/Android/Sdk/platform-tools:/mnt/d/Microsoft VS Code/bin:/mnt/c/Users/g2909/AppData/Local/Programs/Ollama:/mnt/c/Users/g2909/AppData/Local/Microsoft/WindowsApps:/mnt/c/Program Files/Git/usr/bin:/mnt/c/Program Files/Git/cmd:/mnt/c/Users/g2909/AppData/Local/Programs/nodejs:/mnt/c/Program Files/Git/usr/bin/vendor_perl:/mnt/c/Program Files/Git/usr/bin/core_perl:/snap/bin'), ('XDG_RUNTIME_DIR', '/run/user/1000/'), ('DISPLAY', ':0'), ('LANG', 'C.UTF-8'), ('AMENT_PREFIX_PATH', '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('PWD', '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'), ('XDG_DATA_DIRS', '/usr/local/share:/usr/share:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('WSL2_GUI_APPS_ENABLED', '1'), ('HOSTTYPE', 'x86_64'), ('WSLENV', 'VSCODE_WSL_EXT_LOCATION/up'), ('CMAKE_PREFIX_PATH', '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble')]), 'shell': False}
+[0.400022] (-) TimerEvent: {}
+[0.420941] (boundary_detector) StderrLine: {'line': b'CMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):\n'}
+[0.421198] (boundary_detector) StderrLine: {'line': b'  Compatibility with CMake < 3.10 will be removed from a future version of\n'}
+[0.421240] (boundary_detector) StderrLine: {'line': b'  CMake.\n'}
+[0.421270] (boundary_detector) StderrLine: {'line': b'\n'}
+[0.421298] (boundary_detector) StderrLine: {'line': b'  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax\n'}
+[0.421369] (boundary_detector) StderrLine: {'line': b'  to tell CMake that the project requires at least <min> but has been updated\n'}
+[0.421408] (boundary_detector) StderrLine: {'line': b'  to work with policies introduced by <max> or earlier.\n'}
+[0.421441] (boundary_detector) StderrLine: {'line': b'\n'}
+[0.421469] (boundary_detector) StderrLine: {'line': b'\n'}
+[0.426303] (boundary_detector) StdoutLine: {'line': b'-- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)\n'}
+[0.500193] (-) TimerEvent: {}
+[0.547134] (boundary_detector) StdoutLine: {'line': b'-- Override CMake install command with custom implementation using symlinks instead of copying resources\n'}
+[0.551250] (boundary_detector) StdoutLine: {'line': b'-- Found rclcpp: 16.0.19 (/opt/ros/humble/share/rclcpp/cmake)\n'}
+[0.600321] (-) TimerEvent: {}
+[0.700574] (-) TimerEvent: {}
+[0.800824] (-) TimerEvent: {}
+[0.901092] (-) TimerEvent: {}
+[0.935160] (boundary_detector) StdoutLine: {'line': b'-- Found rosidl_generator_c: 3.1.9 (/opt/ros/humble/share/rosidl_generator_c/cmake)\n'}
+[0.936643] (boundary_detector) StdoutLine: {'line': b'-- Found rosidl_adapter: 3.1.9 (/opt/ros/humble/share/rosidl_adapter/cmake)\n'}
+[0.940624] (boundary_detector) StdoutLine: {'line': b'-- Found rosidl_generator_cpp: 3.1.9 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)\n'}
+[0.946825] (boundary_detector) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[0.954877] (boundary_detector) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[0.977487] (boundary_detector) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)\n'}
+[0.978196] (boundary_detector) StdoutLine: {'line': b'-- Found rmw_fastrtps_cpp: 6.2.10 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)\n'}
+[1.001299] (-) TimerEvent: {}
+[1.101563] (-) TimerEvent: {}
+[1.201812] (-) TimerEvent: {}
+[1.302060] (-) TimerEvent: {}
+[1.402286] (-) TimerEvent: {}
+[1.502538] (-) TimerEvent: {}
+[1.602811] (-) TimerEvent: {}
+[1.703076] (-) TimerEvent: {}
+[1.803330] (-) TimerEvent: {}
+[1.903591] (-) TimerEvent: {}
+[2.003871] (-) TimerEvent: {}
+[2.104136] (-) TimerEvent: {}
+[2.204402] (-) TimerEvent: {}
+[2.304679] (-) TimerEvent: {}
+[2.404936] (-) TimerEvent: {}
+[2.505203] (-) TimerEvent: {}
+[2.605496] (-) TimerEvent: {}
+[2.705898] (-) TimerEvent: {}
+[2.806198] (-) TimerEvent: {}
+[2.906561] (-) TimerEvent: {}
+[3.006813] (-) TimerEvent: {}
+[3.107054] (-) TimerEvent: {}
+[3.207344] (-) TimerEvent: {}
+[3.307631] (-) TimerEvent: {}
+[3.407894] (-) TimerEvent: {}
+[3.508152] (-) TimerEvent: {}
+[3.608404] (-) TimerEvent: {}
+[3.708683] (-) TimerEvent: {}
+[3.808940] (-) TimerEvent: {}
+[3.909199] (-) TimerEvent: {}
+[4.009510] (-) TimerEvent: {}
+[4.109798] (-) TimerEvent: {}
+[4.210078] (-) TimerEvent: {}
+[4.310345] (-) TimerEvent: {}
+[4.410604] (-) TimerEvent: {}
+[4.510879] (-) TimerEvent: {}
+[4.611151] (-) TimerEvent: {}
+[4.711563] (-) TimerEvent: {}
+[4.812107] (-) TimerEvent: {}
+[4.912418] (-) TimerEvent: {}
+[5.012704] (-) TimerEvent: {}
+[5.112975] (-) TimerEvent: {}
+[5.213269] (-) TimerEvent: {}
+[5.313580] (-) TimerEvent: {}
+[5.413881] (-) TimerEvent: {}
+[5.514238] (-) TimerEvent: {}
+[5.614571] (-) TimerEvent: {}
+[5.714883] (-) TimerEvent: {}
+[5.815140] (-) TimerEvent: {}
+[5.915398] (-) TimerEvent: {}
+[6.015665] (-) TimerEvent: {}
+[6.115964] (-) TimerEvent: {}
+[6.216241] (-) TimerEvent: {}
+[6.316549] (-) TimerEvent: {}
+[6.416807] (-) TimerEvent: {}
+[6.517102] (-) TimerEvent: {}
+[6.617344] (-) TimerEvent: {}
+[6.717587] (-) TimerEvent: {}
+[6.817869] (-) TimerEvent: {}
+[6.918134] (-) TimerEvent: {}
+[7.018433] (-) TimerEvent: {}
+[7.118701] (-) TimerEvent: {}
+[7.219029] (-) TimerEvent: {}
+[7.319350] (-) TimerEvent: {}
+[7.419615] (-) TimerEvent: {}
+[7.519872] (-) TimerEvent: {}
+[7.620131] (-) TimerEvent: {}
+[7.720417] (-) TimerEvent: {}
+[7.820684] (-) TimerEvent: {}
+[7.920973] (-) TimerEvent: {}
+[8.021285] (-) TimerEvent: {}
+[8.121556] (-) TimerEvent: {}
+[8.221898] (-) TimerEvent: {}
+[8.322187] (-) TimerEvent: {}
+[8.422512] (-) TimerEvent: {}
+[8.522789] (-) TimerEvent: {}
+[8.623065] (-) TimerEvent: {}
+[8.723409] (-) TimerEvent: {}
+[8.823748] (-) TimerEvent: {}
+[8.924040] (-) TimerEvent: {}
+[9.024336] (-) TimerEvent: {}
+[9.124692] (-) TimerEvent: {}
+[9.225011] (-) TimerEvent: {}
+[9.325720] (-) TimerEvent: {}
+[9.426027] (-) TimerEvent: {}
+[9.526306] (-) TimerEvent: {}
+[9.626569] (-) TimerEvent: {}
+[9.726841] (-) TimerEvent: {}
+[9.827152] (-) TimerEvent: {}
+[9.927468] (-) TimerEvent: {}
+[10.027846] (-) TimerEvent: {}
+[10.128146] (-) TimerEvent: {}
+[10.228415] (-) TimerEvent: {}
+[10.328791] (-) TimerEvent: {}
+[10.429228] (-) TimerEvent: {}
+[10.529538] (-) TimerEvent: {}
+[10.629801] (-) TimerEvent: {}
+[10.730114] (-) TimerEvent: {}
+[10.830387] (-) TimerEvent: {}
+[10.930689] (-) TimerEvent: {}
+[11.030958] (-) TimerEvent: {}
+[11.131252] (-) TimerEvent: {}
+[11.231539] (-) TimerEvent: {}
+[11.331862] (-) TimerEvent: {}
+[11.432117] (-) TimerEvent: {}
+[11.532381] (-) TimerEvent: {}
+[11.632672] (-) TimerEvent: {}
+[11.732945] (-) TimerEvent: {}
+[11.833206] (-) TimerEvent: {}
+[11.933505] (-) TimerEvent: {}
+[12.033861] (-) TimerEvent: {}
+[12.134182] (-) TimerEvent: {}
+[12.234477] (-) TimerEvent: {}
+[12.334775] (-) TimerEvent: {}
+[12.435066] (-) TimerEvent: {}
+[12.535338] (-) TimerEvent: {}
+[12.635608] (-) TimerEvent: {}
+[12.735873] (-) TimerEvent: {}
+[12.836145] (-) TimerEvent: {}
+[12.936459] (-) TimerEvent: {}
+[13.036723] (-) TimerEvent: {}
+[13.137101] (-) TimerEvent: {}
+[13.237381] (-) TimerEvent: {}
+[13.337645] (-) TimerEvent: {}
+[13.437902] (-) TimerEvent: {}
+[13.538198] (-) TimerEvent: {}
+[13.638497] (-) TimerEvent: {}
+[13.738747] (-) TimerEvent: {}
+[13.839016] (-) TimerEvent: {}
+[13.939317] (-) TimerEvent: {}
+[14.039654] (-) TimerEvent: {}
+[14.139963] (-) TimerEvent: {}
+[14.240281] (-) TimerEvent: {}
+[14.340585] (-) TimerEvent: {}
+[14.440854] (-) TimerEvent: {}
+[14.541127] (-) TimerEvent: {}
+[14.641403] (-) TimerEvent: {}
+[14.741729] (-) TimerEvent: {}
+[14.842024] (-) TimerEvent: {}
+[14.942284] (-) TimerEvent: {}
+[15.042556] (-) TimerEvent: {}
+[15.142890] (-) TimerEvent: {}
+[15.243201] (-) TimerEvent: {}
+[15.343472] (-) TimerEvent: {}
+[15.443745] (-) TimerEvent: {}
+[15.544009] (-) TimerEvent: {}
+[15.565744] (boundary_detector) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_fastrtps_cpp' as default\n"}
+[15.603172] (boundary_detector) StdoutLine: {'line': b'-- Found geometry_msgs: 4.9.1 (/opt/ros/humble/share/geometry_msgs/cmake)\n'}
+[15.611921] (boundary_detector) StdoutLine: {'line': b'-- Found visualization_msgs: 4.9.1 (/opt/ros/humble/share/visualization_msgs/cmake)\n'}
+[15.638737] (boundary_detector) StdoutLine: {'line': b'-- Found wuta_msgs: 1.0.0 (/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake)\n'}
+[15.644133] (-) TimerEvent: {}
+[15.649563] (boundary_detector) StdoutLine: {'line': b'-- Found autoware_msgs: 1.12.0 (/opt/ros/humble/share/autoware_msgs/cmake)\n'}
+[15.741805] (boundary_detector) StdoutLine: {'line': b'-- Configuring done (15.3s)\n'}
+[15.744348] (-) TimerEvent: {}
+[15.764992] (boundary_detector) StdoutLine: {'line': b'-- Generating done (0.0s)\n'}
+[15.788518] (boundary_detector) StdoutLine: {'line': b'-- Build files have been written to: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector\n'}
+[15.796974] (boundary_detector) CommandEnded: {'returncode': 0}
+[15.797489] (boundary_detector) JobProgress: {'identifier': 'boundary_detector', 'progress': 'build'}
+[15.797535] (boundary_detector) Command: {'cmd': ['/home/g2909/.local/bin/cmake', '--build', '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector', '--', '-j16', '-l16'], 'cwd': '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector', 'env': OrderedDict([('USER', 'g2909'), ('VSCODE_WSL_EXT_LOCATION', '/mnt/c/Users/g2909/.vscode/extensions/ms-vscode-remote.remote-wsl-0.104.3'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/g2909'), ('OLDPWD', '/home/g2909/WUTA-FSD'), ('ROS_PYTHON_VERSION', '3'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('WSL_DISTRO_NAME', 'Ubuntu-22.04'), ('WAYLAND_DISPLAY', 'wayland-0'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'g2909'), ('NAME', 'GaoMing'), ('WSL_INTEROP', '/run/WSL/47441_interop'), ('PULSE_SERVER', 'unix:/mnt/wslg/PulseServer'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('TERM', 'xterm-256color'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/home/g2909/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Users/g2909/bin:/mnt/c/Program Files/Git/mingw64/bin:/mnt/c/Program Files/Git/usr/local/bin:/mnt/c/Program Files/Git/usr/bin:/mnt/c/Program Files/Git/usr/bin:/mnt/c/Program Files/Git/mingw64/bin:/mnt/c/Program Files/Git/usr/bin:/mnt/c/Users/g2909/bin:/mnt/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.9/bin:/mnt/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.9/libnvvp:/mnt/c/Program Files/Common Files/Oracle/Java/javapath:/mnt/c/Users/g2909/miniconda3:/mnt/c/Users/g2909/miniconda3/Scripts:/mnt/c/Users/g2909/miniconda3/Library/bin:/mnt/c/Windows/system32:/mnt/c/Windows:/mnt/c/Windows/System32/Wbem:/mnt/c/Windows/System32/WindowsPowerShell/v1.0:/mnt/c/mingw64/bin:/mnt/c/Users/g2909/AppData/Local/Programs/Python/Python313:/mnt/c/Users/g2909/AppData/Local/Programs/Python/Python313/Scripts:/mnt/c/Windows/System32/OpenSSH:/mnt/c/Program Files/NVIDIA Corporation/NVIDIA App/NvDLISR:/mnt/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/mnt/c/Program Files/dotnet:/mnt/c/Users/g2909/AppData/Local/Android/Sdk/platform-tools:/mnt/c/Program Files/Git/cmd:/mnt/d/SVN/bin:/mnt/c/Program Files/NVIDIA Corporation/Nsight Compute 2025.2.1:/mnt/c/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit:/mnt/c/Program Files (x86)/Microsoft SQL Server/160/Tools/Binn:/mnt/c/Program Files/Microsoft SQL Server/160/Tools/Binn:/mnt/c/Program Files/Microsoft SQL Server/Client SDK/ODBC/170/Tools/Binn:/mnt/c/Program Files/Microsoft SQL Server/160/DTS/Binn:/mnt/c/Program Files (x86)/Windows Kits/8.1/Windows Performance Toolkit:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0:/mnt/c/WINDOWS/System32/OpenSSH:/mnt/c/Program Files/usbipd-win:/mnt/c/Program Files/MATLAB/R2025b/bin:/mnt/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.9/bin:/mnt/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.9/libnvvp:/mnt/c/Program Files/Common Files/Oracle/Java/javapath:/mnt/c/Users/g2909/miniconda3:/mnt/c/Users/g2909/miniconda3/Scripts:/mnt/c/Users/g2909/miniconda3/Library/bin:/mnt/c/Windows/system32:/mnt/c/Windows:/mnt/c/Windows/System32/Wbem:/mnt/c/Windows/System32/WindowsPowerShell/v1.0:/mnt/c/mingw64/bin:/mnt/c/Users/g2909/AppData/Local/Programs/Python/Python313:/mnt/c/Users/g2909/AppData/Local/Programs/Python/Python313/Scripts:/mnt/c/Windows/System32/OpenSSH:/mnt/c/Program Files/NVIDIA Corporation/NVIDIA App/NvDLISR:/mnt/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/mnt/c/Program Files/dotnet:/mnt/c/Users/g2909/AppData/Local/Android/Sdk/platform-tools:/mnt/c/Program Files/Git/cmd:/mnt/d/SVN/bin:/mnt/c/Program Files/NVIDIA Corporation/Nsight Compute 2025.2.1:/mnt/c/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit:/mnt/c/Program Files (x86)/Microsoft SQL Server/160/Tools/Binn:/mnt/c/Program Files/Microsoft SQL Server/160/Tools/Binn:/mnt/c/Program Files/Microsoft SQL Server/Client SDK/ODBC/170/Tools/Binn:/mnt/c/Program Files/Microsoft SQL Server/160/DTS/Binn:/mnt/c/Program Files (x86)/Windows Kits/8.1/Windows Performance Toolkit:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0:/mnt/c/WINDOWS/System32/OpenSSH:/mnt/c/Program Files/usbipd-win:/mnt/c/Program Files/MATLAB/R2025b/bin:/mnt/c/Users/g2909/AppData/Local/Android/Sdk/platform-tools:/mnt/d/Microsoft VS Code/bin:/mnt/c/Users/g2909/AppData/Local/Programs/Ollama:/mnt/c/Users/g2909/AppData/Local/Microsoft/WindowsApps:/mnt/c/Program Files/Git/usr/bin:/mnt/c/Program Files/Git/cmd:/mnt/c/Users/g2909/AppData/Local/Programs/nodejs:/mnt/c/Program Files/Git/usr/bin/vendor_perl:/mnt/c/Program Files/Git/usr/bin/core_perl:/snap/bin'), ('XDG_RUNTIME_DIR', '/run/user/1000/'), ('DISPLAY', ':0'), ('LANG', 'C.UTF-8'), ('AMENT_PREFIX_PATH', '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('PWD', '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'), ('XDG_DATA_DIRS', '/usr/local/share:/usr/share:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('WSL2_GUI_APPS_ENABLED', '1'), ('HOSTTYPE', 'x86_64'), ('WSLENV', 'VSCODE_WSL_EXT_LOCATION/up'), ('CMAKE_PREFIX_PATH', '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble')]), 'shell': False}
+[15.844547] (-) TimerEvent: {}
+[15.854018] (boundary_detector) StdoutLine: {'line': b"Change Dir: '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'\n"}
+[15.854360] (boundary_detector) StdoutLine: {'line': b'\n'}
+[15.854482] (boundary_detector) StdoutLine: {'line': b'Run Build Command(s): /home/g2909/.local/lib/python3.10/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile -j16 -l16\n'}
+[15.859857] (boundary_detector) StdoutLine: {'line': b'/home/g2909/.local/lib/python3.10/site-packages/cmake/data/bin/cmake -S/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector -B/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector --check-build-system CMakeFiles/Makefile.cmake 0\n'}
+[15.867545] (boundary_detector) StdoutLine: {'line': b'/home/g2909/.local/lib/python3.10/site-packages/cmake/data/bin/cmake -E cmake_progress_start /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector//CMakeFiles/progress.marks\n'}
+[15.871918] (boundary_detector) StdoutLine: {'line': b'/usr/bin/gmake  -f CMakeFiles/Makefile2 all\n'}
+[15.873470] (boundary_detector) StdoutLine: {'line': b"gmake[1]: Entering directory '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'\n"}
+[15.873616] (boundary_detector) StdoutLine: {'line': b'/usr/bin/gmake  -f CMakeFiles/pathplanning.dir/build.make CMakeFiles/pathplanning.dir/depend\n'}
+[15.874914] (boundary_detector) StdoutLine: {'line': b"gmake[2]: Entering directory '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'\n"}
+[15.875044] (boundary_detector) StdoutLine: {'line': b'cd /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector && /home/g2909/.local/lib/python3.10/site-packages/cmake/data/bin/cmake -E cmake_depends "Unix Makefiles" /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/DependInfo.cmake "--color=" pathplanning\n'}
+[15.879404] (boundary_detector) StdoutLine: {'line': b'Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/BowyerWatson.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".\n'}
+[15.879563] (boundary_detector) StdoutLine: {'line': b'Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/DelaunayTriangle.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".\n'}
+[15.879869] (boundary_detector) StdoutLine: {'line': b'Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Divide.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".\n'}
+[15.879962] (boundary_detector) StdoutLine: {'line': b'Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Evaluation.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".\n'}
+[15.880139] (boundary_detector) StdoutLine: {'line': b'Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/GlobalVariables.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".\n'}
+[15.880362] (boundary_detector) StdoutLine: {'line': b'Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Line.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".\n'}
+[15.880411] (boundary_detector) StdoutLine: {'line': b'Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/MidPoint.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".\n'}
+[15.880625] (boundary_detector) StdoutLine: {'line': b'Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Path.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".\n'}
+[15.880725] (boundary_detector) StdoutLine: {'line': b'Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/PathSearch.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".\n'}
+[15.880768] (boundary_detector) StdoutLine: {'line': b'Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Point2d.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".\n'}
+[15.880900] (boundary_detector) StdoutLine: {'line': b'Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Tool.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".\n'}
+[15.880938] (boundary_detector) StdoutLine: {'line': b'Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Triangle.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".\n'}
+[15.880970] (boundary_detector) StdoutLine: {'line': b'Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Vect.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".\n'}
+[15.880998] (boundary_detector) StdoutLine: {'line': b'Consolidate compiler generated dependencies of target pathplanning\n'}
+[15.885775] (boundary_detector) StdoutLine: {'line': b"gmake[2]: Leaving directory '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'\n"}
+[15.885958] (boundary_detector) StdoutLine: {'line': b'/usr/bin/gmake  -f CMakeFiles/pathplanning.dir/build.make CMakeFiles/pathplanning.dir/build\n'}
+[15.888961] (boundary_detector) StdoutLine: {'line': b"gmake[2]: Entering directory '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'\n"}
+[15.892840] (boundary_detector) StdoutLine: {'line': b'[  6%] Linking CXX static library libpathplanning.a\n'}
+[15.893465] (boundary_detector) StdoutLine: {'line': b'/home/g2909/.local/lib/python3.10/site-packages/cmake/data/bin/cmake -P CMakeFiles/pathplanning.dir/cmake_clean_target.cmake\n'}
+[15.897287] (boundary_detector) StdoutLine: {'line': b'/home/g2909/.local/lib/python3.10/site-packages/cmake/data/bin/cmake -E cmake_link_script CMakeFiles/pathplanning.dir/link.txt --verbose=1\n'}
+[15.923832] (boundary_detector) StdoutLine: {'line': b'/usr/bin/ar qc libpathplanning.a CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/BowyerWatson.cpp.o CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/DelaunayTriangle.cpp.o CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Divide.cpp.o CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Evaluation.cpp.o CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/GlobalVariables.cpp.o CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Line.cpp.o CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/MidPoint.cpp.o CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Path.cpp.o CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/PathSearch.cpp.o CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Point2d.cpp.o CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Tool.cpp.o CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Triangle.cpp.o CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Vect.cpp.o\n'}
+[15.924047] (boundary_detector) StdoutLine: {'line': b'/usr/bin/ranlib libpathplanning.a\n'}
+[15.924265] (boundary_detector) StdoutLine: {'line': b"gmake[2]: Leaving directory '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'\n"}
+[15.928333] (boundary_detector) StdoutLine: {'line': b'[ 87%] Built target pathplanning\n'}
+[15.928957] (boundary_detector) StdoutLine: {'line': b'/usr/bin/gmake  -f CMakeFiles/boundary_detector_node.dir/build.make CMakeFiles/boundary_detector_node.dir/depend\n'}
+[15.930811] (boundary_detector) StdoutLine: {'line': b"gmake[2]: Entering directory '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'\n"}
+[15.930964] (boundary_detector) StdoutLine: {'line': b'cd /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector && /home/g2909/.local/lib/python3.10/site-packages/cmake/data/bin/cmake -E cmake_depends "Unix Makefiles" /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/boundary_detector_node.dir/DependInfo.cmake "--color=" boundary_detector_node\n'}
+[15.936117] (boundary_detector) StdoutLine: {'line': b"gmake[2]: Leaving directory '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'\n"}
+[15.936407] (boundary_detector) StdoutLine: {'line': b'/usr/bin/gmake  -f CMakeFiles/boundary_detector_node.dir/build.make CMakeFiles/boundary_detector_node.dir/build\n'}
+[15.938371] (boundary_detector) StdoutLine: {'line': b"gmake[2]: Entering directory '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'\n"}
+[15.942385] (boundary_detector) StdoutLine: {'line': b'[ 93%] Building CXX object CMakeFiles/boundary_detector_node.dir/src/boundary_detector_node.cpp.o\n'}
+[15.942947] (boundary_detector) StdoutLine: {'line': b'/usr/bin/c++ -DDEFAULT_RMW_IMPLEMENTATION=rmw_fastrtps_cpp -DFASTCDR_DYN_LINK -DRCUTILS_ENABLE_FAULT_INJECTION -I/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector/include -I/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/include -isystem /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs -isystem /opt/ros/humble/include/rclcpp -isystem /opt/ros/humble/include/geometry_msgs -isystem /opt/ros/humble/include/visualization_msgs -isystem /opt/ros/humble/include/ament_index_cpp -isystem /opt/ros/humble/include/libstatistics_collector -isystem /opt/ros/humble/include/builtin_interfaces -isystem /opt/ros/humble/include/rosidl_runtime_c -isystem /opt/ros/humble/include/rcutils -isystem /opt/ros/humble/include/rosidl_typesupport_interface -isystem /opt/ros/humble/include/fastcdr -isystem /opt/ros/humble/include/rosidl_runtime_cpp -isystem /opt/ros/humble/include/rosidl_typesupport_fastrtps_cpp -isystem /opt/ros/humble/include/rmw -isystem /opt/ros/humble/include/rosidl_typesupport_fastrtps_c -isystem /opt/ros/humble/include/rosidl_typesupport_introspection_c -isystem /opt/ros/humble/include/rosidl_typesupport_introspection_cpp -isystem /opt/ros/humble/include/rcl -isystem /opt/ros/humble/include/rcl_interfaces -isystem /opt/ros/humble/include/rcl_logging_interface -isystem /opt/ros/humble/include/rcl_yaml_param_parser -isystem /opt/ros/humble/include/libyaml_vendor -isystem /opt/ros/humble/include/tracetools -isystem /opt/ros/humble/include/rcpputils -isystem /opt/ros/humble/include/statistics_msgs -isystem /opt/ros/humble/include/rosgraph_msgs -isystem /opt/ros/humble/include/rosidl_typesupport_cpp -isystem /opt/ros/humble/include/rosidl_typesupport_c -isystem /opt/ros/humble/include/std_msgs -isystem /opt/ros/humble/include/sensor_msgs -std=gnu++17 -MD -MT CMakeFiles/boundary_detector_node.dir/src/boundary_detector_node.cpp.o -MF CMakeFiles/boundary_detector_node.dir/src/boundary_detector_node.cpp.o.d -o CMakeFiles/boundary_detector_node.dir/src/boundary_detector_node.cpp.o -c /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector/src/boundary_detector_node.cpp\n'}
+[15.944688] (-) TimerEvent: {}
+[16.044941] (-) TimerEvent: {}
+[16.145254] (-) TimerEvent: {}
+[16.182515] (boundary_detector) StderrLine: {'line': b'In file included from /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector/src/boundary_detector_node.cpp:1:\n'}
+[16.182869] (boundary_detector) StderrLine: {'line': b'/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector/include/boundary_detector/boundary_detector_node.hpp:15:10: fatal error: autoware_msgs/msg/lane.hpp: No such file or directory\n'}
+[16.182939] (boundary_detector) StderrLine: {'line': b'   15 | #include <autoware_msgs/msg/lane.hpp>\n'}
+[16.182974] (boundary_detector) StderrLine: {'line': b'      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'}
+[16.183021] (boundary_detector) StderrLine: {'line': b'compilation terminated.\n'}
+[16.184928] (boundary_detector) StderrLine: {'line': b'gmake[2]: *** [CMakeFiles/boundary_detector_node.dir/build.make:82: CMakeFiles/boundary_detector_node.dir/src/boundary_detector_node.cpp.o] Error 1\n'}
+[16.185111] (boundary_detector) StdoutLine: {'line': b"gmake[2]: Leaving directory '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'\n"}
+[16.185198] (boundary_detector) StderrLine: {'line': b'gmake[1]: *** [CMakeFiles/Makefile2:191: CMakeFiles/boundary_detector_node.dir/all] Error 2\n'}
+[16.185472] (boundary_detector) StdoutLine: {'line': b"gmake[1]: Leaving directory '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'\n"}
+[16.185577] (boundary_detector) StderrLine: {'line': b'gmake: *** [Makefile:149: all] Error 2\n'}
+[16.186561] (boundary_detector) StdoutLine: {'line': b'\n'}
+[16.187955] (boundary_detector) CommandEnded: {'returncode': 2}
+[16.195517] (boundary_detector) JobEnded: {'identifier': 'boundary_detector', 'rc': 2}
+[16.206590] (-) EventReactorShutdown: {}

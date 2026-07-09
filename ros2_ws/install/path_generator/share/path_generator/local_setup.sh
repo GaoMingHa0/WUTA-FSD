@@ -1,0 +1,1 @@
+/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/path_generator/ament_cmake_environment_hooks/local_setup.sh

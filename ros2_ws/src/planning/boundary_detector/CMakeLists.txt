@@ -14,7 +14,7 @@ find_package(autoware_msgs REQUIRED)
 file(GLOB PATHPLANNING_SRCS thirdparty/pathplanning/src/*.cpp)
 
 add_library(pathplanning STATIC ${PATHPLANNING_SRCS})
-target_include_directories(pathplanning PUBLIC thirdparty/pathplanning/include)
+target_include_directories(pathplanning PUBLIC thirdparty/pathplanning/include include)
 
 add_executable(boundary_detector_node src/boundary_detector_node.cpp)
 

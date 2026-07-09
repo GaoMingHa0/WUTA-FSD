@@ -1,0 +1,76 @@
+CMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+-- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+-- Override CMake install command with custom implementation using symlinks instead of copying resources
+-- Found rclcpp: 16.0.19 (/opt/ros/humble/share/rclcpp/cmake)
+-- Found rosidl_generator_c: 3.1.9 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+-- Found rosidl_adapter: 3.1.9 (/opt/ros/humble/share/rosidl_adapter/cmake)
+-- Found rosidl_generator_cpp: 3.1.9 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+-- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+-- Found rmw_fastrtps_cpp: 6.2.10 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+-- Using RMW implementation 'rmw_fastrtps_cpp' as default
+-- Found geometry_msgs: 4.9.1 (/opt/ros/humble/share/geometry_msgs/cmake)
+-- Found visualization_msgs: 4.9.1 (/opt/ros/humble/share/visualization_msgs/cmake)
+-- Found wuta_msgs: 1.0.0 (/home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake)
+-- Found autoware_msgs: 1.12.0 (/opt/ros/humble/share/autoware_msgs/cmake)
+-- Configuring done (5.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector
+Change Dir: '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'
+
+Run Build Command(s): /home/g2909/.local/lib/python3.10/site-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile -j16 -l16
+/home/g2909/.local/lib/python3.10/site-packages/cmake/data/bin/cmake -S/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector -B/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector --check-build-system CMakeFiles/Makefile.cmake 0
+/home/g2909/.local/lib/python3.10/site-packages/cmake/data/bin/cmake -E cmake_progress_start /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector//CMakeFiles/progress.marks
+/usr/bin/gmake  -f CMakeFiles/Makefile2 all
+gmake[1]: Entering directory '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'
+/usr/bin/gmake  -f CMakeFiles/pathplanning.dir/build.make CMakeFiles/pathplanning.dir/depend
+gmake[2]: Entering directory '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'
+cd /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector && /home/g2909/.local/lib/python3.10/site-packages/cmake/data/bin/cmake -E cmake_depends "Unix Makefiles" /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/DependInfo.cmake "--color=" pathplanning
+Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/BowyerWatson.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".
+Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/DelaunayTriangle.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".
+Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Divide.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".
+Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Evaluation.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".
+Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/GlobalVariables.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".
+Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Line.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".
+Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/MidPoint.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".
+Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Path.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".
+Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/PathSearch.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".
+Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Point2d.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".
+Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Tool.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".
+Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Triangle.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".
+Dependencies file "CMakeFiles/pathplanning.dir/thirdparty/pathplanning/src/Vect.cpp.o.d" is newer than depends file "/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/pathplanning.dir/compiler_depend.internal".
+Consolidate compiler generated dependencies of target pathplanning
+gmake[2]: Leaving directory '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'
+/usr/bin/gmake  -f CMakeFiles/pathplanning.dir/build.make CMakeFiles/pathplanning.dir/build
+gmake[2]: Entering directory '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'
+gmake[2]: Nothing to be done for 'CMakeFiles/pathplanning.dir/build'.
+gmake[2]: Leaving directory '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'
+[ 87%] Built target pathplanning
+/usr/bin/gmake  -f CMakeFiles/boundary_detector_node.dir/build.make CMakeFiles/boundary_detector_node.dir/depend
+gmake[2]: Entering directory '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'
+cd /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector && /home/g2909/.local/lib/python3.10/site-packages/cmake/data/bin/cmake -E cmake_depends "Unix Makefiles" /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector /home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector/CMakeFiles/boundary_detector_node.dir/DependInfo.cmake "--color=" boundary_detector_node
+gmake[2]: Leaving directory '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'
+/usr/bin/gmake  -f CMakeFiles/boundary_detector_node.dir/build.make CMakeFiles/boundary_detector_node.dir/build
+gmake[2]: Entering directory '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'
+[ 93%] Building CXX object CMakeFiles/boundary_detector_node.dir/src/boundary_detector_node.cpp.o
+/usr/bin/c++ -DDEFAULT_RMW_IMPLEMENTATION=rmw_fastrtps_cpp -DFASTCDR_DYN_LINK -DRCUTILS_ENABLE_FAULT_INJECTION -I/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector/include -I/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector/thirdparty/pathplanning/include -isystem /home/g2909/WUTA1/WUTA-FSD/ros2_ws/install/wuta_msgs/include/wuta_msgs -isystem /opt/ros/humble/include/rclcpp -isystem /opt/ros/humble/include/geometry_msgs -isystem /opt/ros/humble/include/visualization_msgs -isystem /opt/ros/humble/include/ament_index_cpp -isystem /opt/ros/humble/include/libstatistics_collector -isystem /opt/ros/humble/include/builtin_interfaces -isystem /opt/ros/humble/include/rosidl_runtime_c -isystem /opt/ros/humble/include/rcutils -isystem /opt/ros/humble/include/rosidl_typesupport_interface -isystem /opt/ros/humble/include/fastcdr -isystem /opt/ros/humble/include/rosidl_runtime_cpp -isystem /opt/ros/humble/include/rosidl_typesupport_fastrtps_cpp -isystem /opt/ros/humble/include/rmw -isystem /opt/ros/humble/include/rosidl_typesupport_fastrtps_c -isystem /opt/ros/humble/include/rosidl_typesupport_introspection_c -isystem /opt/ros/humble/include/rosidl_typesupport_introspection_cpp -isystem /opt/ros/humble/include/rcl -isystem /opt/ros/humble/include/rcl_interfaces -isystem /opt/ros/humble/include/rcl_logging_interface -isystem /opt/ros/humble/include/rcl_yaml_param_parser -isystem /opt/ros/humble/include/libyaml_vendor -isystem /opt/ros/humble/include/tracetools -isystem /opt/ros/humble/include/rcpputils -isystem /opt/ros/humble/include/statistics_msgs -isystem /opt/ros/humble/include/rosgraph_msgs -isystem /opt/ros/humble/include/rosidl_typesupport_cpp -isystem /opt/ros/humble/include/rosidl_typesupport_c -isystem /opt/ros/humble/include/std_msgs -isystem /opt/ros/humble/include/sensor_msgs -std=gnu++17 -MD -MT CMakeFiles/boundary_detector_node.dir/src/boundary_detector_node.cpp.o -MF CMakeFiles/boundary_detector_node.dir/src/boundary_detector_node.cpp.o.d -o CMakeFiles/boundary_detector_node.dir/src/boundary_detector_node.cpp.o -c /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector/src/boundary_detector_node.cpp
+In file included from /home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector/src/boundary_detector_node.cpp:1:
+/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/planning/boundary_detector/include/boundary_detector/boundary_detector_node.hpp:15:10: fatal error: autoware_msgs/msg/lane.hpp: No such file or directory
+   15 | #include <autoware_msgs/msg/lane.hpp>
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+gmake[2]: *** [CMakeFiles/boundary_detector_node.dir/build.make:82: CMakeFiles/boundary_detector_node.dir/src/boundary_detector_node.cpp.o] Error 1
+gmake[2]: Leaving directory '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'
+gmake[1]: *** [CMakeFiles/Makefile2:191: CMakeFiles/boundary_detector_node.dir/all] Error 2
+gmake[1]: Leaving directory '/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/boundary_detector'
+gmake: *** [Makefile:149: all] Error 2
+

@@ -1,0 +1,1 @@
+/home/g2909/WUTA1/WUTA-FSD/ros2_ws/src/localization/localization_manager/launch/localization.launch.py

@@ -65,6 +65,12 @@ public:
     int GetSplineSize(){
         return SplineSize;
     }
+    double GetRedundancy() { return Redundancy; }
+    double GetStartPointRedundancy() { return StartPointRedundancy; }
+    int GetPlugPointSize() { return PlugPointSize; }
+    double GetDistanceToBoundary() { return DistanceToBoundary; }
+    int GetIsUseFirstLapPoints() { return IsUseFirstLapPoints; }
+    int GetIsUseFirstLapPointsPro() { return IsUseFirstLapPointsPro; }
 private:
     static GlobalVariables* instance;
     GlobalVariables();
@@ -107,4 +113,10 @@ private:
 
     //三次样条插值，插入数量
     int SplineSize;
+    double Redundancy;
+    double StartPointRedundancy;
+    int PlugPointSize;
+    double DistanceToBoundary;
+    int IsUseFirstLapPoints;
+    int IsUseFirstLapPointsPro;
 };

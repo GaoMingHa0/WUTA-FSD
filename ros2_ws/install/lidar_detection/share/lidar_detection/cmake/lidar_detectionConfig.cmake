@@ -1,0 +1,1 @@
+/home/g2909/WUTA1/WUTA-FSD/ros2_ws/build/lidar_detection/ament_cmake_core/lidar_detectionConfig.cmake
