@@ -106,18 +106,9 @@ autoware_msgs::msg::Lane BoundaryDetectorNode::computeCenterline(
     current_pose_.pose.position.x,
     current_pose_.pose.position.y);
 
-  // Find closest existing midpoint as start, or initialize
+  // Rebuild the local Delaunay graph as the visible cone map changes.
+  path_search_.Clear();
   path_search_.SetPoints(points);
-
-  if (!path_search_.IsInit()) {
-    RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000,
-      "PathSearch not initialized yet");
-    return lane;
-  }
-
-  if (!last_midps_.empty()) {
-    path_search_.SetLastMidps(last_midps_);
-  }
 
   // Compute vehicle heading as former direction
   const auto & q = current_pose_.pose.orientation;
@@ -125,6 +116,21 @@ autoware_msgs::msg::Lane BoundaryDetectorNode::computeCenterline(
     2.0 * (q.w * q.z + q.x * q.y),
     1.0 - 2.0 * (q.y * q.y + q.z * q.z));
   path_search_.SetFormer(Vect(std::cos(yaw), std::sin(yaw)));
+
+  auto vehicle_midpoint = std::make_shared<MidPoint>();
+  vehicle_midpoint->mid = vehicle_pos;
+  path_search_.SetStartPoint(vehicle_midpoint);
+  path_search_.SetPathStartPoint(vehicle_midpoint);
+
+  if (!last_midps_.empty()) {
+    path_search_.SetLastMidps(last_midps_);
+  }
+
+  if (!path_search_.IsInit()) {
+    RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000,
+      "PathSearch initialization failed");
+    return lane;
+  }
 
   // Get best path through Delaunay midpoints
   auto midps = path_search_.GetBestMidps();

@@ -254,6 +254,5 @@ int Evaluation::Evaluate()
             res = i;
         }
     }
-    std::cout<<"Score:"<<res_score<<std::endl;
     return res;
 }

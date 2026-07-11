@@ -75,48 +75,48 @@ private:
     static GlobalVariables* instance;
     GlobalVariables();
     //最大搜索深度
-    int MaxDepth;
-    int DepthStep;
+    int MaxDepth{5};
+    int DepthStep{1};
     //最小搜索深度
-    int MinDepth;
+    int MinDepth{2};
     //三角形最长边阈值
-    double TriMaxLen;
+    double TriMaxLen{10.0};
     //三角形最短边阈值
-    double TriMinLen;
+    double TriMinLen{0.1};
     //三角形最小角阈值
-    double MinAngleTheshold;
+    double MinAngleTheshold{5.0};
     //三角形最大角阈值
-    double MaxAngleTheshold;
+    double MaxAngleTheshold{175.0};
 
     //路径搜索，评价函数权重
     //路径搜索到起点时，得分
-    double IsFindStartPoint;
+    double IsFindStartPoint{1.0};
     //搜索的路径点，路径点周围是否包含2个三角形，权重
-    double CenterWeight;
+    double CenterWeight{1.0};
     //搜索深度权重
-    double DepthWeight;
+    double DepthWeight{1.0};
     //dtw权重
-    double DtwWeight;
+    double DtwWeight{1.0};
     //宽度权重
-    double WidthWeigth;
+    double WidthWeigth{1.0};
     //长度权重
-    double LengthWeight;
+    double LengthWeight{0.5};
     //角度权重
-    double AngleWeight; //0.1
+    double AngleWeight{1.0};
     //角度标准差权重
-    double AngleStandardDeviationWeight;
+    double AngleStandardDeviationWeight{0.5};
     //长度标准差权重
-    double LengthStandardDeviationWeight;
+    double LengthStandardDeviationWeight{0.5};
 
     //分支限界法，角度阈值
-    double AngleThreshold;
+    double AngleThreshold{80.0};
 
     //三次样条插值，插入数量
-    int SplineSize;
-    double Redundancy;
-    double StartPointRedundancy;
-    int PlugPointSize;
-    double DistanceToBoundary;
-    int IsUseFirstLapPoints;
-    int IsUseFirstLapPointsPro;
+    int SplineSize{5};
+    double Redundancy{0.1};
+    double StartPointRedundancy{1.0};
+    int PlugPointSize{5};
+    double DistanceToBoundary{2.0};
+    int IsUseFirstLapPoints{0};
+    int IsUseFirstLapPointsPro{0};
 };

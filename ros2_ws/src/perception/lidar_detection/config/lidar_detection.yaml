@@ -10,8 +10,12 @@ lidar_detection_node:
     # --- Traditional detector parameters ---
 
     # Ground removal
-    use_ransac: true
-    ground_z_threshold: -0.8        # m, used when use_ransac=false
+    # The simulator ground is centered at z=-1.0 m in the lidar frame.
+    # RANSAC with a 0.2 m inlier band also removes most points from a 0.3 m
+    # cone, leaving a cluster that fails min_cone_height.  A known-height
+    # cutoff keeps the cone body while rejecting simulated ground returns.
+    use_ransac: false
+    ground_z_threshold: -0.95       # m, keep points above this height
     ransac_distance_threshold: 0.2  # m
 
     # Voxel downsampling

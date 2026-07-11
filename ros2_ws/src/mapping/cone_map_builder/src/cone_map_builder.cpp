@@ -226,8 +226,6 @@ void ConeMapBuilder::publishMap()
 
 void ConeMapBuilder::publishVisualization()
 {
-  if (marker_pub_->get_subscription_count() == 0) return;
-
   visualization_msgs::msg::MarkerArray marker_array;
 
   // Delete old markers

@@ -200,18 +200,19 @@ std::vector<std::shared_ptr<MidPoint>> PathSearch::GetBestMidps() {
     //dfsMidps.emplace_back(startMidPoint);
     Dfs(startMidPoint,*former ,dfsMidps, 0,true);
     int n = midpsList.size();
-    //std::cout << "midpsList.size:" << n << std::endl;
-    int res = 0;
-    //printf("midpslistsize:%d\n",midpsList.size());
-    if (n > 1) {
-        evaluation->Clear();
-        evaluation->Init(midpsList,lastMidps,pathStartPoint);
-        res = evaluation->Evaluate();
-    }else{
-        std::cout<<"error!"<<std::endl;
-        std::cout<<"lastMidpsSize:"<<lastMidps.size()<<std::endl;
+    if (n == 0) {
         return lastMidps;
     }
+
+    if (n == 1) {
+        lastMidps = midpsList.front();
+        midpsList.clear();
+        return lastMidps;
+    }
+
+    evaluation->Clear();
+    evaluation->Init(midpsList,lastMidps,pathStartPoint);
+    int res = evaluation->Evaluate();
     auto bestMidps = midpsList[res];
     lastMidps = bestMidps;
     // if(BestMidps.size()>10){
@@ -283,7 +284,6 @@ void PathSearch::SetFormer(Vect p)
 {
     former->x = p.x;
     former->y = p.y;
-    std::cout<<"x:"<<p.x<<",y:"<<p.y<<std::endl;
     isSetFormer = true;
 }
 
