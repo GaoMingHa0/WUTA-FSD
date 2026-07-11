@@ -1,0 +1,203 @@
+[0.045s] Invoking command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/ndt_localization': AMENT_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake /home/starry1n/WUTA/WUTA-FSD/ros2_ws/src/localization/ndt_localization -DCMAKE_MODULE_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/cmake -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/ndt_localization
+[8.725s] -- The C compiler identification is GNU 11.4.0
+[8.726s] -- The CXX compiler identification is GNU 11.4.0
+[8.726s] -- Detecting C compiler ABI info
+[8.726s] -- Detecting C compiler ABI info - done
+[8.726s] -- Check for working C compiler: /usr/bin/cc - skipped
+[8.726s] -- Detecting C compile features
+[8.726s] -- Detecting C compile features - done
+[8.726s] -- Detecting CXX compiler ABI info
+[8.726s] -- Detecting CXX compiler ABI info - done
+[8.726s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[8.726s] -- Detecting CXX compile features
+[8.726s] -- Detecting CXX compile features - done
+[8.726s] -- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+[8.726s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter
+[8.726s] -- Override CMake install command with custom implementation using symlinks instead of copying resources
+[8.726s] -- Found rclcpp: 16.0.19 (/opt/ros/humble/share/rclcpp/cmake)
+[8.726s] -- Found rosidl_generator_c: 3.1.9 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[8.726s] -- Found rosidl_adapter: 3.1.9 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[8.726s] -- Found rosidl_generator_cpp: 3.1.9 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[8.726s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[8.726s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[8.726s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[8.727s] -- Found rmw_fastrtps_cpp: 6.2.10 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[8.727s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")
+[8.727s] -- Found FastRTPS: /opt/ros/humble/include
+[8.727s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[8.727s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[8.727s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[8.727s] -- Found Threads: TRUE
+[8.727s] -- Found sensor_msgs: 4.9.1 (/opt/ros/humble/share/sensor_msgs/cmake)
+[8.727s] -- Found nav_msgs: 4.9.1 (/opt/ros/humble/share/nav_msgs/cmake)
+[8.727s] -- Found visualization_msgs: 4.9.1 (/opt/ros/humble/share/visualization_msgs/cmake)
+[8.727s] -- Found wuta_msgs: 1.0.0 (/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake)
+[8.727s] -- Checking for module 'eigen3'
+[8.727s] --   Found eigen3, version 3.4.0
+[8.727s] -- Found Eigen: /usr/include/eigen3 (Required is at least version "3.1")
+[8.727s] -- Eigen found (include: /usr/include/eigen3, version: 3.4.0)
+[8.727s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found suitable version "1.74.0", minimum required is "1.65.0") found components: system filesystem date_time iostreams serialization
+[8.727s] -- Checking for module 'libusb-1.0'
+[8.727s] --   Found libusb-1.0, version 1.0.25
+[8.727s] -- Found libusb: /usr/lib/x86_64-linux-gnu/libusb-1.0.so
+[8.727s] -- Found OpenNI: /usr/lib/libOpenNI.so;libusb::libusb (found version "1.5.4.0")
+[8.727s] -- OpenNI found (version: 1.5.4.0, include: /usr/include/ni, lib: /usr/lib/libOpenNI.so;libusb::libusb)
+[8.727s] -- Found OpenNI2: /usr/lib/x86_64-linux-gnu/libOpenNI2.so;libusb::libusb (found version "2.2.0.33")
+[8.727s] -- OpenNI2 found (version: 2.2.0.33, include: /usr/include/openni2, lib: /usr/lib/x86_64-linux-gnu/libOpenNI2.so;libusb::libusb)
+[8.727s] -- Found GLEW: /usr/lib/x86_64-linux-gnu/libGLEW.so
+[8.727s] -- Found OpenGL: /usr/lib/x86_64-linux-gnu/libOpenGL.so  found components: OpenGL GLX
+[8.727s] -- Found MPI: TRUE  found components: C
+[8.727s] -- Found JsonCpp: /usr/lib/x86_64-linux-gnu/libjsoncpp.so (found suitable version "1.9.5", minimum required is "0.7.0")
+[8.727s] -- Found ZLIB: /usr/lib/x86_64-linux-gnu/libz.so (found version "1.2.11")
+[8.728s] -- Found PNG: /usr/lib/x86_64-linux-gnu/libpng.so (found version "1.6.37")
+[8.728s] -- Found Eigen3: /usr/include/eigen3 (found version "3.4.0")
+[8.728s] -- Found X11: /usr/include
+[8.728s] -- Looking for XOpenDisplay in /usr/lib/x86_64-linux-gnu/libX11.so;/usr/lib/x86_64-linux-gnu/libXext.so
+[8.728s] -- Looking for XOpenDisplay in /usr/lib/x86_64-linux-gnu/libX11.so;/usr/lib/x86_64-linux-gnu/libXext.so - found
+[8.728s] -- Looking for gethostbyname
+[8.728s] -- Looking for gethostbyname - found
+[8.728s] -- Looking for connect
+[8.728s] -- Looking for connect - found
+[8.728s] -- Looking for remove
+[8.728s] -- Looking for remove - found
+[8.728s] -- Looking for shmat
+[8.728s] -- Looking for shmat - found
+[8.728s] -- Looking for IceConnectionNumber in ICE
+[8.728s] -- Looking for IceConnectionNumber in ICE - found
+[8.728s] -- Found EXPAT: /usr/lib/x86_64-linux-gnu/libexpat.so (found version "2.4.7")
+[8.728s] -- Found double-conversion: /usr/lib/x86_64-linux-gnu/libdouble-conversion.so
+[8.728s] -- Found LZ4: /usr/lib/x86_64-linux-gnu/liblz4.so (found version "1.9.3")
+[8.728s] -- Found LZMA: /usr/lib/x86_64-linux-gnu/liblzma.so (found version "5.2.5")
+[8.728s] -- Found JPEG: /usr/lib/x86_64-linux-gnu/libjpeg.so (found version "80")
+[8.728s] -- Found TIFF: /usr/lib/x86_64-linux-gnu/libtiff.so (found version "4.3.0")
+[8.728s] -- Found Freetype: /usr/lib/x86_64-linux-gnu/libfreetype.so (found version "2.11.1")
+[8.728s] -- Found utf8cpp: /usr/include/utf8cpp
+[8.728s] -- Eigen found (include: /usr/include/eigen3, version: 3.4.0)
+[8.729s] -- Checking for module 'flann'
+[8.729s] --   Found flann, version 1.9.1
+[8.729s] -- Found FLANN: /usr/lib/x86_64-linux-gnu/libflann_cpp.so
+[8.729s] -- FLANN found (include: /usr/include, lib: /usr/lib/x86_64-linux-gnu/libflann_cpp.so)
+[8.729s] [0mCMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+[8.729s]   Compatibility with CMake < 3.10 will be removed from a future version of
+[8.729s]   CMake.
+[8.729s] 
+[8.736s]   Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+[8.736s]   to tell CMake that the project requires at least <min> but has been updated
+[8.736s]   to work with policies introduced by <max> or earlier.
+[8.736s] 
+[8.736s] [0m
+[8.736s] [33mCMake Warning (dev) at /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:146 (find_package):
+[8.736s]   Policy CMP0144 is not set: find_package uses upper-case <PACKAGENAME>_ROOT
+[8.736s]   variables.  Run "cmake --help-policy CMP0144" for policy details.  Use the
+[8.736s]   cmake_policy command to set the policy and suppress this warning.
+[8.736s] 
+[8.736s]   CMake variable EIGEN_ROOT is set to:
+[8.736s] 
+[8.737s]     /usr/include/eigen3
+[8.737s] 
+[8.737s]   For compatibility, find_package is ignoring the variable, but code in a
+[8.737s]   .cmake module might still use it.
+[8.737s] Call Stack (most recent call first):
+[8.737s]   /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:299 (find_eigen)
+[8.737s]   /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:543 (find_external_library)
+[8.737s]   CMakeLists.txt:14 (find_package)
+[8.737s] This warning is for project developers.  Use -Wno-dev to suppress it.
+[8.737s] [0m
+[8.737s] [33mCMake Warning (dev) at /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:128 (find_package):
+[8.737s]   Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+[8.737s]   --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+[8.737s]   set the policy and suppress this warning.
+[8.738s] 
+[8.738s] Call Stack (most recent call first):
+[8.738s]   /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:297 (find_boost)
+[8.738s]   /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:543 (find_external_library)
+[8.738s]   CMakeLists.txt:14 (find_package)
+[8.738s] This warning is for project developers.  Use -Wno-dev to suppress it.
+[8.738s] [0m
+[8.738s] [0m** WARNING ** io features related to pcap will be disabled[0m
+[8.738s] [0m** WARNING ** io features related to png will be disabled[0m
+[8.738s] [33mCMake Warning (dev) at /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:128 (find_package):
+[8.738s]   Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+[8.738s]   --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+[8.738s]   set the policy and suppress this warning.
+[8.738s] 
+[8.738s] Call Stack (most recent call first):
+[8.738s]   /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:297 (find_boost)
+[8.738s]   /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:543 (find_external_library)
+[8.738s]   CMakeLists.txt:14 (find_package)
+[8.738s] This warning is for project developers.  Use -Wno-dev to suppress it.
+[8.738s] [0m
+[8.738s] [33mCMake Warning (dev) at /usr/lib/x86_64-linux-gnu/cmake/pcl/Modules/FindFLANN.cmake:44 (find_package):
+[8.739s]   Policy CMP0144 is not set: find_package uses upper-case <PACKAGENAME>_ROOT
+[8.739s]   variables.  Run "cmake --help-policy CMP0144" for policy details.  Use the
+[8.739s]   cmake_policy command to set the policy and suppress this warning.
+[8.739s] 
+[8.739s]   CMake variable FLANN_ROOT is set to:
+[8.739s] 
+[8.739s]     /usr
+[8.739s] 
+[8.739s]   For compatibility, find_package is ignoring the variable, but code in a
+[8.739s]   .cmake module might still use it.
+[8.739s] Call Stack (most recent call first):
+[8.739s]   /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:256 (find_package)
+[8.739s]   /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:301 (find_flann)
+[8.739s]   /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:543 (find_external_library)
+[8.739s]   CMakeLists.txt:14 (find_package)
+[8.739s] This warning is for project developers.  Use -Wno-dev to suppress it.
+[8.739s] [0m
+[8.994s] -- looking for PCL_COMMON
+[8.997s] -- Found PCL_COMMON: /usr/lib/x86_64-linux-gnu/libpcl_common.so
+[8.997s] -- looking for PCL_OCTREE
+[8.999s] -- Found PCL_OCTREE: /usr/lib/x86_64-linux-gnu/libpcl_octree.so
+[8.999s] -- looking for PCL_IO
+[9.001s] -- Found PCL_IO: /usr/lib/x86_64-linux-gnu/libpcl_io.so
+[9.001s] -- looking for PCL_KDTREE
+[9.002s] -- Found PCL_KDTREE: /usr/lib/x86_64-linux-gnu/libpcl_kdtree.so
+[9.002s] -- looking for PCL_SEARCH
+[9.003s] -- Found PCL_SEARCH: /usr/lib/x86_64-linux-gnu/libpcl_search.so
+[9.003s] -- looking for PCL_SAMPLE_CONSENSUS
+[9.004s] -- Found PCL_SAMPLE_CONSENSUS: /usr/lib/x86_64-linux-gnu/libpcl_sample_consensus.so
+[9.005s] -- looking for PCL_FILTERS
+[9.005s] -- Found PCL_FILTERS: /usr/lib/x86_64-linux-gnu/libpcl_filters.so
+[9.006s] -- looking for PCL_2D
+[9.006s] -- Found PCL_2D: /usr/include/pcl-1.12
+[9.006s] -- looking for PCL_FEATURES
+[9.009s] -- Found PCL_FEATURES: /usr/lib/x86_64-linux-gnu/libpcl_features.so
+[9.009s] -- looking for PCL_REGISTRATION
+[9.010s] -- Found PCL_REGISTRATION: /usr/lib/x86_64-linux-gnu/libpcl_registration.so
+[9.012s] -- Found PCL: pcl_common;pcl_octree;pcl_io;pcl_kdtree;pcl_search;pcl_sample_consensus;pcl_filters;pcl_features;pcl_registration;Boost::system;Boost::filesystem;Boost::date_time;Boost::iostreams;Boost::serialization;/usr/lib/libOpenNI.so;libusb::libusb;/usr/lib/x86_64-linux-gnu/libOpenNI2.so;libusb::libusb;VTK::ChartsCore;VTK::CommonColor;VTK::CommonComputationalGeometry;VTK::CommonCore;VTK::CommonDataModel;VTK::CommonExecutionModel;VTK::CommonMath;VTK::CommonMisc;VTK::CommonTransforms;VTK::FiltersCore;VTK::FiltersExtraction;VTK::FiltersGeneral;VTK::FiltersGeometry;VTK::FiltersModeling;VTK::FiltersSources;VTK::ImagingCore;VTK::ImagingSources;VTK::InteractionImage;VTK::InteractionStyle;VTK::InteractionWidgets;VTK::IOCore;VTK::IOGeometry;VTK::IOImage;VTK::IOLegacy;VTK::IOPLY;VTK::RenderingAnnotation;VTK::RenderingCore;VTK::RenderingContext2D;VTK::RenderingLOD;VTK::RenderingFreeType;VTK::ViewsCore;VTK::ViewsContext2D;VTK::RenderingOpenGL2;VTK::GUISupportQt;FLANN::FLANN
+[9.013s] -- Found pcl_conversions: 2.4.5 (/opt/ros/humble/share/pcl_conversions/cmake)
+[9.182s] -- Configuring done (9.1s)
+[9.365s] -- Generating done (0.2s)
+[9.539s] -- Build files have been written to: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/ndt_localization
+[9.560s] Invoked command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/ndt_localization' returned '0': AMENT_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake /home/starry1n/WUTA/WUTA-FSD/ros2_ws/src/localization/ndt_localization -DCMAKE_MODULE_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/cmake -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/ndt_localization
+[9.561s] Invoking command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/ndt_localization': AMENT_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --build /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/ndt_localization -- -j8 -l8
+[37.831s] [ 25%] [32mBuilding CXX object CMakeFiles/ndt_localization_node.dir/src/ndt_localization.cpp.o[0m
+[37.831s] [ 50%] [32mBuilding CXX object CMakeFiles/map_saver_node.dir/src/map_saver.cpp.o[0m
+[55.176s] [ 75%] [1m[32mLinking CXX executable map_saver_node[0m
+[57.811s] [ 75%] Built target map_saver_node
+[72.092s] [100%] [1m[32mLinking CXX executable ndt_localization_node[0m
+[74.806s] [100%] Built target ndt_localization_node
+[74.820s] Invoked command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/ndt_localization' returned '0': AMENT_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --build /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/ndt_localization -- -j8 -l8
+[74.824s] Invoking command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/ndt_localization': AMENT_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --install /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/ndt_localization
+[74.832s] -- Install configuration: ""
+[74.833s] -- Execute custom install script
+[74.833s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/ndt_localization/lib/ndt_localization/ndt_localization_node
+[74.842s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/ndt_localization/lib/ndt_localization/map_saver_node
+[74.853s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/ndt_localization/share/ndt_localization/ndt_localization.yaml
+[74.863s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/ndt_localization/share/ament_index/resource_index/package_run_dependencies/ndt_localization
+[74.872s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/ndt_localization/share/ament_index/resource_index/parent_prefix_path/ndt_localization
+[74.887s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/ndt_localization/share/ndt_localization/environment/ament_prefix_path.sh
+[74.901s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/ndt_localization/share/ndt_localization/environment/ament_prefix_path.dsv
+[74.913s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/ndt_localization/share/ndt_localization/environment/path.sh
+[74.924s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/ndt_localization/share/ndt_localization/environment/path.dsv
+[74.940s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/ndt_localization/share/ndt_localization/local_setup.bash
+[74.951s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/ndt_localization/share/ndt_localization/local_setup.sh
+[74.961s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/ndt_localization/share/ndt_localization/local_setup.zsh
+[74.971s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/ndt_localization/share/ndt_localization/local_setup.dsv
+[74.983s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/ndt_localization/share/ndt_localization/package.dsv
+[74.994s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/ndt_localization/share/ament_index/resource_index/packages/ndt_localization
+[75.005s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/ndt_localization/share/ndt_localization/cmake/ndt_localizationConfig.cmake
+[75.014s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/ndt_localization/share/ndt_localization/cmake/ndt_localizationConfig-version.cmake
+[75.025s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/ndt_localization/share/ndt_localization/package.xml
+[75.045s] Invoked command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/ndt_localization' returned '0': AMENT_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --install /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/ndt_localization

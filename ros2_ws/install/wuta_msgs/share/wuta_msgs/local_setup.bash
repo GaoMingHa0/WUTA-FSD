@@ -1,1 +1,1 @@
-/home/starry1n/WUTA-FSD1/ros2_ws/build/wuta_msgs/ament_cmake_environment_hooks/local_setup.bash
+/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs/ament_cmake_environment_hooks/local_setup.bash

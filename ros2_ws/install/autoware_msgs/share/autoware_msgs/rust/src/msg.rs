@@ -1,1 +1,1 @@
-/home/starry1n/WUTA-FSD1/ros2_ws/build/autoware_msgs/rosidl_generator_rs/autoware_msgs/rust/src/msg.rs
+/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/autoware_msgs/rosidl_generator_rs/autoware_msgs/rust/src/msg.rs

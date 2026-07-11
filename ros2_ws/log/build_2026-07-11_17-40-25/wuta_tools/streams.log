@@ -1,0 +1,65 @@
+[0.064s] Invoking command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_tools': AMENT_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake /home/starry1n/WUTA/WUTA-FSD/ros2_ws/src/common/wuta_tools -DCMAKE_MODULE_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/cmake -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools
+[0.292s] -- The C compiler identification is GNU 11.4.0
+[0.294s] [0mCMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+[0.294s]   Compatibility with CMake < 3.10 will be removed from a future version of
+[0.294s]   CMake.
+[0.294s] 
+[0.294s]   Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+[0.295s]   to tell CMake that the project requires at least <min> but has been updated
+[0.295s]   to work with policies introduced by <max> or earlier.
+[0.295s] 
+[0.295s] [0m
+[0.417s] -- The CXX compiler identification is GNU 11.4.0
+[0.451s] -- Detecting C compiler ABI info
+[0.735s] -- Detecting C compiler ABI info - done
+[0.798s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.798s] -- Detecting C compile features
+[0.799s] -- Detecting C compile features - done
+[0.846s] -- Detecting CXX compiler ABI info
+[1.148s] -- Detecting CXX compiler ABI info - done
+[1.191s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[1.192s] -- Detecting CXX compile features
+[1.195s] -- Detecting CXX compile features - done
+[1.249s] -- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+[1.756s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter
+[1.959s] -- Override CMake install command with custom implementation using symlinks instead of copying resources
+[2.080s] -- Found rclcpp: 16.0.19 (/opt/ros/humble/share/rclcpp/cmake)
+[2.289s] -- Found rosidl_generator_c: 3.1.9 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[2.313s] -- Found rosidl_adapter: 3.1.9 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[2.355s] -- Found rosidl_generator_cpp: 3.1.9 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[2.449s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[2.527s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[2.708s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[2.728s] -- Found rmw_fastrtps_cpp: 6.2.10 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[3.096s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")
+[3.148s] -- Found FastRTPS: /opt/ros/humble/include
+[3.221s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[3.254s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[3.521s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[3.525s] -- Found Threads: TRUE
+[3.723s] -- Found wuta_msgs: 1.0.0 (/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake)
+[3.962s] -- Configuring done (3.9s)
+[3.983s] -- Generating done (0.0s)
+[4.038s] -- Build files have been written to: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_tools
+[4.056s] Invoked command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_tools' returned '0': AMENT_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake /home/starry1n/WUTA/WUTA-FSD/ros2_ws/src/common/wuta_tools -DCMAKE_MODULE_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/cmake -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools
+[4.063s] Invoking command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_tools': AMENT_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --build /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_tools -- -j8 -l8
+[4.138s] Invoked command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_tools' returned '0': AMENT_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --build /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_tools -- -j8 -l8
+[4.143s] Invoking command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_tools': AMENT_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --install /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_tools
+[4.154s] -- Install configuration: ""
+[4.155s] -- Execute custom install script
+[4.157s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/ament_index/resource_index/package_run_dependencies/wuta_tools
+[4.175s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/ament_index/resource_index/parent_prefix_path/wuta_tools
+[4.195s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/environment/ament_prefix_path.sh
+[4.207s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/environment/ament_prefix_path.dsv
+[4.228s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/environment/path.sh
+[4.264s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/environment/path.dsv
+[4.312s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/local_setup.bash
+[4.336s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/local_setup.sh
+[4.360s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/local_setup.zsh
+[4.379s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/local_setup.dsv
+[4.399s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/package.dsv
+[4.416s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/ament_index/resource_index/packages/wuta_tools
+[4.430s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/cmake/wuta_toolsConfig.cmake
+[4.447s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/cmake/wuta_toolsConfig-version.cmake
+[4.465s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_tools/share/wuta_tools/package.xml
+[4.491s] Invoked command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_tools' returned '0': AMENT_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --install /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_tools

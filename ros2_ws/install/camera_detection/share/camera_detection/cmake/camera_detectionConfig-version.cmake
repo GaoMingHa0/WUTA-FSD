@@ -1,1 +1,1 @@
-/home/starry1n/WUTA-FSD1/ros2_ws/build/camera_detection/ament_cmake_core/camera_detectionConfig-version.cmake
+/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/camera_detection/ament_cmake_core/camera_detectionConfig-version.cmake

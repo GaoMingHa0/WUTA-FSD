@@ -1,0 +1,21 @@
+[0mCMake Deprecation Warning at /home/starry1n/WUTA/WUTA-FSD/ros2_ws/src/localization/kiss-icp/cpp/kiss_icp/3rdparty/find_dependencies.cmake:25 (cmake_policy):
+  The OLD behavior for policy CMP0135 will be removed from a future version
+  of CMake.
+
+  The cmake-policies(7) manual explains that the OLD behaviors of all
+  policies are deprecated and that a policy should be set to OLD only under
+  specific short-term circumstances.  Projects should be ported to the NEW
+  behavior and not rely on setting a policy to OLD.
+Call Stack (most recent call first):
+  /home/starry1n/WUTA/WUTA-FSD/ros2_ws/src/localization/kiss-icp/cpp/kiss_icp/CMakeLists.txt:48 (include)
+
+[0m
+[0mCMake Deprecation Warning at /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/kiss_icp/_deps/tessil-src/CMakeLists.txt:1 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+[0m

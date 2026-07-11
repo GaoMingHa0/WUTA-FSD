@@ -1,1 +1,1 @@
-/home/starry1n/WUTA-FSD1/ros2_ws/build/lidar_detection/ament_cmake_core/lidar_detectionConfig.cmake
+/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/lidar_detection/ament_cmake_core/lidar_detectionConfig.cmake
