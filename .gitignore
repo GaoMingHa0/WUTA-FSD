@@ -6,6 +6,8 @@ build/*
 logs/
 logs/*
 # Generated ROS 2 build logs and runtime trajectory exports.
+ros2_ws/build/
+ros2_ws/install/
 ros2_ws/log/
 .vscode/
 .vscode/*
