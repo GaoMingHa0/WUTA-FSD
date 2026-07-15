@@ -36,6 +36,10 @@ private:
   std::unique_ptr<PurePursuit>  pure_pursuit_;
   std::unique_ptr<TwistFilter>  twist_filter_;
 
+  // A figure-eight has tangent-continuous but curvature-discontinuous joins at
+  // the timing-line crossing.  It needs a shorter preview than open tracks.
+  double skidpad_lookahead_{3.0};
+
   // State
   VehicleState vehicle_state_;
   std::vector<autoware_msgs::msg::Waypoint> waypoints_;

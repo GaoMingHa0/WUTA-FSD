@@ -23,6 +23,7 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
   pp_cfg.max_lookahead  = declare_parameter("max_lookahead",  pp_cfg.max_lookahead);
   pp_cfg.max_progress_advance = declare_parameter(
     "max_progress_advance", pp_cfg.max_progress_advance);
+  skidpad_lookahead_ = declare_parameter("skidpad_lookahead", skidpad_lookahead_);
 
   pure_pursuit_ = std::make_unique<PurePursuit>(vp, pp_cfg);
   twist_filter_ = std::make_unique<TwistFilter>(vp);
@@ -122,7 +123,15 @@ void ControllerNode::controlLoop()
   if (mission_complete_) return;
 
   // 1. Pure Pursuit
-  auto raw_cmd = pure_pursuit_->compute(vehicle_state_, waypoints_);
+  // At 5 m/s the generic LD=v*2 would preview 10 m, almost one skidpad
+  // radius.  At the entry, circle transition, and exit this selects a point
+  // from the following path segment and makes the bicycle model cut inward or
+  // unload steering before the crossing.  Keep that behaviour for other
+  // missions, but use the calibrated local preview for skidpad.
+  const double lookahead_override =
+    mission_mode_ == MissionState::MISSION_SKIDPAD ? skidpad_lookahead_ : 0.0;
+  auto raw_cmd = pure_pursuit_->compute(
+    vehicle_state_, waypoints_, lookahead_override);
 
   if (mission_mode_ == MissionState::MISSION_SKIDPAD &&
       pure_pursuit_->progressIndex() == static_cast<int>(waypoints_.size()) - 1 &&

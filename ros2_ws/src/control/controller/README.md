@@ -77,6 +77,7 @@ Pure Pursuit 横向控制 + 速度跟踪纵向控制节点。
 | `min_lookahead` | 2.0m | 前视距离下限（低速） |
 | `max_lookahead` | 20.0m | 前视距离上限（高速） |
 | `max_progress_advance` | 4 | 单次控制循环允许推进的最大路径点数；防止 Skidpad 跳至出口 |
+| `skidpad_lookahead` | 3.0m | Skidpad 固定前视距离；避免 10m 通用前视跨越计时线处的曲率切换 |
 | `control_rate_hz` | 50 | 控制频率 |
 | `finish_position_tolerance` | 0.75m | Skidpad 出口停车位置阈值 |
 | `finish_speed_threshold` | 0.2m/s | Skidpad 出口完成速度阈值 |

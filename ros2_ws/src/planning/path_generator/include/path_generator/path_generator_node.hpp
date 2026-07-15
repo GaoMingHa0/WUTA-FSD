@@ -4,6 +4,9 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <autoware_msgs/msg/lane.hpp>
 
+#include <string>
+#include <vector>
+
 #include "wuta_msgs/msg/mission_state.hpp"
 
 namespace path_generator
@@ -36,6 +39,17 @@ private:
   autoware_msgs::msg::Lane generateSkidpadPath() const;
   autoware_msgs::msg::Lane generateAccelerationPath() const;
 
+  struct SkidpadCsvRow
+  {
+    std::string phase;
+    int lap{0};
+    double x{0.0};
+    double y{0.0};
+    double yaw{0.0};
+    double velocity{0.0};
+  };
+  void exportSkidpadCsv(const std::vector<SkidpadCsvRow> & rows) const;
+
   // State
   uint8_t mission_mode_{wuta_msgs::msg::MissionState::MISSION_TRACKDRIVE};
   uint8_t system_state_{wuta_msgs::msg::MissionState::IDLE};
@@ -52,11 +66,14 @@ private:
   double skidpad_radius_{9.125};       // m
   double skidpad_velocity_{5.0};       // m/s
   int    skidpad_points_{72};          // waypoints per circle (every 5 deg)
-  double skidpad_start_x_{0.0};        // m
-  double skidpad_start_y_{0.0};        // m
-  double skidpad_start_yaw_{0.0};      // rad
+  double skidpad_start_x_{0.0};        // m, crossing reference
+  double skidpad_start_y_{0.0};        // m, crossing reference
+  double skidpad_start_yaw_{0.0};      // rad, entry/exit direction
+  double skidpad_entry_x_{-15.0};      // m, local to crossing reference
+  double skidpad_entry_y_{0.0};        // m, local to crossing reference
   double skidpad_exit_length_{25.0};   // m, measured from the crossing
   double skidpad_braking_distance_{10.0};  // m
+  std::string skidpad_csv_path_{"/tmp/wuta_skidpad_trajectory.csv"};
 
   // Acceleration (75m straight)
   double acceleration_length_{75.0};   // m

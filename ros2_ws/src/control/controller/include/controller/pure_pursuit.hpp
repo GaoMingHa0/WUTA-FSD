@@ -47,7 +47,8 @@ public:
    * @param waypoints  Reference path (autoware_msgs Lane waypoints)
    */
   ControlCommand compute(const VehicleState & state,
-                         const std::vector<autoware_msgs::msg::Waypoint> & waypoints);
+                         const std::vector<autoware_msgs::msg::Waypoint> & waypoints,
+                         double lookahead_override = 0.0);
 
   // Accessors for diagnostics
   double lookaheadDistance() const { return lookahead_dist_; }

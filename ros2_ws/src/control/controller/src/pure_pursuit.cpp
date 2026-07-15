@@ -17,16 +17,19 @@ void PurePursuit::reset()
 
 ControlCommand PurePursuit::compute(
   const VehicleState & state,
-  const std::vector<autoware_msgs::msg::Waypoint> & waypoints)
+  const std::vector<autoware_msgs::msg::Waypoint> & waypoints,
+  double lookahead_override)
 {
   ControlCommand cmd;
   if (waypoints.empty()) return cmd;
 
   // 1. Compute lookahead distance — velocity-proportional, clamped
-  lookahead_dist_ = std::clamp(
-    std::abs(state.velocity) * cfg_.ld_ratio,
-    cfg_.min_lookahead,
-    cfg_.max_lookahead);
+  lookahead_dist_ = lookahead_override > 0.0
+    ? lookahead_override
+    : std::clamp(
+        std::abs(state.velocity) * cfg_.ld_ratio,
+        cfg_.min_lookahead,
+        cfg_.max_lookahead);
 
   // 2. Advance monotonically along the path, then look ahead from that point.
   // This is essential for self-intersecting/overlapping paths such as skidpad:

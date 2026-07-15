@@ -12,8 +12,14 @@ path_generator_node:
     skidpad_start_x: 0.0           # m, crossing point
     skidpad_start_y: 0.0           # m, crossing point
     skidpad_start_yaw: 0.0         # rad, entry/exit direction
+    # FSAC start position: vehicle reference is 15 m before the timing line.
+    # Coordinates are local to the crossing reference above.
+    skidpad_entry_x: -15.0         # m
+    skidpad_entry_y: 0.0           # m
     skidpad_exit_length: 25.0      # m, stop point after the fourth lap
     skidpad_braking_distance: 10.0 # m, linear deceleration before the stop
+    # Runtime analysis artifact; not stored in the repository.
+    skidpad_csv_path: /tmp/wuta_skidpad_trajectory.csv
 
     # ACCELERATION
     acceleration_length: 75.0      # m
