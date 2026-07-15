@@ -1,1 +1,0 @@
-/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/detection_fusion/ament_cmake_core/detection_fusionConfig.cmake

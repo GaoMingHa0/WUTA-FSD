@@ -1,1 +1,0 @@
-/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs/rosidl_generator_cpp/wuta_msgs/msg/detail/cone__builder.hpp

@@ -1,1 +1,0 @@
-/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs/rosidl_typesupport_introspection_c/wuta_msgs/msg/detail/cone__rosidl_typesupport_introspection_c.h

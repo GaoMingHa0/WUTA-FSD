@@ -1,8 +1,0 @@
-source;share/wuta_tools/hook/cmake_prefix_path.ps1
-source;share/wuta_tools/hook/cmake_prefix_path.dsv
-source;share/wuta_tools/hook/cmake_prefix_path.sh
-source;share/wuta_tools/local_setup.bash
-source;share/wuta_tools/local_setup.dsv
-source;share/wuta_tools/local_setup.ps1
-source;share/wuta_tools/local_setup.sh
-source;share/wuta_tools/local_setup.zsh

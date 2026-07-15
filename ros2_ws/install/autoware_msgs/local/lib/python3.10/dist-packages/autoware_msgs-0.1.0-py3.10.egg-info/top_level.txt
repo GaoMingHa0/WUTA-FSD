@@ -1,1 +1,0 @@
-/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/autoware_msgs/ament_cmake_python/autoware_msgs/autoware_msgs.egg-info/top_level.txt

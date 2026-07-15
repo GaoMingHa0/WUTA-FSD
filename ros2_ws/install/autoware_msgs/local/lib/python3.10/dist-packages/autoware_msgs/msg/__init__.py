@@ -1,1 +1,0 @@
-/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/autoware_msgs/rosidl_generator_py/autoware_msgs/msg/__init__.py

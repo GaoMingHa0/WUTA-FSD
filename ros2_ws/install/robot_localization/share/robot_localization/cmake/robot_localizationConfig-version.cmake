@@ -1,1 +1,0 @@
-/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/robot_localization/ament_cmake_core/robot_localizationConfig-version.cmake

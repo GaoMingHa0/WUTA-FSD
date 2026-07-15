@@ -1,1 +1,0 @@
-/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_tools/ament_cmake_core/wuta_toolsConfig.cmake

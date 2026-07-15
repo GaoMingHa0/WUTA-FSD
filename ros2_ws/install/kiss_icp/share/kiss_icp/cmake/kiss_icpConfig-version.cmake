@@ -1,1 +1,0 @@
-/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/kiss_icp/ament_cmake_core/kiss_icpConfig-version.cmake

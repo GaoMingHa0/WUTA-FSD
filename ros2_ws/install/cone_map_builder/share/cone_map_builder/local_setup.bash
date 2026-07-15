@@ -1,1 +1,0 @@
-/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/cone_map_builder/ament_cmake_environment_hooks/local_setup.bash

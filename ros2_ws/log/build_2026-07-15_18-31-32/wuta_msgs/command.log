@@ -1,4 +1,0 @@
-Invoking command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs -- -j8 -l8
-Invoked command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs -- -j8 -l8
-Invoking command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs
-Invoked command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs

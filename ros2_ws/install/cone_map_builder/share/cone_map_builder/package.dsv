@@ -1,8 +1,0 @@
-source;share/cone_map_builder/hook/cmake_prefix_path.ps1
-source;share/cone_map_builder/hook/cmake_prefix_path.dsv
-source;share/cone_map_builder/hook/cmake_prefix_path.sh
-source;share/cone_map_builder/local_setup.bash
-source;share/cone_map_builder/local_setup.dsv
-source;share/cone_map_builder/local_setup.ps1
-source;share/cone_map_builder/local_setup.sh
-source;share/cone_map_builder/local_setup.zsh

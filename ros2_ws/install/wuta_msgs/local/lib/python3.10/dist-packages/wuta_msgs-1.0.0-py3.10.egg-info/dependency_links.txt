@@ -1,1 +1,0 @@
-/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/wuta_msgs/ament_cmake_python/wuta_msgs/wuta_msgs.egg-info/dependency_links.txt

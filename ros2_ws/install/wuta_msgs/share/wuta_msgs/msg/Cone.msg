@@ -1,1 +1,0 @@
-/home/starry1n/WUTA/WUTA-FSD/ros2_ws/src/common/wuta_msgs/msg/Cone.msg

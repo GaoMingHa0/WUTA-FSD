@@ -1,1 +1,0 @@
-/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/localization_manager/ament_cmake_core/localization_managerConfig.cmake
