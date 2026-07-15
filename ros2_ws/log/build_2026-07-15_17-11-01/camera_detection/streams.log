@@ -1,0 +1,65 @@
+[0.070s] Invoking command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/camera_detection': AMENT_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake /home/starry1n/WUTA/WUTA-FSD/ros2_ws/src/perception/camera_detection -DCMAKE_MODULE_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/cmake -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/camera_detection
+[0.080s] [0mCMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+[0.080s]   Compatibility with CMake < 3.10 will be removed from a future version of
+[0.080s]   CMake.
+[0.080s] 
+[0.080s]   Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+[0.080s]   to tell CMake that the project requires at least <min> but has been updated
+[0.080s]   to work with policies introduced by <max> or earlier.
+[0.080s] 
+[0.080s] [0m
+[0.201s] -- The C compiler identification is GNU 11.4.0
+[0.370s] -- The CXX compiler identification is GNU 11.4.0
+[0.387s] -- Detecting C compiler ABI info
+[0.694s] -- Detecting C compiler ABI info - done
+[0.715s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.718s] -- Detecting C compile features
+[0.718s] -- Detecting C compile features - done
+[0.737s] -- Detecting CXX compiler ABI info
+[0.978s] -- Detecting CXX compiler ABI info - done
+[1.009s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[1.019s] -- Detecting CXX compile features
+[1.019s] -- Detecting CXX compile features - done
+[1.037s] -- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+[1.285s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter
+[1.395s] -- Override CMake install command with custom implementation using symlinks instead of copying resources
+[1.454s] -- Found rclcpp: 16.0.19 (/opt/ros/humble/share/rclcpp/cmake)
+[1.542s] -- Found rosidl_generator_c: 3.1.9 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[1.554s] -- Found rosidl_adapter: 3.1.9 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[1.571s] -- Found rosidl_generator_cpp: 3.1.9 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[1.602s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[1.639s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[1.779s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[1.788s] -- Found rmw_fastrtps_cpp: 6.2.10 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[2.149s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")
+[2.210s] -- Found FastRTPS: /opt/ros/humble/include
+[2.289s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[2.301s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[2.496s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[2.498s] -- Found Threads: TRUE
+[2.636s] -- Found wuta_msgs: 1.0.0 (/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake)
+[2.821s] -- Configuring done (2.7s)
+[2.827s] -- Generating done (0.0s)
+[2.863s] -- Build files have been written to: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/camera_detection
+[2.882s] Invoked command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/camera_detection' returned '0': AMENT_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake /home/starry1n/WUTA/WUTA-FSD/ros2_ws/src/perception/camera_detection -DCMAKE_MODULE_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/cmake -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/camera_detection
+[2.894s] Invoking command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/camera_detection': AMENT_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --build /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/camera_detection -- -j8 -l8
+[3.066s] Invoked command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/camera_detection' returned '0': AMENT_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --build /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/camera_detection -- -j8 -l8
+[3.067s] Invoking command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/camera_detection': AMENT_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --install /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/camera_detection
+[3.082s] -- Install configuration: ""
+[3.082s] -- Execute custom install script
+[3.082s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/camera_detection/share/ament_index/resource_index/package_run_dependencies/camera_detection
+[3.082s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/camera_detection/share/ament_index/resource_index/parent_prefix_path/camera_detection
+[3.084s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/camera_detection/share/camera_detection/environment/ament_prefix_path.sh
+[3.095s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/camera_detection/share/camera_detection/environment/ament_prefix_path.dsv
+[3.111s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/camera_detection/share/camera_detection/environment/path.sh
+[3.120s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/camera_detection/share/camera_detection/environment/path.dsv
+[3.130s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/camera_detection/share/camera_detection/local_setup.bash
+[3.139s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/camera_detection/share/camera_detection/local_setup.sh
+[3.155s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/camera_detection/share/camera_detection/local_setup.zsh
+[3.193s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/camera_detection/share/camera_detection/local_setup.dsv
+[3.224s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/camera_detection/share/camera_detection/package.dsv
+[3.263s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/camera_detection/share/ament_index/resource_index/packages/camera_detection
+[3.277s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/camera_detection/share/camera_detection/cmake/camera_detectionConfig.cmake
+[3.295s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/camera_detection/share/camera_detection/cmake/camera_detectionConfig-version.cmake
+[3.319s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/camera_detection/share/camera_detection/package.xml
+[3.372s] Invoked command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/camera_detection' returned '0': AMENT_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --install /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/camera_detection

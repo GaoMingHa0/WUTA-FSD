@@ -13,6 +13,12 @@ PathGeneratorNode::PathGeneratorNode(const rclcpp::NodeOptions & options)
   skidpad_radius_         = declare_parameter("skidpad_radius",         skidpad_radius_);
   skidpad_velocity_       = declare_parameter("skidpad_velocity",       skidpad_velocity_);
   skidpad_points_         = declare_parameter("skidpad_points",         skidpad_points_);
+  skidpad_start_x_        = declare_parameter("skidpad_start_x",        skidpad_start_x_);
+  skidpad_start_y_        = declare_parameter("skidpad_start_y",        skidpad_start_y_);
+  skidpad_start_yaw_      = declare_parameter("skidpad_start_yaw",      skidpad_start_yaw_);
+  skidpad_exit_length_    = declare_parameter("skidpad_exit_length",    skidpad_exit_length_);
+  skidpad_braking_distance_ = declare_parameter(
+    "skidpad_braking_distance", skidpad_braking_distance_);
   acceleration_length_    = declare_parameter("acceleration_length",    acceleration_length_);
   acceleration_velocity_  = declare_parameter("acceleration_velocity",  acceleration_velocity_);
 
@@ -48,14 +54,18 @@ void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
 
   // Trigger non-trackdrive paths when system is active
   if (system_state_ != State::EXPLORE && system_state_ != State::RACE) return;
-  if (!pose_ready_) return;
 
   if (mission_mode_ == State::MISSION_SKIDPAD) {
-    auto lane = generateSkidpadPath();
+    if (!skidpad_path_ready_) {
+      skidpad_path_ = generateSkidpadPath();
+      skidpad_path_ready_ = true;
+    }
+    auto lane = skidpad_path_;
     lane.header.stamp    = now();
     lane.header.frame_id = "map";
     waypoints_pub_->publish(lane);
   } else if (mission_mode_ == State::MISSION_ACCELERATION) {
+    if (!pose_ready_) return;
     auto lane = generateAccelerationPath();
     lane.header.stamp    = now();
     lane.header.frame_id = "map";
@@ -82,54 +92,64 @@ autoware_msgs::msg::Lane PathGeneratorNode::generateSkidpadPath() const
 {
   autoware_msgs::msg::Lane lane;
 
-  // FSG Skidpad: two circles of radius 9.125m
-  // Right circle first (standard FSG direction), then left circle
-  // Start at vehicle position
-  const double cx = current_pose_.pose.position.x;
-  const double cy = current_pose_.pose.position.y;
-  const double z  = current_pose_.pose.position.z;
-
-  // Vehicle heading
-  const auto & q = current_pose_.pose.orientation;
-  const double yaw = std::atan2(
-    2.0 * (q.w * q.z + q.x * q.y),
-    1.0 - 2.0 * (q.y * q.y + q.z * q.z));
-
-  // Circle centers: perpendicular to heading, offset by radius
-  const double right_cx = cx + skidpad_radius_ * std::sin(yaw);
-  const double right_cy = cy - skidpad_radius_ * std::cos(yaw);
-  const double left_cx  = cx - skidpad_radius_ * std::sin(yaw);
-  const double left_cy  = cy + skidpad_radius_ * std::cos(yaw);
+  // The track is fixed in map, not regenerated from the moving vehicle pose.
+  // At yaw=0 the crossing is (0, 0), the right circle is below it and the
+  // left circle above it, matching perception_simulation/tracks/skidpad.yaml.
+  const double c = std::cos(skidpad_start_yaw_);
+  const double s = std::sin(skidpad_start_yaw_);
+  const auto to_map = [this, c, s](double local_x, double local_y,
+                                    autoware_msgs::msg::Waypoint & wp) {
+    wp.pose.pose.position.x = skidpad_start_x_ + local_x * c - local_y * s;
+    wp.pose.pose.position.y = skidpad_start_y_ + local_x * s + local_y * c;
+    wp.pose.pose.position.z = 0.0;
+    wp.pose.pose.orientation.w = 1.0;
+  };
 
   const double d_theta = 2.0 * M_PI / skidpad_points_;
 
-  // Two laps right circle, two laps left circle (FSG rules)
+  // Enter at the crossing with heading +x.  The first right lap is the
+  // steering-establishment lap, the second is timed.  Both begin/end at the
+  // crossing and are therefore continuous with the following phase.
   for (int lap = 0; lap < 2; ++lap) {
     for (int i = 0; i <= skidpad_points_; ++i) {
-      const double theta = -M_PI_2 + i * d_theta;  // Start from bottom of circle
+      const double theta = M_PI_2 - i * d_theta;  // clockwise, starts at crossing
       autoware_msgs::msg::Waypoint wp;
-      wp.pose.pose.position.x = right_cx + skidpad_radius_ * std::cos(theta);
-      wp.pose.pose.position.y = right_cy + skidpad_radius_ * std::sin(theta);
-      wp.pose.pose.position.z = z;
-      wp.pose.pose.orientation.w = 1.0;
-      wp.twist.twist.linear.x = skidpad_velocity_;
-      lane.waypoints.push_back(wp);
-    }
-  }
-  for (int lap = 0; lap < 2; ++lap) {
-    for (int i = 0; i <= skidpad_points_; ++i) {
-      const double theta = -M_PI_2 - i * d_theta;  // Opposite direction
-      autoware_msgs::msg::Waypoint wp;
-      wp.pose.pose.position.x = left_cx + skidpad_radius_ * std::cos(theta);
-      wp.pose.pose.position.y = left_cy + skidpad_radius_ * std::sin(theta);
-      wp.pose.pose.position.z = z;
-      wp.pose.pose.orientation.w = 1.0;
+      to_map(skidpad_radius_ * std::cos(theta),
+             -skidpad_radius_ + skidpad_radius_ * std::sin(theta), wp);
       wp.twist.twist.linear.x = skidpad_velocity_;
       lane.waypoints.push_back(wp);
     }
   }
 
-  RCLCPP_INFO(get_logger(), "Skidpad path generated: %zu waypoints", lane.waypoints.size());
+  // Third lap enters the left circle from the same crossing; the fourth lap
+  // is timed.  Counter-clockwise travel preserves the +x crossing direction.
+  for (int lap = 0; lap < 2; ++lap) {
+    for (int i = 0; i <= skidpad_points_; ++i) {
+      const double theta = -M_PI_2 + i * d_theta;  // counter-clockwise
+      autoware_msgs::msg::Waypoint wp;
+      to_map(skidpad_radius_ * std::cos(theta),
+             skidpad_radius_ + skidpad_radius_ * std::sin(theta), wp);
+      wp.twist.twist.linear.x = skidpad_velocity_;
+      lane.waypoints.push_back(wp);
+    }
+  }
+
+  // Leave the crossing in the same direction as entry and stop at 25 m.
+  // The final braking segment gives the controller a decreasing speed target.
+  for (int i = 1; i <= static_cast<int>(std::ceil(skidpad_exit_length_)); ++i) {
+    const double distance = std::min(static_cast<double>(i), skidpad_exit_length_);
+    const double remaining = skidpad_exit_length_ - distance;
+    autoware_msgs::msg::Waypoint wp;
+    to_map(distance, 0.0, wp);
+    wp.twist.twist.linear.x = remaining < skidpad_braking_distance_
+      ? skidpad_velocity_ * remaining / skidpad_braking_distance_
+      : skidpad_velocity_;
+    lane.waypoints.push_back(wp);
+  }
+
+  RCLCPP_INFO(get_logger(),
+    "Fixed skidpad path generated: right lap 1/2, left lap 3/4, %.1f m exit (%zu waypoints)",
+    skidpad_exit_length_, lane.waypoints.size());
   return lane;
 }
 

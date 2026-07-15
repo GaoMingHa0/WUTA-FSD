@@ -49,10 +49,11 @@ ndt_node ──→ /ndt/pose ─────────────────
 ### EKF 配置（ekf.yaml）
 
 融合两路输入：
-- `odom0`：KISS-ICP（高频里程计，xy + yaw + vx + vyaw）
+- `odom0`：KISS-ICP（高频里程计，xy + yaw；KISS 不发布 Twist 估计）
 - `odom1`：CG-410 INS（绝对位置，xyz + rpy，修正漂移）
 
-> **注意**：`/cg410/odometry` topic 名需根据实际驱动确认。
+仿真默认由 `WUTA-SIM/wuta-ins-simulator` 发布 `/cg410/odometry`。真实车辆接入时可保持
+该接口，或在 bringup 中重映射实际 CG-410 驱动话题。
 
 ---
 

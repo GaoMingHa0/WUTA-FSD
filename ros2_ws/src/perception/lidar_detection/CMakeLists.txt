@@ -7,6 +7,8 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 find_package(wuta_msgs REQUIRED)
 find_package(PCL REQUIRED COMPONENTS common filters segmentation search kdtree)
 find_package(pcl_conversions REQUIRED)
@@ -30,6 +32,8 @@ ament_target_dependencies(lidar_detection_node
   rclcpp
   sensor_msgs
   visualization_msgs
+  tf2_ros
+  tf2_geometry_msgs
   wuta_msgs
   pcl_conversions
 )

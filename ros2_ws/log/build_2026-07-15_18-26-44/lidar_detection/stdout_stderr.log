@@ -1,0 +1,20 @@
+[100%] Built target lidar_detection_node
+-- Install configuration: ""
+-- Execute custom install script
+-- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/lib/lidar_detection/lidar_detection_node
+-- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/config/lidar_detection.yaml
+-- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/ament_index/resource_index/package_run_dependencies/lidar_detection
+-- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/ament_index/resource_index/parent_prefix_path/lidar_detection
+-- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/environment/ament_prefix_path.sh
+-- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/environment/ament_prefix_path.dsv
+-- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/environment/path.sh
+-- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/environment/path.dsv
+-- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/local_setup.bash
+-- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/local_setup.sh
+-- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/local_setup.zsh
+-- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/local_setup.dsv
+-- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/package.dsv
+-- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/ament_index/resource_index/packages/lidar_detection
+-- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/cmake/lidar_detectionConfig.cmake
+-- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/cmake/lidar_detectionConfig-version.cmake
+-- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/package.xml

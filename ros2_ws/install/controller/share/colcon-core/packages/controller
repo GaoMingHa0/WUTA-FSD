@@ -1,1 +1,1 @@
-autoware_msgs:geometry_msgs:rclcpp:visualization_msgs:wuta_msgs
+autoware_msgs:geometry_msgs:rclcpp:std_msgs:visualization_msgs:wuta_msgs

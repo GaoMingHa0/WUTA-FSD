@@ -15,5 +15,13 @@ cone_map_builder:
     # Set false if camera detection will provide colors downstream
     assign_colors: true
 
+    # Sensor messages retain acquisition timestamps. Only the TF at that
+    # timestamp is valid for map integration; missing transforms are queued
+    # briefly and retried instead of using a motion-biased latest TF.
+    tf_lookup_timeout_sec: 0.1
+    use_latest_tf_fallback: false
+    pending_detection_timeout_sec: 0.5
+    max_pending_detections: 20
+
     # Path to save cone map YAML when loop is closed
     map_save_path: "/tmp/wuta_cone_map.yaml"

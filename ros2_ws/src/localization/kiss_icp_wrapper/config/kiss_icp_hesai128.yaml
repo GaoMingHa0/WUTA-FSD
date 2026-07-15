@@ -2,8 +2,10 @@ kiss_icp_node:
   ros__parameters:
     # Frame IDs
     base_frame: "base_link"
+    # KISS is expressed in the local odom frame.  EKF is the sole publisher
+    # of odom -> base_link, so KISS only publishes Odometry.
     lidar_odom_frame: "odom"
-    publish_odom_tf: true
+    publish_odom_tf: false
     invert_odom_tf: false
 
     # Covariance for EKF fusion (robot_localization)

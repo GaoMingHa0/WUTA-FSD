@@ -30,7 +30,9 @@ install(TARGETS localization_manager_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
-install(DIRECTORY config/ launch/
+# Preserve the config/ and launch/ directories because the launch file resolves
+# them through FindPackageShare("localization_manager").
+install(DIRECTORY config launch
   DESTINATION share/${PROJECT_NAME}
 )
 

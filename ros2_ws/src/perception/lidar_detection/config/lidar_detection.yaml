@@ -6,6 +6,7 @@ lidar_detection_node:
     # Topic names
     input_topic:  "/hesai/pandar"           # Hesai 128-line LiDAR raw point cloud
     output_topic: "/perception/lidar/cones" # ConeArray output
+    visualization_tf_timeout_sec: 0.1        # Exact map<-lidar TF wait for cones_viz
 
     # --- Traditional detector parameters ---
 

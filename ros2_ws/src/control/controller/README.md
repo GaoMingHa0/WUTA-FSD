@@ -26,7 +26,7 @@ Pure Pursuit 横向控制 + 速度跟踪纵向控制节点。
 
 ### 纵向控制：速度跟踪
 
-- 目标速度直接读取 waypoint 的 `twist.twist.linear.x`
+- 转向目标取前视 waypoint；目标速度取当前单调路径进度 waypoint 的 `twist.twist.linear.x`，避免在 Skidpad 出口提前一个前视距离停车
 - 由 path_generator 在各模式下写入（trackdrive=7m/s, skidpad=5m/s, acceleration=15m/s）
 - TwistFilter 做平滑处理，避免急加速/急减速
 
@@ -52,6 +52,7 @@ Pure Pursuit 横向控制 + 速度跟踪纵向控制节点。
   twist_filter.filter()  → filtered (angle, velocity)
   → /control/command (autoware_msgs/Command)
   → /control/target_viz (可视化：目标点 + 前视圆)
+  → /system/mission_complete (Skidpad 出口终点停车后一次发布 true)
 ```
 
 ## Topics
@@ -63,6 +64,7 @@ Pure Pursuit 横向控制 + 速度跟踪纵向控制节点。
 | 订阅 | `/planning/final_waypoints` | `autoware_msgs/Lane` | 参考路径 |
 | 订阅 | `/system/mission_state` | `MissionState` | 使能控制 |
 | 发布 | `/control/command` | `autoware_msgs/Command` | 转向角 + 速度 |
+| 发布 | `/system/mission_complete` | `std_msgs/Bool` | Skidpad 在 25 m 出口终点停车后发布 `true` |
 | 发布 | `/control/target_viz` | `MarkerArray` | 目标点 + 前视圆 |
 
 ## 关键参数
@@ -74,7 +76,10 @@ Pure Pursuit 横向控制 + 速度跟踪纵向控制节点。
 | `ld_ratio` | 2.0 | 前视距离系数 |
 | `min_lookahead` | 2.0m | 前视距离下限（低速） |
 | `max_lookahead` | 20.0m | 前视距离上限（高速） |
+| `max_progress_advance` | 4 | 单次控制循环允许推进的最大路径点数；防止 Skidpad 跳至出口 |
 | `control_rate_hz` | 50 | 控制频率 |
+| `finish_position_tolerance` | 0.75m | Skidpad 出口停车位置阈值 |
+| `finish_speed_threshold` | 0.2m/s | Skidpad 出口完成速度阈值 |
 
 ## 线程模型
 

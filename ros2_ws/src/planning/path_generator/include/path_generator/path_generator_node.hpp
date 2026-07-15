@@ -15,7 +15,7 @@ namespace path_generator
  * Subscribes to MissionState and routes to the correct path generation mode:
  *
  *  TRACKDRIVE  → forwards centerline from boundary_detector (Delaunay)
- *  SKIDPAD     → generates figure-8 path (predefined geometry)
+ *  SKIDPAD     → publishes a fixed four-lap figure-8 and exit path
  *  ACCELERATION → generates straight-line path to finish
  *
  * All modes output to /planning/final_waypoints (autoware_msgs::Lane),
@@ -41,15 +41,22 @@ private:
   uint8_t system_state_{wuta_msgs::msg::MissionState::IDLE};
   geometry_msgs::msg::PoseStamped current_pose_;
   bool pose_ready_{false};
+  autoware_msgs::msg::Lane skidpad_path_;
+  bool skidpad_path_ready_{false};
 
   // Parameters
   // Trackdrive
   double trackdrive_velocity_{7.0};    // m/s
 
-  // Skidpad (FSG standard: two circles, r=9.125m, center offset=±9.125m from start)
+  // Skidpad reference in map.  This matches tracks/skidpad.yaml by default.
   double skidpad_radius_{9.125};       // m
   double skidpad_velocity_{5.0};       // m/s
   int    skidpad_points_{72};          // waypoints per circle (every 5 deg)
+  double skidpad_start_x_{0.0};        // m
+  double skidpad_start_y_{0.0};        // m
+  double skidpad_start_yaw_{0.0};      // rad
+  double skidpad_exit_length_{25.0};   // m, measured from the crossing
+  double skidpad_braking_distance_{10.0};  // m
 
   // Acceleration (75m straight)
   double acceleration_length_{75.0};   // m

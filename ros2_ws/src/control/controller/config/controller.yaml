@@ -9,6 +9,11 @@ controller_node:
     ld_ratio: 2.0           # lookahead = velocity × ratio
     min_lookahead: 2.0      # m — clamp at low speed
     max_lookahead: 20.0     # m — clamp at high speed
+    max_progress_advance: 4 # waypoints per 50 Hz control update; keeps skidpad progress continuous
 
     # Control loop
     control_rate_hz: 50
+
+    # Skidpad completion: the vehicle must stop at the 25 m exit endpoint.
+    finish_position_tolerance: 0.75  # m
+    finish_speed_threshold: 0.2      # m/s

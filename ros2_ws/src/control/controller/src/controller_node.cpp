@@ -1,4 +1,5 @@
 #include "controller/controller_node.hpp"
+#include <cmath>
 #include <visualization_msgs/msg/marker.hpp>
 
 namespace controller
@@ -20,12 +21,18 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
   pp_cfg.ld_ratio       = declare_parameter("ld_ratio",       pp_cfg.ld_ratio);
   pp_cfg.min_lookahead  = declare_parameter("min_lookahead",  pp_cfg.min_lookahead);
   pp_cfg.max_lookahead  = declare_parameter("max_lookahead",  pp_cfg.max_lookahead);
+  pp_cfg.max_progress_advance = declare_parameter(
+    "max_progress_advance", pp_cfg.max_progress_advance);
 
   pure_pursuit_ = std::make_unique<PurePursuit>(vp, pp_cfg);
   twist_filter_ = std::make_unique<TwistFilter>(vp);
 
   // --- Control loop rate ---
   const int rate_hz = declare_parameter("control_rate_hz", 50);
+  finish_position_tolerance_ = declare_parameter(
+    "finish_position_tolerance", finish_position_tolerance_);
+  finish_speed_threshold_ = declare_parameter(
+    "finish_speed_threshold", finish_speed_threshold_);
 
   // --- Subscribers ---
   pose_sub_ = create_subscription<geometry_msgs::msg::PoseStamped>(
@@ -46,6 +53,8 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
 
   // --- Publishers ---
   cmd_pub_ = create_publisher<autoware_msgs::msg::Command>("/control/command", 10);
+  mission_complete_pub_ = create_publisher<std_msgs::msg::Bool>(
+    "/system/mission_complete", 10);
   target_viz_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>(
     "/control/target_viz", 10);
 
@@ -81,12 +90,18 @@ void ControllerNode::onVelocity(const geometry_msgs::msg::TwistStamped::SharedPt
 
 void ControllerNode::onWaypoints(const autoware_msgs::msg::Lane::SharedPtr msg)
 {
+  const bool changed = !isSamePath(msg->waypoints);
   waypoints_ = msg->waypoints;
   waypoints_ready_ = !waypoints_.empty();
+  if (changed) {
+    pure_pursuit_->reset();
+    mission_complete_ = false;
+  }
 }
 
 void ControllerNode::onMissionState(const MissionState::SharedPtr msg)
 {
+  mission_mode_ = msg->mission_mode;
   enabled_ = (msg->state == MissionState::EXPLORE || msg->state == MissionState::RACE);
 
   if (!enabled_) {
@@ -104,8 +119,22 @@ void ControllerNode::controlLoop()
 {
   if (!enabled_ || !pose_ready_ || !waypoints_ready_) return;
 
+  if (mission_complete_) return;
+
   // 1. Pure Pursuit
   auto raw_cmd = pure_pursuit_->compute(vehicle_state_, waypoints_);
+
+  if (mission_mode_ == MissionState::MISSION_SKIDPAD &&
+      pure_pursuit_->progressIndex() == static_cast<int>(waypoints_.size()) - 1 &&
+      std::hypot(
+        waypoints_.back().pose.pose.position.x - vehicle_state_.x,
+        waypoints_.back().pose.pose.position.y - vehicle_state_.y) <= finish_position_tolerance_ &&
+      vehicle_state_.velocity <= finish_speed_threshold_)
+  {
+    publishMissionComplete();
+    return;
+  }
+
   if (!raw_cmd.valid) return;
 
   // 2. Safety filter
@@ -127,6 +156,43 @@ void ControllerNode::controlLoop()
       wp.pose.pose.position.x,
       wp.pose.pose.position.y);
   }
+}
+
+bool ControllerNode::isSamePath(
+  const std::vector<autoware_msgs::msg::Waypoint> & candidate) const
+{
+  if (candidate.size() != waypoints_.size()) return false;
+  for (size_t i = 0; i < candidate.size(); ++i) {
+    const auto & lhs = candidate[i].pose.pose.position;
+    const auto & rhs = waypoints_[i].pose.pose.position;
+    if (std::abs(lhs.x - rhs.x) > 1e-6 || std::abs(lhs.y - rhs.y) > 1e-6 ||
+        std::abs(lhs.z - rhs.z) > 1e-6) {
+      return false;
+    }
+  }
+  return true;
+}
+
+void ControllerNode::publishMissionComplete()
+{
+  mission_complete_ = true;
+  enabled_ = false;
+  twist_filter_->reset();
+
+  autoware_msgs::msg::Command stop;
+  stop.speed = 0.0;
+  stop.angle = 0.0;
+  stop.dv_state = 4;
+  cmd_pub_->publish(stop);
+
+  std_msgs::msg::Bool complete;
+  complete.data = true;
+  mission_complete_pub_->publish(complete);
+  RCLCPP_INFO(
+    get_logger(),
+    "Skidpad complete: progress=%d/%zu pose=(%.3f, %.3f) speed=%.3f m/s",
+    pure_pursuit_->progressIndex(), waypoints_.size() - 1,
+    vehicle_state_.x, vehicle_state_.y, vehicle_state_.velocity);
 }
 
 void ControllerNode::publishVisualization(double target_x, double target_y)

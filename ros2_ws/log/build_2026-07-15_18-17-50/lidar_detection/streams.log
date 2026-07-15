@@ -1,0 +1,120 @@
+[0.029s] Invoking command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/lidar_detection': AMENT_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --build /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/lidar_detection -- -j8 -l8
+[0.061s] CMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+[0.061s]   Compatibility with CMake < 3.10 will be removed from a future version of
+[0.061s]   CMake.
+[0.061s] 
+[0.061s]   Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+[0.062s]   to tell CMake that the project requires at least <min> but has been updated
+[0.062s]   to work with policies introduced by <max> or earlier.
+[0.062s] 
+[0.062s] 
+[0.073s] -- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+[0.292s] -- Override CMake install command with custom implementation using symlinks instead of copying resources
+[0.293s] -- Found rclcpp: 16.0.19 (/opt/ros/humble/share/rclcpp/cmake)
+[0.344s] -- Found rosidl_generator_c: 3.1.9 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[0.344s] -- Found rosidl_adapter: 3.1.9 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[0.344s] -- Found rosidl_generator_cpp: 3.1.9 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[0.347s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[0.366s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[0.425s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[0.425s] -- Found rmw_fastrtps_cpp: 6.2.10 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[0.506s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[0.553s] -- Found sensor_msgs: 4.9.1 (/opt/ros/humble/share/sensor_msgs/cmake)
+[0.579s] -- Found visualization_msgs: 4.9.1 (/opt/ros/humble/share/visualization_msgs/cmake)
+[0.599s] -- Found tf2_ros: 0.25.20 (/opt/ros/humble/share/tf2_ros/cmake)
+[0.694s] -- Found tf2_geometry_msgs: 0.25.20 (/opt/ros/humble/share/tf2_geometry_msgs/cmake)
+[0.704s] -- Found eigen3_cmake_module: 0.1.1 (/opt/ros/humble/share/eigen3_cmake_module/cmake)
+[0.705s] -- Found Eigen3: TRUE (found version "3.4.0")
+[0.705s] -- Ensuring Eigen3 include directory is part of orocos-kdl CMake target
+[0.706s] -- Found wuta_msgs: 1.0.0 (/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/share/wuta_msgs/cmake)
+[0.728s] CMake Warning (dev) at /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:146 (find_package):
+[0.728s]   Policy CMP0144 is not set: find_package uses upper-case <PACKAGENAME>_ROOT
+[0.728s]   variables.  Run "cmake --help-policy CMP0144" for policy details.  Use the
+[0.728s]   cmake_policy command to set the policy and suppress this warning.
+[0.728s] 
+[0.728s]   CMake variable EIGEN_ROOT is set to:
+[0.728s] 
+[0.728s]     /usr/include/eigen3
+[0.728s] 
+[0.728s]   For compatibility, find_package is ignoring the variable, but code in a
+[0.728s]   .cmake module might still use it.
+[0.728s] Call Stack (most recent call first):
+[0.728s]   /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:299 (find_eigen)
+[0.728s]   /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:543 (find_external_library)
+[0.728s]   CMakeLists.txt:13 (find_package)
+[0.728s] This warning is for project developers.  Use -Wno-dev to suppress it.
+[0.728s] 
+[0.733s] -- Eigen found (include: /usr/include/eigen3, version: 3.4.0)
+[0.733s] CMake Warning (dev) at /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:128 (find_package):
+[0.733s]   Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+[0.733s]   --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+[0.733s]   set the policy and suppress this warning.
+[0.733s] 
+[0.733s] Call Stack (most recent call first):
+[0.733s]   /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:297 (find_boost)
+[0.733s]   /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:543 (find_external_library)
+[0.733s]   CMakeLists.txt:13 (find_package)
+[0.734s] This warning is for project developers.  Use -Wno-dev to suppress it.
+[0.734s] 
+[0.814s] -- Found Eigen3: /usr/include/eigen3 (found version "3.4.0")
+[1.151s] CMake Warning (dev) at /usr/lib/x86_64-linux-gnu/cmake/pcl/Modules/FindFLANN.cmake:44 (find_package):
+[1.151s]   Policy CMP0144 is not set: find_package uses upper-case <PACKAGENAME>_ROOT
+[1.151s]   variables.  Run "cmake --help-policy CMP0144" for policy details.  Use the
+[1.151s]   cmake_policy command to set the policy and suppress this warning.
+[1.151s] 
+[1.151s]   CMake variable FLANN_ROOT is set to:
+[1.151s] 
+[1.151s]     /usr
+[1.151s] 
+[1.151s]   For compatibility, find_package is ignoring the variable, but code in a
+[1.151s]   .cmake module might still use it.
+[1.151s] Call Stack (most recent call first):
+[1.151s]   /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:256 (find_package)
+[1.151s]   /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:301 (find_flann)
+[1.151s]   /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:543 (find_external_library)
+[1.151s]   CMakeLists.txt:13 (find_package)
+[1.151s] This warning is for project developers.  Use -Wno-dev to suppress it.
+[1.151s] 
+[1.168s] -- FLANN found (include: /usr/include, lib: /usr/lib/x86_64-linux-gnu/libflann_cpp.so)
+[1.169s] -- looking for PCL_COMMON
+[1.169s] -- looking for PCL_SAMPLE_CONSENSUS
+[1.169s] -- looking for PCL_OCTREE
+[1.169s] -- looking for PCL_FILTERS
+[1.169s] -- looking for PCL_GEOMETRY
+[1.170s] -- looking for PCL_2D
+[1.170s] -- looking for PCL_FEATURES
+[1.170s] -- looking for PCL_ML
+[1.170s] -- looking for PCL_SEGMENTATION
+[1.171s] -- looking for PCL_SEARCH
+[1.171s] -- looking for PCL_KDTREE
+[1.174s] -- Found pcl_conversions: 2.4.5 (/opt/ros/humble/share/pcl_conversions/cmake)
+[1.249s] -- Configuring done (1.2s)
+[1.282s] -- Generating done (0.0s)
+[1.343s] -- Build files have been written to: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/lidar_detection
+[1.402s] [ 25%] Building CXX object CMakeFiles/lidar_detection_node.dir/src/lidar_detection_node.cpp.o
+[1.402s] [ 50%] Building CXX object CMakeFiles/lidar_detection_node.dir/src/traditional_detector.cpp.o
+[1.403s] [ 75%] Building CXX object CMakeFiles/lidar_detection_node.dir/src/dl_detector.cpp.o
+[10.870s] [100%] Linking CXX executable lidar_detection_node
+[12.146s] [100%] Built target lidar_detection_node
+[12.154s] Invoked command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/lidar_detection' returned '0': AMENT_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --build /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/lidar_detection -- -j8 -l8
+[12.157s] Invoking command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/lidar_detection': AMENT_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --install /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/lidar_detection
+[12.163s] -- Install configuration: ""
+[12.163s] -- Execute custom install script
+[12.163s] -- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/lib/lidar_detection/lidar_detection_node
+[12.163s] -- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/config/lidar_detection.yaml
+[12.163s] -- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/ament_index/resource_index/package_run_dependencies/lidar_detection
+[12.164s] -- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/ament_index/resource_index/parent_prefix_path/lidar_detection
+[12.164s] -- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/environment/ament_prefix_path.sh
+[12.164s] -- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/environment/ament_prefix_path.dsv
+[12.164s] -- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/environment/path.sh
+[12.164s] -- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/environment/path.dsv
+[12.164s] -- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/local_setup.bash
+[12.165s] -- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/local_setup.sh
+[12.165s] -- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/local_setup.zsh
+[12.165s] -- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/local_setup.dsv
+[12.165s] -- Symlinking: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/package.dsv
+[12.173s] -- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/ament_index/resource_index/packages/lidar_detection
+[12.173s] -- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/cmake/lidar_detectionConfig.cmake
+[12.173s] -- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/cmake/lidar_detectionConfig-version.cmake
+[12.173s] -- Up-to-date symlink: /home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/lidar_detection/share/lidar_detection/package.xml
+[12.174s] Invoked command in '/home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/lidar_detection' returned '0': AMENT_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/starry1n/WUTA/WUTA-FSD/ros2_ws/install/wuta_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --install /home/starry1n/WUTA/WUTA-FSD/ros2_ws/build/lidar_detection

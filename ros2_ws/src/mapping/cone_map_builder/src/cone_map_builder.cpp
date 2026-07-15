@@ -17,6 +17,11 @@ ConeMapBuilder::ConeMapBuilder(const rclcpp::NodeOptions & options)
   loop_closure_distance_  = declare_parameter("loop_closure_distance",  loop_closure_distance_);
   min_cones_for_closure_  = declare_parameter("min_cones_for_closure",  min_cones_for_closure_);
   assign_colors_          = declare_parameter("assign_colors",          assign_colors_);
+  tf_lookup_timeout_sec_  = declare_parameter("tf_lookup_timeout_sec",  tf_lookup_timeout_sec_);
+  use_latest_tf_fallback_ = declare_parameter("use_latest_tf_fallback", use_latest_tf_fallback_);
+  pending_detection_timeout_sec_ = declare_parameter(
+    "pending_detection_timeout_sec", pending_detection_timeout_sec_);
+  max_pending_detections_ = declare_parameter("max_pending_detections", max_pending_detections_);
   start_skip_distance_    = declare_parameter("start_skip_distance",    start_skip_distance_);
   map_save_path_          = declare_parameter("map_save_path",          map_save_path_);
 
@@ -55,6 +60,13 @@ ConeMapBuilder::ConeMapBuilder(const rclcpp::NodeOptions & options)
       }
     });
 
+  // Retry scans whose exact-time TF was not available when they arrived.
+  // This preserves temporal correctness without blocking the sensor callback.
+  tf_retry_timer_ = create_wall_timer(
+    std::chrono::milliseconds(20),
+    std::bind(&ConeMapBuilder::processPendingDetections, this),
+    cones_cbg_);
+
   RCLCPP_INFO(get_logger(), "ConeMapBuilder ready.");
 }
 
@@ -73,17 +85,50 @@ void ConeMapBuilder::onCones(const wuta_msgs::msg::ConeArray::SharedPtr msg)
   if (!pose_initialized_) return;
   if (loop_closed_) return;  // Map is complete, stop updating
 
-  integrateDetections(*msg);
+  if (max_pending_detections_ <= 0) {
+    RCLCPP_WARN_ONCE(get_logger(), "max_pending_detections <= 0; dropping cone detections.");
+    return;
+  }
 
-  if (!loop_closed_ && checkLoopClosure()) {
-    loop_closed_ = true;
-    RCLCPP_INFO(get_logger(), "Loop closed! %zu cones in map. Saving map...", cone_map_.size());
-    saveMapToYaml();
-    publishMap();  // Publish immediately with is_closed = true
+  if (pending_detections_.size() >= static_cast<size_t>(max_pending_detections_)) {
+    pending_detections_.pop_front();
+    RCLCPP_WARN_THROTTLE(
+      get_logger(), *get_clock(), 2000,
+      "Pending cone queue is full; dropping the oldest detection.");
+  }
+  pending_detections_.push_back({msg, now()});
+  processPendingDetections();
+}
+
+void ConeMapBuilder::processPendingDetections()
+{
+  while (!pending_detections_.empty() && !loop_closed_) {
+    auto & pending = pending_detections_.front();
+    if (!integrateDetections(*pending.message)) {
+      const double age_sec = (now() - pending.queued_at).seconds();
+      if (age_sec > pending_detection_timeout_sec_) {
+        RCLCPP_WARN_THROTTLE(
+          get_logger(), *get_clock(), 2000,
+          "Dropping cone detection after %.3f s without an exact-time TF.", age_sec);
+        pending_detections_.pop_front();
+        continue;
+      }
+      // Preserve ordering: a later scan must not be integrated ahead of an
+      // earlier scan whose transform is still pending.
+      break;
+    }
+    pending_detections_.pop_front();
+
+    if (checkLoopClosure()) {
+      loop_closed_ = true;
+      RCLCPP_INFO(get_logger(), "Loop closed! %zu cones in map. Saving map...", cone_map_.size());
+      saveMapToYaml();
+      publishMap();  // Publish immediately with is_closed = true
+    }
   }
 }
 
-void ConeMapBuilder::integrateDetections(const wuta_msgs::msg::ConeArray & cones_in_sensor_frame)
+bool ConeMapBuilder::integrateDetections(const wuta_msgs::msg::ConeArray & cones_in_sensor_frame)
 {
   // Transform each cone from sensor frame to map frame using TF2
   const std::string target_frame = "map";
@@ -94,11 +139,29 @@ void ConeMapBuilder::integrateDetections(const wuta_msgs::msg::ConeArray & cones
     transform = tf_buffer_->lookupTransform(
       target_frame, source_frame,
       cones_in_sensor_frame.header.stamp,
-      rclcpp::Duration::from_seconds(0.1));
+      rclcpp::Duration::from_seconds(tf_lookup_timeout_sec_));
   } catch (const tf2::TransformException & ex) {
-    RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000,
-      "TF lookup failed: %s", ex.what());
-    return;
+    if (!use_latest_tf_fallback_) {
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000,
+        "TF lookup at sensor stamp failed: %s", ex.what());
+      return false;
+    }
+
+    try {
+      // A delayed EKF may not retain/publish the exact ground-truth stamp
+      // used by the simulated sensor.  Latest TF is a bounded-latency
+      // fallback; detections are still retained instead of being dropped.
+      transform = tf_buffer_->lookupTransform(
+        target_frame, source_frame,
+        rclcpp::Time(0, 0, RCL_ROS_TIME),
+        rclcpp::Duration::from_seconds(tf_lookup_timeout_sec_));
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000,
+        "TF at sensor stamp unavailable; using latest map<-sensor transform.");
+    } catch (const tf2::TransformException & latest_ex) {
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000,
+        "TF lookup failed at sensor stamp and latest time: %s", latest_ex.what());
+      return false;
+    }
   }
 
   for (const auto & cone : cones_in_sensor_frame.cones) {
@@ -149,6 +212,7 @@ void ConeMapBuilder::integrateDetections(const wuta_msgs::msg::ConeArray & cones
       }
     }
   }
+  return true;
 }
 
 uint8_t ConeMapBuilder::assignColor(double cone_x_map, double cone_y_map) const

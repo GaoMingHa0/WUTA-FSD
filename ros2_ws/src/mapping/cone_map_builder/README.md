@@ -54,6 +54,12 @@
 - **pose_cbg**：处理 `/localization/pose`（50Hz，仅存储，极轻）
 - **cones_cbg**：处理 `/perception/lidar/cones`（10Hz，含 TF 变换和去重计算）
 
+`ConeMapBuilder` 对检测消息先按其采样时间查询 `map <- lidar` TF，等待
+`tf_lookup_timeout_sec`（默认 0.1 s）。检测消息在队列中等待精确采样时刻的 TF，最长
+`pending_detection_timeout_sec`（默认 0.5 s），随后丢弃并记录警告。默认关闭
+`use_latest_tf_fallback`，避免车辆运动时用最新 TF 转换旧点云造成地图偏移；该参数仅
+用于兼容旧配置，不建议在建图时开启。
+
 避免锥桶处理耗时时阻塞 pose 更新。
 
 ## 地图文件格式（YAML）

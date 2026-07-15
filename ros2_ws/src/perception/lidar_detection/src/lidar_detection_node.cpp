@@ -3,6 +3,7 @@
 #include "lidar_detection/dl_detector.hpp"
 
 #include <pcl_conversions/pcl_conversions.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 
 namespace lidar_detection
@@ -44,6 +45,11 @@ LidarDetectionNode::LidarDetectionNode(const rclcpp::NodeOptions & options)
   // --- Topics ---
   const std::string input_topic  = declare_parameter<std::string>("input_topic",  "/hesai/pandar");
   const std::string output_topic = declare_parameter<std::string>("output_topic", "/perception/lidar/cones");
+  visualization_tf_timeout_sec_ = declare_parameter(
+    "visualization_tf_timeout_sec", visualization_tf_timeout_sec_);
+
+  tf_buffer_ = std::make_shared<tf2_ros::Buffer>(get_clock());
+  tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
   pointcloud_sub_ = create_subscription<sensor_msgs::msg::PointCloud2>(
     input_topic, rclcpp::SensorDataQoS(),
@@ -67,8 +73,43 @@ void LidarDetectionNode::onPointCloud(const sensor_msgs::msg::PointCloud2::Share
   cone_pub_->publish(cones);
 
   if (marker_pub_->get_subscription_count() > 0) {
-    publishVisualization(cones, msg->header);
+    // Convert the visualization to map at the acquisition time.  This keeps
+    // RViz independent of the TF buffer's historical lookup and avoids both
+    // TF_ERROR and the spatial bias caused by applying latest TF to old data.
+    wuta_msgs::msg::ConeArray cones_in_map;
+    if (transformConesForVisualization(cones, cones_in_map)) {
+      publishVisualization(cones_in_map, cones_in_map.header);
+    }
   }
+}
+
+bool LidarDetectionNode::transformConesForVisualization(
+  const wuta_msgs::msg::ConeArray & cones,
+  wuta_msgs::msg::ConeArray & cones_in_map)
+{
+  geometry_msgs::msg::TransformStamped transform;
+  try {
+    transform = tf_buffer_->lookupTransform(
+      "map", cones.header.frame_id, cones.header.stamp,
+      rclcpp::Duration::from_seconds(visualization_tf_timeout_sec_));
+  } catch (const tf2::TransformException & ex) {
+    RCLCPP_WARN_THROTTLE(
+      get_logger(), *get_clock(), 2000,
+      "Perception visualization skipped: no exact map<-sensor TF: %s", ex.what());
+    return false;
+  }
+
+  cones_in_map = cones;
+  cones_in_map.header.frame_id = "map";
+  for (auto & cone : cones_in_map.cones) {
+    geometry_msgs::msg::PointStamped point_sensor;
+    geometry_msgs::msg::PointStamped point_map;
+    point_sensor.header = cones.header;
+    point_sensor.point = cone.position;
+    tf2::doTransform(point_sensor, point_map, transform);
+    cone.position = point_map.point;
+  }
+  return true;
 }
 
 void LidarDetectionNode::publishVisualization(

@@ -75,10 +75,10 @@ planning/
 - 更新各 waypoint 的速度为 `trackdrive_velocity`
 
 #### SKIDPAD（八字绕桩）
-- 根据当前车辆位置和朝向，计算两个圆心
-- 生成右圈×2 + 左圈×2 的完整八字路径（FSG 标准）
+- 使用 `skidpad_start_*` 固定 map 参考，与 `tracks/skidpad.yaml` 对齐，不随定位位姿重建
+- 生成右圈两圈（第一圈建立转向、第二圈计时）→ 左圈两圈（第三圈过渡、第四圈计时）→ 同向 25 m 出口停车
 - 圆半径：9.125m（FSG 规定）
-- 在 MissionState 变为 EXPLORE/RACE 时一次性生成并发布
+- 路径几何只生成一次；在有效任务状态下重复发布缓存路径，确保晚启动的控制器能够接收
 
 #### ACCELERATION（直线加速）
 - 沿车辆当前朝向生成 75m 直线
@@ -112,5 +112,4 @@ planning/
 ## 待完善
 
 - [ ] Delaunay PathSearch 的起点初始化逻辑（`SetStartPoint`）
-- [ ] Skidpad 路径与实际赛道锥桶对齐（目前基于车辆位姿估算圆心）
 - [ ] Trackdrive 速度规划：根据曲率动态调整速度（曲率大→减速）
