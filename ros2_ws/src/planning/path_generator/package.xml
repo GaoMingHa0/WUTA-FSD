@@ -7,6 +7,7 @@
   <license>MIT</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>rclcpp</depend>
+  <depend>ament_index_cpp</depend>
   <depend>wuta_msgs</depend>
   <depend>autoware_msgs</depend>
   <export>

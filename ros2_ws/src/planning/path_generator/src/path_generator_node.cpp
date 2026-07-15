@@ -1,6 +1,8 @@
 #include "path_generator/path_generator_node.hpp"
+#include <ament_index_cpp/get_package_share_directory.hpp>
 #include <algorithm>
 #include <cmath>
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 
@@ -98,9 +100,31 @@ void PathGeneratorNode::exportSkidpadCsv(const std::vector<SkidpadCsvRow> & rows
 {
   if (skidpad_csv_path_.empty()) return;
 
-  std::ofstream stream(skidpad_csv_path_);
+  namespace fs = std::filesystem;
+  fs::path output_path(skidpad_csv_path_);
+  if (output_path.is_relative()) {
+    try {
+      // <WUTA-FSD>/ros2_ws/install/path_generator/share/path_generator
+      // is the package share path in this workspace installation.
+      fs::path fsd_root = ament_index_cpp::get_package_share_directory("path_generator");
+      for (int i = 0; i < 5; ++i) fsd_root = fsd_root.parent_path();
+      output_path = fsd_root / output_path;
+    } catch (const std::exception & exception) {
+      RCLCPP_WARN(get_logger(), "Cannot resolve WUTA-FSD output root: %s", exception.what());
+    }
+  }
+
+  std::error_code error;
+  fs::create_directories(output_path.parent_path(), error);
+  if (error) {
+    RCLCPP_ERROR(get_logger(), "Unable to create skidpad CSV directory %s: %s",
+      output_path.parent_path().c_str(), error.message().c_str());
+    return;
+  }
+
+  std::ofstream stream(output_path);
   if (!stream.is_open()) {
-    RCLCPP_ERROR(get_logger(), "Unable to write skidpad CSV: %s", skidpad_csv_path_.c_str());
+    RCLCPP_ERROR(get_logger(), "Unable to write skidpad CSV: %s", output_path.c_str());
     return;
   }
 
@@ -112,7 +136,7 @@ void PathGeneratorNode::exportSkidpadCsv(const std::vector<SkidpadCsvRow> & rows
            << row.x << ',' << row.y << ',' << row.yaw << ',' << row.velocity << '\n';
   }
   RCLCPP_INFO(get_logger(), "Skidpad trajectory CSV: %s (%zu rows)",
-    skidpad_csv_path_.c_str(), rows.size());
+    output_path.c_str(), rows.size());
 }
 
 autoware_msgs::msg::Lane PathGeneratorNode::generateSkidpadPath() const

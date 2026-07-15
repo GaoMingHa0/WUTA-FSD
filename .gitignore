@@ -5,6 +5,8 @@ build/
 build/*
 logs/
 logs/*
+# Runtime skidpad trajectory exports (created by path_generator).
+ros2_ws/log/trajectory/
 .vscode/
 .vscode/*
 .rosinstall

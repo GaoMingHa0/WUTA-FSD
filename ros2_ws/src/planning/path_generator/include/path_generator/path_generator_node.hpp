@@ -73,7 +73,8 @@ private:
   double skidpad_entry_y_{0.0};        // m, local to crossing reference
   double skidpad_exit_length_{25.0};   // m, measured from the crossing
   double skidpad_braking_distance_{10.0};  // m
-  std::string skidpad_csv_path_{"/tmp/wuta_skidpad_trajectory.csv"};
+  // Relative paths are rooted at the detected WUTA-FSD directory.
+  std::string skidpad_csv_path_{"ros2_ws/log/trajectory/skidpad_trajectory.csv"};
 
   // Acceleration (75m straight)
   double acceleration_length_{75.0};   // m
