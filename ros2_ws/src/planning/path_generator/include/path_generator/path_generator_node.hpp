@@ -3,6 +3,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <autoware_msgs/msg/lane.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 #include <string>
 #include <vector>
@@ -50,6 +51,11 @@ private:
   };
   void exportSkidpadCsv(const std::vector<SkidpadCsvRow> & rows) const;
 
+  // Visualization helpers
+  void publishVisualization(const autoware_msgs::msg::Lane & lane,
+                            float r, float g, float b);
+  void publishTrajectory();
+
   // State
   uint8_t mission_mode_{wuta_msgs::msg::MissionState::MISSION_TRACKDRIVE};
   uint8_t system_state_{wuta_msgs::msg::MissionState::IDLE};
@@ -57,6 +63,10 @@ private:
   bool pose_ready_{false};
   autoware_msgs::msg::Lane skidpad_path_;
   bool skidpad_path_ready_{false};
+
+  // Trajectory history — accumulates driven positions for visualization
+  std::vector<geometry_msgs::msg::Point> trajectory_;
+  geometry_msgs::msg::Point last_trajectory_point_;
 
   // Parameters
   // Trackdrive
@@ -85,8 +95,10 @@ private:
   rclcpp::Subscription<autoware_msgs::msg::Lane>::SharedPtr centerline_sub_;
   rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_sub_;
 
-  // Publisher
+  // Publishers
   rclcpp::Publisher<autoware_msgs::msg::Lane>::SharedPtr waypoints_pub_;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr viz_pub_;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr trajectory_viz_pub_;
 };
 
 }  // namespace path_generator

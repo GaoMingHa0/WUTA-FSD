@@ -1,4 +1,5 @@
 #include "controller/controller_node.hpp"
+#include <chrono>
 #include <cmath>
 #include <visualization_msgs/msg/marker.hpp>
 
@@ -155,6 +156,25 @@ void ControllerNode::controlLoop()
   cmd.angle    = filtered.steering_angle;
   cmd.dv_state = filtered.emergency ? 6 : 4;  // 4=normal, 6=emergency
   cmd_pub_->publish(cmd);
+
+  // DEBUG: throttled to 2 Hz
+  {
+    static auto last_log = std::chrono::steady_clock::now();
+    auto now = std::chrono::steady_clock::now();
+    if (std::chrono::duration_cast<std::chrono::milliseconds>(now - last_log).count() >= 500) {
+      last_log = now;
+      int tgt = pure_pursuit_->targetIndex();
+      int prog = pure_pursuit_->progressIndex();
+      double ld = pure_pursuit_->lookaheadDistance();
+      RCLCPP_INFO(get_logger(),
+        "state=(%.2f,%.2f) yaw=%.2f° v=%.2f | waypoints=%zu | target=%d prog=%d/%zu ld=%.2f "
+        "| raw(angle=%.1f° vel=%.1f) | cmd(angle=%.1f° vel=%.1f)",
+        vehicle_state_.x, vehicle_state_.y, vehicle_state_.yaw * 180.0 / M_PI,
+        vehicle_state_.velocity, waypoints_.size(), tgt, prog, waypoints_.size(), ld,
+        raw_cmd.steering_angle, raw_cmd.velocity,
+        filtered.steering_angle, filtered.velocity);
+    }
+  }
 
   // 4. Visualization (target waypoint marker)
   if (target_viz_pub_->get_subscription_count() > 0 &&
