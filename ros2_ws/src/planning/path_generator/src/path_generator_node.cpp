@@ -46,6 +46,14 @@ PathGeneratorNode::PathGeneratorNode(const rclcpp::NodeOptions & options)
   // Publisher — final_waypoints consumed by controller
   waypoints_pub_ = create_publisher<autoware_msgs::msg::Lane>("/planning/final_waypoints", 10);
 
+  // Visualization — LINE_STRIP through planned waypoints
+  viz_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>(
+    "/planning/final_waypoints_viz", 10);
+
+  // Visualization — driven trajectory growing behind the vehicle
+  trajectory_viz_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>(
+    "/planning/driven_trajectory_viz", 10);
+
   RCLCPP_INFO(get_logger(), "PathGeneratorNode ready.");
 }
 
@@ -53,6 +61,26 @@ void PathGeneratorNode::onPose(const geometry_msgs::msg::PoseStamped::SharedPtr 
 {
   current_pose_ = *msg;
   pose_ready_ = true;
+
+  // Accumulate driven trajectory (skip if position unchanged to avoid duplicates)
+  geometry_msgs::msg::Point pt;
+  pt.x = msg->pose.position.x;
+  pt.y = msg->pose.position.y;
+  pt.z = msg->pose.position.z;
+
+  if (trajectory_.empty() ||
+      std::abs(pt.x - last_trajectory_point_.x) > 0.01 ||
+      std::abs(pt.y - last_trajectory_point_.y) > 0.01)
+  {
+    trajectory_.push_back(pt);
+    last_trajectory_point_ = pt;
+
+    // Publish every few points so RViz can discover the topic before subscribing
+    if (trajectory_.size() % 3 == 0)
+    {
+      publishTrajectory();
+    }
+  }
 }
 
 void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
@@ -72,12 +100,14 @@ void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
     lane.header.stamp    = now();
     lane.header.frame_id = "map";
     waypoints_pub_->publish(lane);
+    publishVisualization(lane, 0.0f, 1.0f, 1.0f);  // cyan for skidpad
   } else if (mission_mode_ == State::MISSION_ACCELERATION) {
     if (!pose_ready_) return;
     auto lane = generateAccelerationPath();
     lane.header.stamp    = now();
     lane.header.frame_id = "map";
     waypoints_pub_->publish(lane);
+    publishVisualization(lane, 1.0f, 0.5f, 0.0f);  // orange for acceleration
   }
   // TRACKDRIVE: forwarded by onCenterline callback
 }
@@ -94,6 +124,7 @@ void PathGeneratorNode::onCenterline(const autoware_msgs::msg::Lane::SharedPtr m
     wp.twist.twist.linear.x = trackdrive_velocity_;
   }
   waypoints_pub_->publish(lane);
+  publishVisualization(lane, 0.0f, 1.0f, 0.0f);  // green for trackdrive
 }
 
 void PathGeneratorNode::exportSkidpadCsv(const std::vector<SkidpadCsvRow> & rows) const
@@ -264,6 +295,61 @@ autoware_msgs::msg::Lane PathGeneratorNode::generateAccelerationPath() const
 
   RCLCPP_INFO(get_logger(), "Acceleration path generated: %zu waypoints", lane.waypoints.size());
   return lane;
+}
+
+void PathGeneratorNode::publishVisualization(
+  const autoware_msgs::msg::Lane & lane,
+  float r, float g, float b)
+{
+  visualization_msgs::msg::MarkerArray arr;
+
+  // LINE_STRIP through all waypoints — ADD with same ns/id replaces in place
+  visualization_msgs::msg::Marker line;
+  line.header = lane.header;
+  line.ns     = "planned_path";
+  line.id     = 0;
+  line.type   = visualization_msgs::msg::Marker::LINE_STRIP;
+  line.action = visualization_msgs::msg::Marker::ADD;
+  line.scale.x = 0.08;  // line width
+  line.color.r = r;
+  line.color.g = g;
+  line.color.b = b;
+  line.color.a = 0.9f;
+
+  for (const auto & wp : lane.waypoints) {
+    geometry_msgs::msg::Point p;
+    p.x = wp.pose.pose.position.x;
+    p.y = wp.pose.pose.position.y;
+    p.z = wp.pose.pose.position.z;
+    line.points.push_back(p);
+  }
+  arr.markers.push_back(line);
+  viz_pub_->publish(arr);
+}
+
+void PathGeneratorNode::publishTrajectory()
+{
+  if (trajectory_.size() < 2) return;
+
+  visualization_msgs::msg::MarkerArray arr;
+
+  // LINE_STRIP of driven positions — ADD with same ns/id replaces previous marker
+  visualization_msgs::msg::Marker line;
+  line.header.frame_id = "map";
+  line.header.stamp    = now();
+  line.ns     = "driven_trajectory";
+  line.id     = 0;
+  line.type   = visualization_msgs::msg::Marker::LINE_STRIP;
+  line.action = visualization_msgs::msg::Marker::ADD;
+  line.scale.x = 0.06;  // slightly thinner than planned path
+  line.color.r = 1.0f;
+  line.color.g = 0.85f;
+  line.color.b = 0.0f;
+  line.color.a = 0.9f;
+  line.points = trajectory_;
+
+  arr.markers.push_back(line);
+  trajectory_viz_pub_->publish(arr);
 }
 
 }  // namespace path_generator
