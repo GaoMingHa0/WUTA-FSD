@@ -21,6 +21,18 @@ path_generator_node:
     # Runtime analysis artifact; relative paths resolve from WUTA-FSD.
     skidpad_csv_path: ros2_ws/log/trajectory/skidpad_trajectory.csv
 
-    # ACCELERATION
-    acceleration_length: 75.0      # m
-    acceleration_velocity: 15.0    # m/s
+    # Driven Trajectory RViz marker: smooth only the displayed localization
+    # history; controller and mapping continue to use raw /localization/pose.
+    driven_trajectory_smoothing_alpha: 0.20
+    driven_trajectory_min_distance: 0.10  # m
+
+    # ACCELERATION — matches perception_simulation/tracks/acceleration.yaml.
+    # The 75 m timed run begins at x=0.0; brake only after its finish line and
+    # stop at the end of the marked 100 m exit lane.
+    acceleration_start_x: -0.30      # m, start-position line
+    acceleration_start_y: 0.0        # m
+    acceleration_start_yaw: 0.0      # rad
+    acceleration_timing_start_x: 0.0 # m
+    acceleration_length: 75.0        # m, timed distance
+    acceleration_stopping_distance: 100.0 # m, post-finish exit lane
+    acceleration_velocity: 15.0      # m/s

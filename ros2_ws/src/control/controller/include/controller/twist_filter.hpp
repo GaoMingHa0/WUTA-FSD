@@ -20,7 +20,8 @@ namespace controller
 class TwistFilter
 {
 public:
-  explicit TwistFilter(const VehicleParams & params);
+  TwistFilter(const VehicleParams & params, int control_rate_hz,
+              double max_steering_rate_deg_s);
 
   struct FilteredCommand
   {
@@ -32,11 +33,14 @@ public:
   FilteredCommand filter(double raw_angle, double raw_velocity,
                          bool emergency = false);
 
-  void reset() { last_velocity_ = 0.0; }
+  void reset() { last_velocity_ = 0.0; last_steering_angle_ = 0.0; }
 
 private:
   VehicleParams params_;
+  int control_rate_hz_{50};
+  double max_steering_rate_deg_s_{180.0};
   double last_velocity_{0.0};
+  double last_steering_angle_{0.0};
 };
 
 }  // namespace controller

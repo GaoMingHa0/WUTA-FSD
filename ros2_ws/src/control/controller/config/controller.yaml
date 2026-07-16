@@ -16,6 +16,9 @@ controller_node:
 
     # Control loop
     control_rate_hz: 50
+    # Maximum steering command change.  Limits pose-noise-induced chatter
+    # while retaining enough response for the skidpad entry.
+    max_steering_rate_deg_s: 180.0
 
     # Skidpad completion: the vehicle must stop at the 25 m exit endpoint.
     finish_position_tolerance: 0.75  # m

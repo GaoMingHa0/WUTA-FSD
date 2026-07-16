@@ -30,6 +30,9 @@ private:
   void onConeMap(const wuta_msgs::msg::ConeMap::SharedPtr msg);
   void onEmergency(const std_msgs::msg::Bool::SharedPtr msg);
   void onMissionModeCmd(const std_msgs::msg::String::SharedPtr msg);
+  void onStartCommand(const std_msgs::msg::Bool::SharedPtr msg);
+  void onMissionComplete(const std_msgs::msg::Bool::SharedPtr msg);
+  void advanceWhenReady();
 
   // ---------------------------------------------------------------------------
   // INSPECTION interface (预留，暂不接其他模块)
@@ -44,6 +47,7 @@ private:
   bool lidar_ready_{false};
   bool localization_ready_{false};
   bool map_closed_{false};
+  bool start_requested_{false};
 
   // Publishers
   rclcpp::Publisher<wuta_msgs::msg::MissionState>::SharedPtr state_pub_;
@@ -55,6 +59,8 @@ private:
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr lidar_status_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr localization_status_sub_;
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr mission_mode_sub_;
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr start_command_sub_;
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr mission_complete_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr inspection_trigger_sub_; // 预留
 
   // Timer for periodic state broadcast

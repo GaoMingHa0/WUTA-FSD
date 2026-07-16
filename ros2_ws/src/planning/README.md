@@ -82,9 +82,9 @@ planning/
 - 路径生成时输出分析 CSV，默认位置为 `WUTA-FSD/ros2_ws/log/trajectory/skidpad_trajectory.csv`；路径的每行包含阶段、圈次、坐标、航向和目标速度
 
 #### ACCELERATION（直线加速）
-- 沿车辆当前朝向生成 75m 直线
-- 末尾 10m 线性减速到 0
-- 在 MissionState 变为 EXPLORE/RACE 时一次性生成并发布
+- 严格对齐 `WUTA-SIM/perception_simulation/tracks/acceleration.yaml`：车辆参考点从 `x=-0.30 m` 起步，计时起点为 `x=0 m`、计时终点为 `x=75 m`
+- 在整个 75 m 计时段保持 `acceleration_velocity`；仅在终点线后进入 100 m 标记停止区时按恒减速度剖面制动，并在 `x=175 m` 停车
+- 路径只按赛道 map 参考生成一次并缓存，绝不依据实时定位位姿重建，以免终点随车辆前移
 
 ### Topics
 
@@ -94,6 +94,8 @@ planning/
 | 订阅 | `/planning/centerline` | `autoware_msgs/Lane` |
 | 订阅 | `/localization/pose` | `PoseStamped` |
 | 发布 | `/planning/final_waypoints` | `autoware_msgs/Lane` |
+| 发布 | `/planning/final_waypoints_viz` | `MarkerArray` |
+| 发布 | `/planning/driven_trajectory_viz` | `MarkerArray` |
 
 ### 关键参数
 
@@ -106,6 +108,12 @@ planning/
 | `skidpad_exit_length` | 25.0 m | 第四圈后的出口停车距离 |
 | `skidpad_braking_distance` | 10.0 m | 出口末段线性降速距离 |
 | `skidpad_csv_path` | `ros2_ws/log/trajectory/skidpad_trajectory.csv` | 分析轨迹输出；相对路径以 WUTA-FSD 根目录解析 |
+| `driven_trajectory_smoothing_alpha` | 0.20 | 仅用于 RViz 实际轨迹的一阶平滑；不改变定位、建图或控制输入 |
+| `driven_trajectory_min_distance` | 0.10 m | 平滑后轨迹点的最小空间间隔，抑制静止时的噪声折线 |
+| `acceleration_start_x/y/yaw` | -0.30 m / 0 / 0 | 起跑位置线与朝向，来自赛道 YAML |
+| `acceleration_timing_start_x` | 0.0 m | 计时起点线 |
+| `acceleration_length` | 75.0 m | 计时距离；路径在此终点线前不减速 |
+| `acceleration_stopping_distance` | 100.0 m | 终点线后的标记停止区；在其末端速度为零 |
 | `acceleration_velocity` | 15.0 m/s | 加速直线速度 |
 
 ---

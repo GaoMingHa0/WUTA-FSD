@@ -40,7 +40,7 @@
   Lane + pose ──→ controller(Pure Pursuit) ──→ Command → VCU
 
 系统管理
-  mission_manager：状态机，IDLE→EXPLORE→RACE→FINISH
+  mission_manager：唯一状态机发布者，IDLE→READY→EXPLORE→…→FINISH
 ```
 
 ---
@@ -122,6 +122,17 @@ ros2 run path_generator path_generator_node
 ros2 run controller controller_node \
   --ros-args --params-file src/control/controller/config/controller.yaml
 ```
+
+### 仿真闭环说明
+
+由上层 `WUTA-SIM/simulator_bringup` 启动时，`mission_manager` 是
+`/system/mission_state` 的唯一发布者：LiDAR 与定位 ready 后进入 `READY`，收到
+`/system/start_command=true` 后进入 `EXPLORE`，控制器完成 Skidpad/Acceleration 停车后经
+`/system/mission_complete=true` 进入 `FINISH`。不要与 `simulation_bridge` 或外部节点同时
+发布 MissionState。
+
+控制侧使用连续的 Pure Pursuit 曲率，并以 `max_steering_rate_deg_s` 限制转向命令变化；该参数
+是仿真初值，实车必须依转向执行器反馈与允许转向速率标定。
 
 ### 切换任务模式
 

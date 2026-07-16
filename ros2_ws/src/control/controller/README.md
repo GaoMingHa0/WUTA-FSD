@@ -63,7 +63,7 @@ Skidpad 目标速度为 5 m/s 时，通用 `ld_ratio=2.0` 会得到 10 m 前视�
   twist_filter.filter()  → filtered (angle, velocity)
   → /control/command (autoware_msgs/Command)
   → /control/target_viz (可视化：目标点 + 前视圆)
-  → /system/mission_complete (Skidpad 出口终点停车后一次发布 true)
+  → /system/mission_complete (Skidpad 或 Acceleration 在停车终点后一次发布 true)
 ```
 
 ## Topics
@@ -75,7 +75,7 @@ Skidpad 目标速度为 5 m/s 时，通用 `ld_ratio=2.0` 会得到 10 m 前视�
 | 订阅 | `/planning/final_waypoints` | `autoware_msgs/Lane` | 参考路径 |
 | 订阅 | `/system/mission_state` | `MissionState` | 使能控制 |
 | 发布 | `/control/command` | `autoware_msgs/Command` | 转向角 + 速度 |
-| 发布 | `/system/mission_complete` | `std_msgs/Bool` | Skidpad 在 25 m 出口终点停车后发布 `true` |
+| 发布 | `/system/mission_complete` | `std_msgs/Bool` | Skidpad 在 25 m 出口或 Acceleration 在 100 m 停止区末端停车后发布 `true` |
 | 发布 | `/control/target_viz` | `MarkerArray` | 目标点 + 前视圆 |
 
 ## 关键参数
@@ -90,6 +90,7 @@ Skidpad 目标速度为 5 m/s 时，通用 `ld_ratio=2.0` 会得到 10 m 前视�
 | `max_progress_advance` | 4 | 单次控制循环允许推进的最大路径点数；防止 Skidpad 跳至出口 |
 | `skidpad_lookahead` | 3.0m | 仅 `MISSION_SKIDPAD` 使用的固定前视距离；5 m/s 下替代通用 10 m 前视，避免跨越交叉点的曲率切换 |
 | `control_rate_hz` | 50 | 控制频率 |
+| `max_steering_rate_deg_s` | 180°/s | 每个控制周期限制转向变化量，抑制定位噪声和目标点离散化导致的指令抖动 |
 | `finish_position_tolerance` | 0.75m | Skidpad 出口停车位置阈值 |
 | `finish_speed_threshold` | 0.2m/s | Skidpad 出口完成速度阈值 |
 

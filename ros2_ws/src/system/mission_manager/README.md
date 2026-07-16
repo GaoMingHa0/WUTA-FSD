@@ -14,7 +14,7 @@
 ```
 IDLE ──(传感器就绪)──→ READY ──(/system/inspection_trigger)──→ INSPECTION ──→ READY
                           │
-                     (收到出发指令)
+               (`/system/start_command=true`)
                           │
                           ▼
                        EXPLORE
@@ -38,12 +38,14 @@ IDLE ──(传感器就绪)──→ READY ──(/system/inspection_trigger)�
 
 | 方向 | Topic | 类型 | 说明 |
 |------|-------|------|------|
-| 发布 | `/system/mission_state` | `MissionState` | 10Hz 周期广播 |
+| 发布 | `/system/mission_state` | `MissionState` | **唯一发布者**；10Hz 周期广播 |
 | 订阅 | `/mapping/cone_map` | `ConeMap` | 监听 `is_closed` |
 | 订阅 | `/system/emergency` | `std_msgs/Bool` | 急停信号 |
 | 订阅 | `/system/lidar_ready` | `std_msgs/Bool` | LiDAR 就绪 |
 | 订阅 | `/system/localization_ready` | `std_msgs/Bool` | 定位就绪 |
 | 订阅 | `/system/mission_mode_cmd` | `std_msgs/String` | 设置任务模式（trackdrive/skidpad/acceleration） |
+| 订阅 | `/system/start_command` | `std_msgs/Bool` | `true` 请求出发；在两项就绪后从 READY 进入 EXPLORE |
+| 订阅 | `/system/mission_complete` | `std_msgs/Bool` | 控制器完成停车后进入 FINISH |
 | 订阅 | `/system/inspection_trigger` | `std_msgs/Bool` | **[预留]** 触发车检流程 |
 | 发布 | `/system/inspection_result` | `std_msgs/String` | **[预留]** 车检结果输出 |
 
@@ -53,6 +55,5 @@ IDLE ──(传感器就绪)──→ READY ──(/system/inspection_trigger)�
 
 ## 待完善
 
-- [ ] 收到出发指令的 trigger（目前需要手动触发 EXPLORE 状态）
 - [ ] NDT 地图构建完成的检测逻辑（MAPPING_DONE → RACE）
 - [ ] 完成圈数计数（RACE → FINISH）

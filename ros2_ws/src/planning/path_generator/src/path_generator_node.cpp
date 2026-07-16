@@ -27,7 +27,19 @@ PathGeneratorNode::PathGeneratorNode(const rclcpp::NodeOptions & options)
   skidpad_braking_distance_ = declare_parameter(
     "skidpad_braking_distance", skidpad_braking_distance_);
   skidpad_csv_path_       = declare_parameter("skidpad_csv_path",       skidpad_csv_path_);
+  driven_trajectory_smoothing_alpha_ = declare_parameter(
+    "driven_trajectory_smoothing_alpha", driven_trajectory_smoothing_alpha_);
+  driven_trajectory_min_distance_ = declare_parameter(
+    "driven_trajectory_min_distance", driven_trajectory_min_distance_);
+  acceleration_start_x_ = declare_parameter("acceleration_start_x", acceleration_start_x_);
+  acceleration_start_y_ = declare_parameter("acceleration_start_y", acceleration_start_y_);
+  acceleration_start_yaw_ = declare_parameter(
+    "acceleration_start_yaw", acceleration_start_yaw_);
+  acceleration_timing_start_x_ = declare_parameter(
+    "acceleration_timing_start_x", acceleration_timing_start_x_);
   acceleration_length_    = declare_parameter("acceleration_length",    acceleration_length_);
+  acceleration_stopping_distance_ = declare_parameter(
+    "acceleration_stopping_distance", acceleration_stopping_distance_);
   acceleration_velocity_  = declare_parameter("acceleration_velocity",  acceleration_velocity_);
 
   // Subscribers
@@ -62,18 +74,34 @@ void PathGeneratorNode::onPose(const geometry_msgs::msg::PoseStamped::SharedPtr 
   current_pose_ = *msg;
   pose_ready_ = true;
 
-  // Accumulate driven trajectory (skip if position unchanged to avoid duplicates)
+  // Smooth and spatially decimate the visualization history.  The raw pose
+  // still reaches the controller unchanged; this only makes the RViz line
+  // readable when the simulated INS supplies independent measurement noise.
   geometry_msgs::msg::Point pt;
   pt.x = msg->pose.position.x;
   pt.y = msg->pose.position.y;
   pt.z = msg->pose.position.z;
 
-  if (trajectory_.empty() ||
-      std::abs(pt.x - last_trajectory_point_.x) > 0.01 ||
-      std::abs(pt.y - last_trajectory_point_.y) > 0.01)
+  const double alpha = std::clamp(driven_trajectory_smoothing_alpha_, 0.0, 1.0);
+  if (!trajectory_filter_ready_)
   {
-    trajectory_.push_back(pt);
-    last_trajectory_point_ = pt;
+    filtered_trajectory_point_ = pt;
+    trajectory_filter_ready_ = true;
+  }
+  else
+  {
+    filtered_trajectory_point_.x += alpha * (pt.x - filtered_trajectory_point_.x);
+    filtered_trajectory_point_.y += alpha * (pt.y - filtered_trajectory_point_.y);
+    filtered_trajectory_point_.z += alpha * (pt.z - filtered_trajectory_point_.z);
+  }
+
+  const double min_distance = std::max(0.0, driven_trajectory_min_distance_);
+  if (trajectory_.empty() || std::hypot(
+        filtered_trajectory_point_.x - last_trajectory_point_.x,
+        filtered_trajectory_point_.y - last_trajectory_point_.y) >= min_distance)
+  {
+    trajectory_.push_back(filtered_trajectory_point_);
+    last_trajectory_point_ = filtered_trajectory_point_;
 
     // Publish every few points so RViz can discover the topic before subscribing
     if (trajectory_.size() % 3 == 0)
@@ -85,8 +113,14 @@ void PathGeneratorNode::onPose(const geometry_msgs::msg::PoseStamped::SharedPtr 
 
 void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
 {
+  const bool mission_changed = msg->mission_mode != mission_mode_;
   mission_mode_  = msg->mission_mode;
   system_state_  = msg->state;
+
+  if (mission_changed) {
+    skidpad_path_ready_ = false;
+    acceleration_path_ready_ = false;
+  }
 
   // Trigger non-trackdrive paths when system is active
   if (system_state_ != State::EXPLORE && system_state_ != State::RACE) return;
@@ -102,8 +136,14 @@ void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
     waypoints_pub_->publish(lane);
     publishVisualization(lane, 0.0f, 1.0f, 1.0f);  // cyan for skidpad
   } else if (mission_mode_ == State::MISSION_ACCELERATION) {
-    if (!pose_ready_) return;
-    auto lane = generateAccelerationPath();
+    // This route is fixed by acceleration.yaml. Regenerating it from the
+    // moving localization pose would shift the finish line forward on every
+    // MissionState update, so the controller could never reach its stop.
+    if (!acceleration_path_ready_) {
+      acceleration_path_ = generateAccelerationPath();
+      acceleration_path_ready_ = true;
+    }
+    auto lane = acceleration_path_;
     lane.header.stamp    = now();
     lane.header.frame_id = "map";
     waypoints_pub_->publish(lane);
@@ -264,36 +304,39 @@ autoware_msgs::msg::Lane PathGeneratorNode::generateAccelerationPath() const
 {
   autoware_msgs::msg::Lane lane;
 
-  const double cx  = current_pose_.pose.position.x;
-  const double cy  = current_pose_.pose.position.y;
-  const double z   = current_pose_.pose.position.z;
-
-  // Vehicle heading direction
-  const auto & q = current_pose_.pose.orientation;
-  const double yaw = std::atan2(
-    2.0 * (q.w * q.z + q.x * q.y),
-    1.0 - 2.0 * (q.y * q.y + q.z * q.z));
-
-  const double dx = std::cos(yaw);
-  const double dy = std::sin(yaw);
-
-  // Waypoints every 1m along straight line
-  const int num_points = static_cast<int>(acceleration_length_);
-  for (int i = 0; i <= num_points; ++i) {
+  const double finish_x = acceleration_timing_start_x_ + acceleration_length_;
+  const double stop_end_x = finish_x + acceleration_stopping_distance_;
+  const double stopping_distance = std::max(1e-6, acceleration_stopping_distance_);
+  const double braking_deceleration =
+    acceleration_velocity_ * acceleration_velocity_ / (2.0 * stopping_distance);
+  const auto append_waypoint = [&lane, this](double x, double velocity) {
     autoware_msgs::msg::Waypoint wp;
-    wp.pose.pose.position.x = cx + i * dx;
-    wp.pose.pose.position.y = cy + i * dy;
-    wp.pose.pose.position.z = z;
-    wp.pose.pose.orientation.w = 1.0;
-    // Ramp down velocity in last 10m
-    const double remaining = acceleration_length_ - i;
-    wp.twist.twist.linear.x = (remaining < 10.0)
-      ? acceleration_velocity_ * (remaining / 10.0)
-      : acceleration_velocity_;
+    wp.pose.pose.position.x = x;
+    wp.pose.pose.position.y = acceleration_start_y_;
+    wp.pose.pose.position.z = 0.0;
+    wp.pose.pose.orientation.z = std::sin(acceleration_start_yaw_ * 0.5);
+    wp.pose.pose.orientation.w = std::cos(acceleration_start_yaw_ * 0.5);
+    wp.twist.twist.linear.x = velocity;
     lane.waypoints.push_back(wp);
+  };
+
+  // Keep full speed through the 75 m timing line. Braking begins only after
+  // that line and follows v²=2aΔx, so the vehicle reaches zero at the marked
+  // end of the 100 m stopping lane in finite time (rather than asymptotically).
+  append_waypoint(acceleration_start_x_, acceleration_velocity_);
+  append_waypoint(acceleration_timing_start_x_, acceleration_velocity_);
+  for (int x = static_cast<int>(std::ceil(acceleration_timing_start_x_)) + 1;
+       x <= static_cast<int>(std::ceil(stop_end_x)); ++x) {
+    const double waypoint_x = std::min(static_cast<double>(x), stop_end_x);
+    const double velocity = waypoint_x <= finish_x
+      ? acceleration_velocity_
+      : std::sqrt(2.0 * braking_deceleration * std::max(0.0, stop_end_x - waypoint_x));
+    append_waypoint(waypoint_x, velocity);
   }
 
-  RCLCPP_INFO(get_logger(), "Acceleration path generated: %zu waypoints", lane.waypoints.size());
+  RCLCPP_INFO(get_logger(),
+    "Fixed acceleration path generated: start=%.2f m, timing finish=%.2f m, stop=%.2f m (%zu waypoints)",
+    acceleration_start_x_, finish_x, stop_end_x, lane.waypoints.size());
   return lane;
 }
 

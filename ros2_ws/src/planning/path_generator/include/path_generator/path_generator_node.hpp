@@ -63,10 +63,14 @@ private:
   bool pose_ready_{false};
   autoware_msgs::msg::Lane skidpad_path_;
   bool skidpad_path_ready_{false};
+  autoware_msgs::msg::Lane acceleration_path_;
+  bool acceleration_path_ready_{false};
 
   // Trajectory history — accumulates driven positions for visualization
   std::vector<geometry_msgs::msg::Point> trajectory_;
   geometry_msgs::msg::Point last_trajectory_point_;
+  geometry_msgs::msg::Point filtered_trajectory_point_;
+  bool trajectory_filter_ready_{false};
 
   // Parameters
   // Trackdrive
@@ -86,9 +90,22 @@ private:
   // Relative paths are rooted at the detected WUTA-FSD directory.
   std::string skidpad_csv_path_{"ros2_ws/log/trajectory/skidpad_trajectory.csv"};
 
-  // Acceleration (75m straight)
-  double acceleration_length_{75.0};   // m
-  double acceleration_velocity_{15.0}; // m/s
+  // Driven-trajectory visualization only. These do not affect localization
+  // or the controller; they prevent INS/EKF measurement noise from appearing
+  // as a jagged vehicle path in RViz.
+  double driven_trajectory_smoothing_alpha_{0.20};
+  double driven_trajectory_min_distance_{0.10};
+
+  // Acceleration reference in map.  These values match acceleration.yaml:
+  // start at -0.30 m, timing starts at 0 m, finish is 75 m later, and the
+  // marked exit/stopping lane extends another 100 m.
+  double acceleration_start_x_{-0.30};      // m
+  double acceleration_start_y_{0.0};        // m
+  double acceleration_start_yaw_{0.0};      // rad
+  double acceleration_timing_start_x_{0.0}; // m
+  double acceleration_length_{75.0};        // timed distance, m
+  double acceleration_stopping_distance_{100.0};  // after finish, m
+  double acceleration_velocity_{15.0};      // m/s
 
   // Subscribers
   rclcpp::Subscription<wuta_msgs::msg::MissionState>::SharedPtr mission_sub_;

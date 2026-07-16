@@ -26,15 +26,18 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
     "max_progress_advance", pp_cfg.max_progress_advance);
   skidpad_lookahead_ = declare_parameter("skidpad_lookahead", skidpad_lookahead_);
 
-  pure_pursuit_ = std::make_unique<PurePursuit>(vp, pp_cfg);
-  twist_filter_ = std::make_unique<TwistFilter>(vp);
-
   // --- Control loop rate ---
   const int rate_hz = declare_parameter("control_rate_hz", 50);
+  const double max_steering_rate_deg_s = declare_parameter(
+    "max_steering_rate_deg_s", 180.0);
   finish_position_tolerance_ = declare_parameter(
     "finish_position_tolerance", finish_position_tolerance_);
   finish_speed_threshold_ = declare_parameter(
     "finish_speed_threshold", finish_speed_threshold_);
+
+  pure_pursuit_ = std::make_unique<PurePursuit>(vp, pp_cfg);
+  twist_filter_ = std::make_unique<TwistFilter>(
+    vp, rate_hz, max_steering_rate_deg_s);
 
   // --- Subscribers ---
   pose_sub_ = create_subscription<geometry_msgs::msg::PoseStamped>(
@@ -134,7 +137,10 @@ void ControllerNode::controlLoop()
   auto raw_cmd = pure_pursuit_->compute(
     vehicle_state_, waypoints_, lookahead_override);
 
-  if (mission_mode_ == MissionState::MISSION_SKIDPAD &&
+  const bool stopping_mission =
+    mission_mode_ == MissionState::MISSION_SKIDPAD ||
+    mission_mode_ == MissionState::MISSION_ACCELERATION;
+  if (stopping_mission &&
       pure_pursuit_->progressIndex() == static_cast<int>(waypoints_.size()) - 1 &&
       std::hypot(
         waypoints_.back().pose.pose.position.x - vehicle_state_.x,
@@ -219,7 +225,8 @@ void ControllerNode::publishMissionComplete()
   mission_complete_pub_->publish(complete);
   RCLCPP_INFO(
     get_logger(),
-    "Skidpad complete: progress=%d/%zu pose=(%.3f, %.3f) speed=%.3f m/s",
+    "Mission complete: mode=%u progress=%d/%zu pose=(%.3f, %.3f) speed=%.3f m/s",
+    mission_mode_,
     pure_pursuit_->progressIndex(), waypoints_.size() - 1,
     vehicle_state_.x, vehicle_state_.y, vehicle_state_.velocity);
 }

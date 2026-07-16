@@ -5,8 +5,10 @@
 namespace controller
 {
 
-TwistFilter::TwistFilter(const VehicleParams & params)
-: params_(params) {}
+TwistFilter::TwistFilter(const VehicleParams & params, int control_rate_hz,
+                         double max_steering_rate_deg_s)
+: params_(params), control_rate_hz_(std::max(1, control_rate_hz)),
+  max_steering_rate_deg_s_(std::max(0.0, max_steering_rate_deg_s)) {}
 
 TwistFilter::FilteredCommand TwistFilter::filter(
   double raw_angle, double raw_velocity, bool emergency)
@@ -32,11 +34,19 @@ TwistFilter::FilteredCommand TwistFilter::filter(
   }
   last_velocity_ = out.velocity;
 
-  // --- Steering clamp ---
-  out.steering_angle = std::clamp(
+  // --- Steering clamp and rate limit ---
+  const double bounded_angle = std::clamp(
     raw_angle,
     -params_.max_steer_angle,
      params_.max_steer_angle);
+  // Rate limiting suppresses command chatter caused by localization noise
+  // without changing the path geometry.
+  const double max_step = max_steering_rate_deg_s_ / control_rate_hz_;
+  out.steering_angle = std::clamp(
+    bounded_angle,
+    last_steering_angle_ - max_step,
+    last_steering_angle_ + max_step);
+  last_steering_angle_ = out.steering_angle;
 
   return out;
 }

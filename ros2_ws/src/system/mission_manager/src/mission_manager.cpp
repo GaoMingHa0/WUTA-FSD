@@ -32,22 +32,26 @@ MissionManager::MissionManager(const rclcpp::NodeOptions & options)
     "/system/mission_mode_cmd", 10,
     std::bind(&MissionManager::onMissionModeCmd, this, std::placeholders::_1));
 
+  start_command_sub_ = create_subscription<std_msgs::msg::Bool>(
+    "/system/start_command", 10,
+    std::bind(&MissionManager::onStartCommand, this, std::placeholders::_1));
+
+  mission_complete_sub_ = create_subscription<std_msgs::msg::Bool>(
+    "/system/mission_complete", 10,
+    std::bind(&MissionManager::onMissionComplete, this, std::placeholders::_1));
+
   lidar_status_sub_ = create_subscription<std_msgs::msg::Bool>(
     "/system/lidar_ready", 10,
     [this](const std_msgs::msg::Bool::SharedPtr msg) {
       lidar_ready_ = msg->data;
-      if (lidar_ready_ && localization_ready_ && current_state_ == State::IDLE) {
-        transitionTo(State::READY);
-      }
+      advanceWhenReady();
     });
 
   localization_status_sub_ = create_subscription<std_msgs::msg::Bool>(
     "/system/localization_ready", 10,
     [this](const std_msgs::msg::Bool::SharedPtr msg) {
       localization_ready_ = msg->data;
-      if (lidar_ready_ && localization_ready_ && current_state_ == State::IDLE) {
-        transitionTo(State::READY);
-      }
+      advanceWhenReady();
     });
 
   // ---------------------------------------------------------------------------
@@ -65,6 +69,16 @@ MissionManager::MissionManager(const rclcpp::NodeOptions & options)
 
   RCLCPP_INFO(get_logger(), "Mission Manager initialized. mode=%s state=IDLE",
     mode_str.c_str());
+}
+
+void MissionManager::advanceWhenReady()
+{
+  if (lidar_ready_ && localization_ready_ && current_state_ == State::IDLE) {
+    transitionTo(State::READY);
+  }
+  if (start_requested_ && current_state_ == State::READY) {
+    transitionTo(State::EXPLORE);
+  }
 }
 
 void MissionManager::transitionTo(uint8_t new_state)
@@ -143,6 +157,22 @@ void MissionManager::onMissionModeCmd(const std_msgs::msg::String::SharedPtr msg
   }
   RCLCPP_INFO(get_logger(), "Mission mode set to: %s", msg->data.c_str());
   publishState();
+}
+
+void MissionManager::onStartCommand(const std_msgs::msg::Bool::SharedPtr msg)
+{
+  if (!msg->data) return;
+  start_requested_ = true;
+  advanceWhenReady();
+}
+
+void MissionManager::onMissionComplete(const std_msgs::msg::Bool::SharedPtr msg)
+{
+  if (!msg->data) return;
+  if (current_state_ == State::EXPLORE || current_state_ == State::MAPPING_DONE ||
+      current_state_ == State::RACE) {
+    transitionTo(State::FINISH);
+  }
 }
 
 // ---------------------------------------------------------------------------

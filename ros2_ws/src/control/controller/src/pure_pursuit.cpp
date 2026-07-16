@@ -52,14 +52,11 @@ ControlCommand PurePursuit::compute(
   // 4. Lateral offset in vehicle body frame (x_body = how far left/right target is)
   const double x_body = lateralOffset(tx, ty, state.x, state.y, state.yaw);
 
-  // Numerical stabilization: amplify very small lateral offset (straight-ahead case)
-  double numerator = 2.0 * x_body;
-  if (std::abs(numerator) < 0.1) {
-    numerator = 10.0 * std::copysign(1.0, numerator) * numerator;
-  }
-
   // 5. Curvature: kappa = 2·x_body / dist²
-  const double kappa = numerator / (dist * dist);
+  // Keep the pure-pursuit relationship continuous around x_body = 0.  The
+  // former small-error amplification introduced a 10x jump at its threshold,
+  // which appeared as severe steering chatter in the driven trajectory.
+  const double kappa = (2.0 * x_body) / (dist * dist);
 
   // 6. Steering angle (Ackermann bicycle model): δ = atan(L × kappa)
   cmd.steering_angle = std::atan(params_.wheel_base * kappa) * 180.0 / M_PI;
