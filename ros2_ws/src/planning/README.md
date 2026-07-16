@@ -76,9 +76,10 @@ planning/
 
 #### SKIDPAD（八字绕桩）
 - 使用 `skidpad_start_*` 固定 map 参考，与 `tracks/skidpad.yaml` 对齐，不随定位位姿重建
-- 生成右圈两圈（第一圈建立转向、第二圈计时）→ 左圈两圈（第三圈过渡、第四圈计时）→ 同向 25 m 出口停车
+- 车辆参考点从计时线前 15 m 的 `(-15, 0)` 进入；生成下方右圆两圈（第一圈建立转向、第二圈计时）→ 上方左圈两圈（第三圈过渡、第四圈计时）→ 同向 25 m 出口停车
 - 圆半径：9.125m（FSG 规定）
 - 路径几何只生成一次；在有效任务状态下重复发布缓存路径，确保晚启动的控制器能够接收
+- 路径生成时输出分析 CSV，默认位置为 `WUTA-FSD/ros2_ws/log/trajectory/skidpad_trajectory.csv`；路径的每行包含阶段、圈次、坐标、航向和目标速度
 
 #### ACCELERATION（直线加速）
 - 沿车辆当前朝向生成 75m 直线
@@ -101,6 +102,10 @@ planning/
 | `trackdrive_velocity` | 7.0 m/s | 循迹速度 |
 | `skidpad_radius` | 9.125m | FSG 标准圆半径 |
 | `skidpad_velocity` | 5.0 m/s | 八字速度 |
+| `skidpad_entry_x/y` | -15.0 / 0.0 m | 相对交叉点的入口参考 |
+| `skidpad_exit_length` | 25.0 m | 第四圈后的出口停车距离 |
+| `skidpad_braking_distance` | 10.0 m | 出口末段线性降速距离 |
+| `skidpad_csv_path` | `ros2_ws/log/trajectory/skidpad_trajectory.csv` | 分析轨迹输出；相对路径以 WUTA-FSD 根目录解析 |
 | `acceleration_velocity` | 15.0 m/s | 加速直线速度 |
 
 ---

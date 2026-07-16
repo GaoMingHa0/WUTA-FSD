@@ -24,6 +24,17 @@ Pure Pursuit 横向控制 + 速度跟踪纵向控制节点。
    δ = atan(wheel_base × kappa)  [degrees]
 ```
 
+### Skidpad 专用前视距离
+
+Trackdrive 与 Acceleration 保持通用动态前视：`LD = |velocity| × ld_ratio`，并限制在
+`[min_lookahead, max_lookahead]`。但在 `MISSION_SKIDPAD` 下，控制器使用
+`skidpad_lookahead` 固定覆盖该计算，默认 **3.0 m**。
+
+Skidpad 目标速度为 5 m/s 时，通用 `ld_ratio=2.0` 会得到 10 m 前视，已接近 9.125 m 圆半径。
+在入口、右/左圆切换和第四圈出口处，目标点会跨越交叉点的曲率突变，导致车辆切向圆内侧或在
+出口过早卸载转向。3.0 m 前视只预览当前局部圆弧，保留转向直到实际切换点；它不改变其它赛项
+的动态前视行为。
+
 ### 纵向控制：速度跟踪
 
 - 转向目标取前视 waypoint；目标速度取当前单调路径进度 waypoint 的 `twist.twist.linear.x`，避免在 Skidpad 出口提前一个前视距离停车
@@ -77,7 +88,7 @@ Pure Pursuit 横向控制 + 速度跟踪纵向控制节点。
 | `min_lookahead` | 2.0m | 前视距离下限（低速） |
 | `max_lookahead` | 20.0m | 前视距离上限（高速） |
 | `max_progress_advance` | 4 | 单次控制循环允许推进的最大路径点数；防止 Skidpad 跳至出口 |
-| `skidpad_lookahead` | 3.0m | Skidpad 固定前视距离；避免 10m 通用前视跨越计时线处的曲率切换 |
+| `skidpad_lookahead` | 3.0m | 仅 `MISSION_SKIDPAD` 使用的固定前视距离；5 m/s 下替代通用 10 m 前视，避免跨越交叉点的曲率切换 |
 | `control_rate_hz` | 50 | 控制频率 |
 | `finish_position_tolerance` | 0.75m | Skidpad 出口停车位置阈值 |
 | `finish_speed_threshold` | 0.2m/s | Skidpad 出口完成速度阈值 |

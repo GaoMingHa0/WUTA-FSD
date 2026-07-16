@@ -132,6 +132,27 @@ ros2 topic pub /system/mission_mode_cmd std_msgs/msg/String "data: 'acceleration
 ros2 topic pub /system/mission_mode_cmd std_msgs/msg/String "data: 'trackdrive'"
 ```
 
+### 仿真 Skidpad 闭环
+
+集成仿真由主仓库的启动脚本负责构建与编排；不要在本子仓库中单独拼接 INS、KISS-ICP 和
+EKF 节点。于主仓库根目录运行：
+
+```bash
+./start_simulator.sh --rviz track_file:=skidpad mission_mode:=skidpad
+```
+
+该模式从 `(-15, 0)` 沿 `+X` 进入，依次完成下方右圆两圈、上方左圆两圈，并沿 `+X` 出口
+在 25 m 内停车。默认使用 INS + KISS-ICP + EKF；若只需真值定位调试，使用：
+
+```bash
+./start_simulator.sh --skip-build \
+  track_file:=skidpad mission_mode:=skidpad \
+  use_ground_truth_localization:=true
+```
+
+Skidpad 固定轨迹的分析 CSV 写至
+`ros2_ws/log/trajectory/skidpad_trajectory.csv`（相对于 `WUTA-FSD` 根目录）。
+
 ---
 
 ## 开发进度
