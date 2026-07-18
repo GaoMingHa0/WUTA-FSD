@@ -74,7 +74,7 @@ Skidpad 目标速度为 5 m/s 时，通用 `ld_ratio=2.0` 会得到 10 m 前视�
 | 订阅 | `/localization/velocity` | `TwistStamped` | 当前速度 |
 | 订阅 | `/planning/final_waypoints` | `autoware_msgs/Lane` | 参考路径 |
 | 订阅 | `/system/mission_state` | `MissionState` | 使能控制 |
-| 发布 | `/control/command` | `autoware_msgs/Command` | 转向角 + 速度 |
+| 发布 | `/control/command` | `autoware_msgs/Command` | 转向角 + 速度；发布前写入 `header.stamp`，供仿真统计 LiDAR→控制命令延迟 |
 | 发布 | `/system/mission_complete` | `std_msgs/Bool` | Skidpad 在 25 m 出口或 Acceleration 在 100 m 停止区末端停车后发布 `true` |
 | 发布 | `/control/target_viz` | `MarkerArray` | 目标点 + 前视圆 |
 

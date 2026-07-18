@@ -113,6 +113,8 @@ void ControllerNode::onMissionState(const MissionState::SharedPtr msg)
     twist_filter_->reset();
     // Publish stop command
     autoware_msgs::msg::Command stop;
+    stop.header.stamp = now();
+    stop.header.frame_id = "base_link";
     stop.speed = 0.0;
     stop.angle = 0.0;
     stop.dv_state = 4;
@@ -158,6 +160,8 @@ void ControllerNode::controlLoop()
 
   // 3. Publish command
   autoware_msgs::msg::Command cmd;
+  cmd.header.stamp = now();
+  cmd.header.frame_id = "base_link";
   cmd.speed    = filtered.velocity;
   cmd.angle    = filtered.steering_angle;
   cmd.dv_state = filtered.emergency ? 6 : 4;  // 4=normal, 6=emergency
@@ -215,6 +219,8 @@ void ControllerNode::publishMissionComplete()
   twist_filter_->reset();
 
   autoware_msgs::msg::Command stop;
+  stop.header.stamp = now();
+  stop.header.frame_id = "base_link";
   stop.speed = 0.0;
   stop.angle = 0.0;
   stop.dv_state = 4;
