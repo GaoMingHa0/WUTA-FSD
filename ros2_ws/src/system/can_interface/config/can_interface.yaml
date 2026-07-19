@@ -1,0 +1,5 @@
+can_interface:
+  ros__parameters:
+    can_device: "can0"
+    can_baud_rate: 500000
+    can_loopback: false

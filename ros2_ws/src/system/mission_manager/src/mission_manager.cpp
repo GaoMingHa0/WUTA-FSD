@@ -175,10 +175,6 @@ void MissionManager::onMissionComplete(const std_msgs::msg::Bool::SharedPtr msg)
   }
 }
 
-// ---------------------------------------------------------------------------
-// INSPECTION — 预留接口，暂未接入其他模块
-// ---------------------------------------------------------------------------
-
 void MissionManager::onInspectionTrigger(const std_msgs::msg::Bool::SharedPtr msg)
 {
   if (!msg->data) return;
@@ -190,33 +186,15 @@ void MissionManager::onInspectionTrigger(const std_msgs::msg::Bool::SharedPtr ms
 
   RCLCPP_INFO(get_logger(), "Inspection triggered.");
   transitionTo(State::INSPECTION);
-  runInspection();
-  sendInspectionCAN();
 
-  // Return to READY after inspection
-  transitionTo(State::READY);
-}
-
-void MissionManager::runInspection()
-{
   // TODO: 检查各传感器 topic 是否在线（LiDAR、相机、CG-410）
   // TODO: 检查 TF tree 是否完整
-  // TODO: 发布检查结果到 /system/inspection_result
-
-  RCLCPP_INFO(get_logger(), "[INSPECTION] Sensor check — not yet implemented.");
 
   std_msgs::msg::String result;
   result.data = "INSPECTION_NOT_IMPLEMENTED";
   inspection_result_pub_->publish(result);
-}
 
-void MissionManager::sendInspectionCAN()
-{
-  // TODO: 通过 CAN 接口向 VCU 发送车检测试报文
-  // 建议通过 can_msgs::msg::Frame 发布到 /can/tx topic
-  // 具体报文格式需根据 VCU 协议文档确定
-
-  RCLCPP_INFO(get_logger(), "[INSPECTION] VCU CAN test — not yet implemented.");
+  transitionTo(State::READY);
 }
 
 }  // namespace mission_manager
