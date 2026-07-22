@@ -42,13 +42,17 @@ planning/
 
 ## boundary_detector
 
-### 算法：Delaunay 三角剖分（来自 HRT-D）
+### 算法：在线蓝黄锥配对 + 局部几何配对 + Delaunay 兜底
 
-1. 从 `/mapping/cone_map` 提取当前 `lookahead_distance` 范围内的锥桶坐标
-2. 对所有锥桶做 Delaunay 三角剖分（BowyerWatson 算法）
-3. 取三角形各边中点作为候选路径点（`MidPoint`）
-4. DFS 搜索最优路径（考虑方向连续性和路径代价）
-5. 输出为 `autoware_msgs/Lane`
+1. 从 `/mapping/cone_map` 和 `/localization/pose` 读取当前建图结果与车辆位姿；Trackdrive 不读取赛道 YAML 或完整参考中心线
+2. 提取当前 `lookahead_distance` 范围内、位于车辆前方窗口的蓝/黄锥桶
+3. 按车辆航向投影，过滤左右关系错误、赛道宽度异常、前向间隔过大的锥桶组合
+4. 对可用蓝/黄锥桶做唯一配对，取两锥中点作为中心线候选点
+5. 使用车辆当前航向、候选点间距离、蓝/黄锥横向向量推导出的局部赛道切向进行连续性排序，避免在相邻赛段较近时跳到错误分支
+6. 若颜色信息连续不足，则可按车辆局部坐标将可见锥桶分为左右两侧，做几何配对兜底；该策略由 `local_pairing_min_streak` 控制，避免过早误配
+7. 若上述配对仍不足，则从 `/mapping/cone_map` 的局部锥桶做 Delaunay 三角剖分兜底（BowyerWatson 算法）
+8. 兜底路径会按当前车辆航向过滤明显位于车后的中点，并在必要时翻转局部路径顺序，降低中心线反向导致掉头的概率
+9. 输出为 `autoware_msgs/Lane`
 
 **只在 TRACKDRIVE 模式下运行**，SKIDPAD 和 ACCELERATION 直接在 path_generator 内生成。
 
@@ -71,8 +75,9 @@ planning/
 ### 三种模式
 
 #### TRACKDRIVE（高速循迹）
-- 直接转发 `boundary_detector` 输出的中心线
-- 更新各 waypoint 的速度为 `trackdrive_velocity`
+- 使用 `boundary_detector` 基于在线锥桶地图输出的局部中心线
+- 将稀疏局部中心线按 `trackdrive_resample_spacing` 重采样
+- 根据重采样后的局部曲率限制 waypoint 速度：直道不超过 `trackdrive_velocity`，弯道不低于 `trackdrive_min_velocity`，横向加速度上限由 `trackdrive_lateral_accel_limit` 控制
 
 #### SKIDPAD（八字绕桩）
 - 使用 `skidpad_start_*` 固定 map 参考，与 `tracks/skidpad.yaml` 对齐，不随定位位姿重建
@@ -101,7 +106,12 @@ planning/
 
 | 参数 | 默认值 | 说明 |
 |------|--------|------|
+| `boundary_detector.lookahead_distance` | 30.0 m | 高速循迹在线蓝/黄锥配对和 Delaunay 兜底的局部取锥范围；需要大于控制器高速前视距离，避免每帧只剩 2-3 个中心线点 |
+| `boundary_detector.local_pairing_min_streak` | 10 | 颜色配对连续不足多少个周期后，才允许车辆局部坐标系左右锥几何配对兜底；值过小可能在紧凑图上误配 |
 | `trackdrive_velocity` | 7.0 m/s | 循迹速度 |
+| `trackdrive_resample_spacing` | 1.0 m | 高速循迹局部中心线重采样间距，用于给 Pure Pursuit 提供连续前向目标 |
+| `trackdrive_min_velocity` | 3.0 m/s | Trackdrive 曲率限速的最低目标速度 |
+| `trackdrive_lateral_accel_limit` | 4.0 m/s^2 | Trackdrive 曲率限速使用的横向加速度上限 |
 | `skidpad_radius` | 9.125m | FSG 标准圆半径 |
 | `skidpad_velocity` | 5.0 m/s | 八字速度 |
 | `skidpad_entry_x/y` | -15.0 / 0.0 m | 相对交叉点的入口参考 |
@@ -125,4 +135,4 @@ planning/
 ## 待完善
 
 - [ ] Delaunay PathSearch 的起点初始化逻辑（`SetStartPoint`）
-- [ ] Trackdrive 速度规划：根据曲率动态调整速度（曲率大→减速）
+- [ ] Trackdrive 局部中心线分支选择和平滑，重点降低紧凑外部图上的瞬时大偏差

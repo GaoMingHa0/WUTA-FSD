@@ -34,6 +34,7 @@ ControlCommand PurePursuit::compute(
   // 2. Advance monotonically along the path, then look ahead from that point.
   // This is essential for self-intersecting/overlapping paths such as skidpad:
   // selecting the last geometrically-close waypoint would jump to a later lap.
+  // Trackdrive local paths may also be re-ordered, so targets behind the car are rejected.
   progress_idx_ = std::max(
     progress_idx_, findNearestForwardIndex(state, waypoints));
   target_idx_ = findTargetIndex(state, waypoints, lookahead_dist_);
@@ -42,6 +43,11 @@ ControlCommand PurePursuit::compute(
   }
 
   const auto & target = waypoints[target_idx_];
+  if (longitudinalOffset(
+      target.pose.pose.position.x, target.pose.pose.position.y,
+      state.x, state.y, state.yaw) <= 0.0) {
+    return cmd;
+  }
   const double tx = target.pose.pose.position.x;
   const double ty = target.pose.pose.position.y;
 
@@ -75,15 +81,29 @@ int PurePursuit::findTargetIndex(
   const std::vector<autoware_msgs::msg::Waypoint> & waypoints,
   double ld) const
 {
-  // First point at or beyond the lookahead distance after current progress.
+  // First point at or beyond the lookahead distance after current progress,
+  // but only if it is in front of the vehicle.  A locally re-planned
+  // Trackdrive lane can occasionally arrive in the reverse order; following a
+  // behind-car target makes the vehicle turn around and circle.
+  int furthest_forward_idx = -1;
+  double furthest_forward = 0.0;
   for (int i = progress_idx_; i < static_cast<int>(waypoints.size()); ++i) {
+    const double forward = longitudinalOffset(
+      waypoints[i].pose.pose.position.x,
+      waypoints[i].pose.pose.position.y,
+      state.x, state.y, state.yaw);
+    if (forward <= 0.0) continue;
+    if (forward > furthest_forward) {
+      furthest_forward = forward;
+      furthest_forward_idx = i;
+    }
     const double d = planeDist(
       waypoints[i].pose.pose.position.x,
       waypoints[i].pose.pose.position.y,
       state.x, state.y);
     if (d >= ld) return i;
   }
-  return static_cast<int>(waypoints.size()) - 1;
+  return furthest_forward_idx;
 }
 
 int PurePursuit::findNearestForwardIndex(
@@ -103,6 +123,11 @@ int PurePursuit::findNearestForwardIndex(
       waypoints[i].pose.pose.position.x,
       waypoints[i].pose.pose.position.y,
       state.x, state.y);
+    const double forward = longitudinalOffset(
+      waypoints[i].pose.pose.position.x,
+      waypoints[i].pose.pose.position.y,
+      state.x, state.y, state.yaw);
+    if (forward < -0.5) continue;
     // Keep the first index for ties: repeated crossing points must resolve to
     // the current lap, not an identical point in a future lap.
     if (distance < nearest_distance) {
@@ -122,6 +147,16 @@ double PurePursuit::lateralOffset(
   // Body frame x = lateral (left positive), y = longitudinal (forward positive)
   // x_body = -dx·sin(yaw) + dy·cos(yaw)
   return -dx * std::sin(car_yaw) + dy * std::cos(car_yaw);
+}
+
+double PurePursuit::longitudinalOffset(
+  double target_x, double target_y,
+  double car_x,    double car_y, double car_yaw)
+{
+  const double dx = target_x - car_x;
+  const double dy = target_y - car_y;
+  // Body frame y = longitudinal, positive in front of the vehicle.
+  return dx * std::cos(car_yaw) + dy * std::sin(car_yaw);
 }
 
 double PurePursuit::planeDist(double ax, double ay, double bx, double by)

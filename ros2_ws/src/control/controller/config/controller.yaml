@@ -6,9 +6,9 @@ controller_node:
     max_steer_angle: 25.0   # degrees
 
     # Pure Pursuit lookahead
-    ld_ratio: 2.0           # lookahead = velocity × ratio
+    ld_ratio: 1.2           # lookahead = velocity × ratio
     min_lookahead: 2.0      # m — clamp at low speed
-    max_lookahead: 20.0     # m — clamp at high speed
+    max_lookahead: 10.0     # m — clamp at high speed
     max_progress_advance: 4 # waypoints per 50 Hz control update; keeps skidpad progress continuous
     # Fixed local preview for the 9.125 m skidpad circles.  This avoids the
     # generic 10 m preview shortcutting the curvature changes at the crossing.

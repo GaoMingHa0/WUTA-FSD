@@ -32,6 +32,7 @@ private:
   void onMissionModeCmd(const std_msgs::msg::String::SharedPtr msg);
   void onStartCommand(const std_msgs::msg::Bool::SharedPtr msg);
   void onMissionComplete(const std_msgs::msg::Bool::SharedPtr msg);
+  void onMapReady(const std_msgs::msg::Bool::SharedPtr msg);
   void advanceWhenReady();
 
   // ---------------------------------------------------------------------------
@@ -47,6 +48,7 @@ private:
   bool lidar_ready_{false};
   bool localization_ready_{false};
   bool map_closed_{false};
+  bool ndt_map_ready_{false};
   bool start_requested_{false};
 
   // Publishers
@@ -61,6 +63,7 @@ private:
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr mission_mode_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr start_command_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr mission_complete_sub_;
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr map_ready_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr inspection_trigger_sub_; // 预留
 
   // Timer for periodic state broadcast

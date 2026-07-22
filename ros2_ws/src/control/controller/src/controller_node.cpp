@@ -153,7 +153,19 @@ void ControllerNode::controlLoop()
     return;
   }
 
-  if (!raw_cmd.valid) return;
+  if (!raw_cmd.valid) {
+    twist_filter_->reset();
+    autoware_msgs::msg::Command stop;
+    stop.header.stamp = now();
+    stop.header.frame_id = "base_link";
+    stop.speed = 0.0;
+    stop.angle = 0.0;
+    stop.dv_state = 4;
+    cmd_pub_->publish(stop);
+    RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
+      "No forward waypoint target available; publishing stop command.");
+    return;
+  }
 
   // 2. Safety filter
   auto filtered = twist_filter_->filter(raw_cmd.steering_angle, raw_cmd.velocity);

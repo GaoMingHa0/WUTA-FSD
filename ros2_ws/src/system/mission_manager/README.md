@@ -46,6 +46,7 @@ IDLE ──(传感器就绪)──→ READY ──(/system/inspection_trigger)�
 | 订阅 | `/system/mission_mode_cmd` | `std_msgs/String` | 设置任务模式（trackdrive/skidpad/acceleration） |
 | 订阅 | `/system/start_command` | `std_msgs/Bool` | `true` 请求出发；在两项就绪后从 READY 进入 EXPLORE |
 | 订阅 | `/system/mission_complete` | `std_msgs/Bool` | 控制器完成停车后进入 FINISH |
+| 订阅 | `/ndt/map_ready` | `std_msgs/Bool` | map_saver 保存 NDT 地图后触发 `MAPPING_DONE` → `RACE` |
 | 订阅 | `/system/inspection_trigger` | `std_msgs/Bool` | **[预留]** 触发车检流程 |
 | 发布 | `/system/inspection_result` | `std_msgs/String` | **[预留]** 车检结果输出 |
 
@@ -55,5 +56,5 @@ IDLE ──(传感器就绪)──→ READY ──(/system/inspection_trigger)�
 
 ## 待完善
 
-- [ ] NDT 地图构建完成的检测逻辑（MAPPING_DONE → RACE）
+- [x] NDT 地图保存完成后，由 `/ndt/map_ready=true` 触发 `MAPPING_DONE` → `RACE`
 - [ ] 完成圈数计数（RACE → FINISH）

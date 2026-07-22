@@ -39,6 +39,8 @@ private:
   // Mode-specific path generators
   autoware_msgs::msg::Lane generateSkidpadPath() const;
   autoware_msgs::msg::Lane generateAccelerationPath() const;
+  autoware_msgs::msg::Lane resampleTrackdriveLane(const autoware_msgs::msg::Lane & lane) const;
+  void applyTrackdriveSpeedProfile(autoware_msgs::msg::Lane & lane) const;
 
   struct SkidpadCsvRow
   {
@@ -75,6 +77,9 @@ private:
   // Parameters
   // Trackdrive
   double trackdrive_velocity_{7.0};    // m/s
+  double trackdrive_resample_spacing_{1.0};  // m
+  double trackdrive_min_velocity_{3.0}; // m/s
+  double trackdrive_lateral_accel_limit_{4.0}; // m/s^2
 
   // Skidpad reference in map.  This matches tracks/skidpad.yaml by default.
   double skidpad_radius_{9.125};       // m

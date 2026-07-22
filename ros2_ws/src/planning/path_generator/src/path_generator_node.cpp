@@ -15,6 +15,12 @@ PathGeneratorNode::PathGeneratorNode(const rclcpp::NodeOptions & options)
 : Node("path_generator_node", options)
 {
   trackdrive_velocity_    = declare_parameter("trackdrive_velocity",    trackdrive_velocity_);
+  trackdrive_resample_spacing_ = declare_parameter(
+    "trackdrive_resample_spacing", trackdrive_resample_spacing_);
+  trackdrive_min_velocity_ = declare_parameter(
+    "trackdrive_min_velocity", trackdrive_min_velocity_);
+  trackdrive_lateral_accel_limit_ = declare_parameter(
+    "trackdrive_lateral_accel_limit", trackdrive_lateral_accel_limit_);
   skidpad_radius_         = declare_parameter("skidpad_radius",         skidpad_radius_);
   skidpad_velocity_       = declare_parameter("skidpad_velocity",       skidpad_velocity_);
   skidpad_points_         = declare_parameter("skidpad_points",         skidpad_points_);
@@ -158,13 +164,120 @@ void PathGeneratorNode::onCenterline(const autoware_msgs::msg::Lane::SharedPtr m
   if (mission_mode_ != State::MISSION_TRACKDRIVE) return;
   if (system_state_ != State::EXPLORE && system_state_ != State::RACE) return;
 
-  // Update velocity for trackdrive
-  auto lane = *msg;
-  for (auto & wp : lane.waypoints) {
-    wp.twist.twist.linear.x = trackdrive_velocity_;
-  }
+  auto lane = resampleTrackdriveLane(*msg);
+  applyTrackdriveSpeedProfile(lane);
   waypoints_pub_->publish(lane);
   publishVisualization(lane, 0.0f, 1.0f, 0.0f);  // green for trackdrive
+}
+
+autoware_msgs::msg::Lane PathGeneratorNode::resampleTrackdriveLane(
+  const autoware_msgs::msg::Lane & input) const
+{
+  if (input.waypoints.size() < 2 || trackdrive_resample_spacing_ <= 0.05) {
+    return input;
+  }
+
+  autoware_msgs::msg::Lane output;
+  output.header = input.header;
+  const double spacing = std::max(0.2, trackdrive_resample_spacing_);
+
+  const auto append_point = [&output, this](
+      const autoware_msgs::msg::Waypoint & source,
+      double x, double y, double z, double yaw) {
+    autoware_msgs::msg::Waypoint wp = source;
+    wp.pose.pose.position.x = x;
+    wp.pose.pose.position.y = y;
+    wp.pose.pose.position.z = z;
+    wp.pose.pose.orientation.x = 0.0;
+    wp.pose.pose.orientation.y = 0.0;
+    wp.pose.pose.orientation.z = std::sin(yaw * 0.5);
+    wp.pose.pose.orientation.w = std::cos(yaw * 0.5);
+    wp.twist.twist.linear.x = trackdrive_velocity_;
+    output.waypoints.push_back(wp);
+  };
+
+  for (std::size_t i = 0; i + 1 < input.waypoints.size(); ++i) {
+    const auto & from = input.waypoints[i];
+    const auto & to = input.waypoints[i + 1];
+    const double x0 = from.pose.pose.position.x;
+    const double y0 = from.pose.pose.position.y;
+    const double z0 = from.pose.pose.position.z;
+    const double x1 = to.pose.pose.position.x;
+    const double y1 = to.pose.pose.position.y;
+    const double z1 = to.pose.pose.position.z;
+    const double dx = x1 - x0;
+    const double dy = y1 - y0;
+    const double dz = z1 - z0;
+    const double length = std::hypot(dx, dy);
+    if (length < 1e-3) continue;
+
+    const double yaw = std::atan2(dy, dx);
+    const int segments = std::max(1, static_cast<int>(std::ceil(length / spacing)));
+    for (int step = 0; step < segments; ++step) {
+      if (!output.waypoints.empty() && step == 0) continue;
+      const double ratio = static_cast<double>(step) / segments;
+      append_point(from, x0 + dx * ratio, y0 + dy * ratio, z0 + dz * ratio, yaw);
+    }
+  }
+
+  const auto & last = input.waypoints.back();
+  const auto & previous = input.waypoints[input.waypoints.size() - 2];
+  const double yaw = std::atan2(
+    last.pose.pose.position.y - previous.pose.pose.position.y,
+    last.pose.pose.position.x - previous.pose.pose.position.x);
+  append_point(last, last.pose.pose.position.x, last.pose.pose.position.y,
+    last.pose.pose.position.z, yaw);
+  return output;
+}
+
+void PathGeneratorNode::applyTrackdriveSpeedProfile(autoware_msgs::msg::Lane & lane) const
+{
+  if (lane.waypoints.empty()) return;
+
+  const double max_velocity = std::max(0.0, trackdrive_velocity_);
+  const double min_velocity = std::clamp(trackdrive_min_velocity_, 0.0, max_velocity);
+  const double lateral_accel = std::max(0.1, trackdrive_lateral_accel_limit_);
+
+  if (lane.waypoints.size() < 3 || max_velocity <= 0.0) {
+    for (auto & wp : lane.waypoints) {
+      wp.twist.twist.linear.x = max_velocity;
+    }
+    return;
+  }
+
+  for (std::size_t i = 0; i < lane.waypoints.size(); ++i) {
+    const std::size_t prev_index = (i == 0) ? 0 : i - 1;
+    const std::size_t next_index = (i + 1 >= lane.waypoints.size())
+      ? lane.waypoints.size() - 1
+      : i + 1;
+
+    const auto & prev = lane.waypoints[prev_index].pose.pose.position;
+    const auto & curr = lane.waypoints[i].pose.pose.position;
+    const auto & next = lane.waypoints[next_index].pose.pose.position;
+
+    const double ax = curr.x - prev.x;
+    const double ay = curr.y - prev.y;
+    const double bx = next.x - curr.x;
+    const double by = next.y - curr.y;
+    const double cx = next.x - prev.x;
+    const double cy = next.y - prev.y;
+
+    const double a = std::hypot(ax, ay);
+    const double b = std::hypot(bx, by);
+    const double c = std::hypot(cx, cy);
+    double target_velocity = max_velocity;
+
+    if (a > 1e-3 && b > 1e-3 && c > 1e-3) {
+      const double double_area = std::abs(ax * cy - ay * cx);
+      const double curvature = 2.0 * double_area / (a * b * c);
+      if (curvature > 1e-4) {
+        target_velocity = std::sqrt(lateral_accel / curvature);
+      }
+    }
+
+    lane.waypoints[i].twist.twist.linear.x =
+      std::clamp(target_velocity, min_velocity, max_velocity);
+  }
 }
 
 void PathGeneratorNode::exportSkidpadCsv(const std::vector<SkidpadCsvRow> & rows) const

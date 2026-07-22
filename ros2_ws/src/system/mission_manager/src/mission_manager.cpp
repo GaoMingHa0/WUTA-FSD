@@ -40,6 +40,10 @@ MissionManager::MissionManager(const rclcpp::NodeOptions & options)
     "/system/mission_complete", 10,
     std::bind(&MissionManager::onMissionComplete, this, std::placeholders::_1));
 
+  map_ready_sub_ = create_subscription<std_msgs::msg::Bool>(
+    "/ndt/map_ready", 10,
+    std::bind(&MissionManager::onMapReady, this, std::placeholders::_1));
+
   lidar_status_sub_ = create_subscription<std_msgs::msg::Bool>(
     "/system/lidar_ready", 10,
     [this](const std_msgs::msg::Bool::SharedPtr msg) {
@@ -130,7 +134,20 @@ void MissionManager::onConeMap(const wuta_msgs::msg::ConeMap::SharedPtr msg)
     RCLCPP_INFO(get_logger(), "Cone map closed. %zu blue + %zu yellow cones.",
       msg->blue_cones.size(), msg->yellow_cones.size());
     transitionTo(State::MAPPING_DONE);
-    // TODO: wait for NDT map build completion, then transitionTo(State::RACE)
+    if (ndt_map_ready_) {
+      transitionTo(State::RACE);
+    }
+  }
+}
+
+void MissionManager::onMapReady(const std_msgs::msg::Bool::SharedPtr msg)
+{
+  if (!msg->data) return;
+  ndt_map_ready_ = true;
+
+  if (current_state_ == State::MAPPING_DONE) {
+    RCLCPP_INFO(get_logger(), "NDT map ready. Entering RACE mode.");
+    transitionTo(State::RACE);
   }
 }
 

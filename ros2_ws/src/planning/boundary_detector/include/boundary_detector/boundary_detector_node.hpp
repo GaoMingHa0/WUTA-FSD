@@ -34,6 +34,10 @@ private:
   // Run Delaunay + path search, return centerline waypoints
   autoware_msgs::msg::Lane computeCenterline(const std::vector<Point2d> & points);
 
+  // Online Trackdrive path: pair forward blue/yellow cones in the local driving direction.
+  autoware_msgs::msg::Lane computePairedCenterline(const wuta_msgs::msg::ConeMap & map) const;
+  autoware_msgs::msg::Lane computeLocalFrameCenterline(const wuta_msgs::msg::ConeMap & map) const;
+
   void publishVisualization(const autoware_msgs::msg::Lane & lane);
 
   // Algorithm
@@ -44,10 +48,12 @@ private:
   geometry_msgs::msg::PoseStamped current_pose_;
   bool pose_ready_{false};
   uint8_t mission_mode_{wuta_msgs::msg::MissionState::MISSION_TRACKDRIVE};
+  int short_color_pair_streak_{0};
 
   // Parameters
   double lookahead_distance_{15.0};  // m — how far ahead to plan
   double desired_velocity_{7.0};     // m/s — default, overridden by path_generator
+  int local_pairing_min_streak_{10}; // cycles before geometry-only pairing is allowed
 
   // Subscribers
   rclcpp::Subscription<wuta_msgs::msg::ConeMap>::SharedPtr cone_map_sub_;

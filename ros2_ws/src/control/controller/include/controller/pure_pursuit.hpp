@@ -69,6 +69,10 @@ private:
   static double lateralOffset(double target_x, double target_y,
                                double car_x, double car_y, double car_yaw);
 
+  // Transform global point to vehicle body frame, return forward offset y
+  static double longitudinalOffset(double target_x, double target_y,
+                                   double car_x, double car_y, double car_yaw);
+
   static double planeDist(double ax, double ay, double bx, double by);
 
   VehicleParams params_;
