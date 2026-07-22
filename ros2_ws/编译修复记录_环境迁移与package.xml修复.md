@@ -2,7 +2,7 @@
 
 > 日期: 2026-07-09
 > 环境: Ubuntu 22.04 (WSL2), ROS 2 Humble, CMake 4.3.4 (pip)
-> 工作空间: `/home/g2909/WUTA1/WUTA-FSD/ros2_ws`
+> 工作空间: `/path/to/WUTA-FSD/ros2_ws`
 > 分支: `小登测试`
 
 ---
@@ -23,7 +23,7 @@
 
 | 对比项 | WUTA 副本 | WUTA1 副本（本文档基于此） |
 |--------|----------|------------------------|
-| 路径 | `/home/g2909/WUTA-FSD/ros2_ws` | `/home/g2909/WUTA1/WUTA-FSD/ros2_ws` |
+| 路径 | `/path/to/old/WUTA-FSD/ros2_ws` | `/path/to/WUTA-FSD/ros2_ws` |
 | 分支 | `wuta0318` | `小登测试`（多 1 个 commit `4968e7d`） |
 | 源码修复状态 | 4 项关键修复**未生效**（见下文 §2） | 4 项关键修复**已生效** |
 | 能否直接编译 | ❌ 必然失败 | ✅ 修复 package.xml 后可通过 |
@@ -233,7 +233,7 @@ echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
 
 # 最终验证
-which cmake          # 应输出 /home/<用户>/.local/bin/cmake
+which cmake          # 应输出 ~/.local/bin/cmake
 cmake --version     # 应输出 4.x
 ```
 
@@ -276,7 +276,7 @@ git config --global --unset https.proxy
 ### 4.6 编译
 
 ```bash
-cd /home/<用户>/WUTA1/WUTA-FSD/ros2_ws
+cd /path/to/WUTA-FSD/ros2_ws
 
 # 首次编译前确认：无陈旧 build/ 缓存
 # 如果之前失败过，先清理：
