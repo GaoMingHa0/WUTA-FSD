@@ -2,6 +2,7 @@
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <yaml-cpp/yaml.h>
+#include <algorithm>
 #include <cmath>
 #include <fstream>
 
@@ -174,6 +175,7 @@ bool ConeMapBuilder::integrateDetections(const wuta_msgs::msg::ConeArray & cones
     const double cx = pt_map.point.x;
     const double cy = pt_map.point.y;
     const double cz = pt_map.point.z;
+    const uint8_t observed_color = classifyConeObservation(cone);
 
     // Search for existing cone within merge_distance
     bool merged = false;
@@ -186,10 +188,8 @@ bool ConeMapBuilder::integrateDetections(const wuta_msgs::msg::ConeArray & cones
         tracked.y = (tracked.y * tracked.hit_count + cy) / (tracked.hit_count + 1);
         tracked.z = (tracked.z * tracked.hit_count + cz) / (tracked.hit_count + 1);
         tracked.hit_count++;
-        // Update color if not yet assigned and we have a better estimate
-        if (tracked.color == wuta_msgs::msg::Cone::COLOR_UNKNOWN && assign_colors_) {
-          tracked.color = assignColor(tracked.x, tracked.y);
-        }
+        addColorVote(tracked, observed_color);
+        tracked.color = majorityColor(tracked);
         merged = true;
         break;
       }
@@ -200,9 +200,8 @@ bool ConeMapBuilder::integrateDetections(const wuta_msgs::msg::ConeArray & cones
       new_cone.x     = cx;
       new_cone.y     = cy;
       new_cone.z     = cz;
-      new_cone.color = assign_colors_
-        ? assignColor(cx, cy)
-        : wuta_msgs::msg::Cone::COLOR_UNKNOWN;
+      new_cone.color = observed_color;
+      addColorVote(new_cone, observed_color);
       cone_map_.push_back(new_cone);
 
       // Record start pose on first cone detection
@@ -215,29 +214,58 @@ bool ConeMapBuilder::integrateDetections(const wuta_msgs::msg::ConeArray & cones
   return true;
 }
 
-uint8_t ConeMapBuilder::assignColor(double cone_x_map, double cone_y_map) const
+uint8_t ConeMapBuilder::classifyConeObservation(const wuta_msgs::msg::Cone & cone) const
 {
-  // Determine left/right relative to current vehicle heading
-  // Blue = left boundary, Yellow = right boundary (FSG rules)
-  const double vx = current_pose_.pose.position.x;
-  const double vy = current_pose_.pose.position.y;
+  if (!assign_colors_) {
+    return cone.color;
+  }
 
-  // Vehicle heading from quaternion (yaw)
-  const auto & q = current_pose_.pose.orientation;
-  const double yaw = std::atan2(
-    2.0 * (q.w * q.z + q.x * q.y),
-    1.0 - 2.0 * (q.y * q.y + q.z * q.z));
+  // The detector publishes cones in the LiDAR/body-aligned sensor frame. In ROS
+  // base_link convention y>0 is the vehicle left side, so this does not depend
+  // on delayed EKF yaw while preserving the default left/right heuristic.
+  return cone.position.y >= 0.0
+    ? wuta_msgs::msg::Cone::COLOR_BLUE
+    : wuta_msgs::msg::Cone::COLOR_YELLOW;
+}
 
-  // Vector from vehicle to cone
-  const double dcx = cone_x_map - vx;
-  const double dcy = cone_y_map - vy;
+void ConeMapBuilder::addColorVote(TrackedCone & tracked, uint8_t color) const
+{
+  switch (color) {
+    case wuta_msgs::msg::Cone::COLOR_BLUE:
+      ++tracked.blue_votes;
+      break;
+    case wuta_msgs::msg::Cone::COLOR_YELLOW:
+      ++tracked.yellow_votes;
+      break;
+    case wuta_msgs::msg::Cone::COLOR_ORANGE:
+      ++tracked.orange_votes;
+      break;
+    default:
+      ++tracked.unknown_votes;
+      break;
+  }
+}
 
-  // Cross product: heading × d_cone → positive = left, negative = right
-  const double cross = std::cos(yaw) * dcy - std::sin(yaw) * dcx;
+uint8_t ConeMapBuilder::majorityColor(const TrackedCone & tracked) const
+{
+  const int best_votes = std::max(
+    {tracked.blue_votes, tracked.yellow_votes, tracked.orange_votes});
+  if (best_votes <= 0) {
+    return wuta_msgs::msg::Cone::COLOR_UNKNOWN;
+  }
 
-  return cross > 0
-    ? wuta_msgs::msg::Cone::COLOR_BLUE    // Left
-    : wuta_msgs::msg::Cone::COLOR_YELLOW; // Right
+  const bool blue_best = tracked.blue_votes == best_votes;
+  const bool yellow_best = tracked.yellow_votes == best_votes;
+  const bool orange_best = tracked.orange_votes == best_votes;
+  const int tied_best_count =
+    static_cast<int>(blue_best) + static_cast<int>(yellow_best) + static_cast<int>(orange_best);
+  if (tied_best_count > 1 && tracked.color != wuta_msgs::msg::Cone::COLOR_UNKNOWN) {
+    return tracked.color;
+  }
+
+  if (blue_best) return wuta_msgs::msg::Cone::COLOR_BLUE;
+  if (yellow_best) return wuta_msgs::msg::Cone::COLOR_YELLOW;
+  return wuta_msgs::msg::Cone::COLOR_ORANGE;
 }
 
 bool ConeMapBuilder::checkLoopClosure()

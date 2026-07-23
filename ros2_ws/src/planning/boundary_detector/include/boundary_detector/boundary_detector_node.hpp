@@ -37,6 +37,7 @@ private:
   // Online Trackdrive path: pair forward blue/yellow cones in the local driving direction.
   autoware_msgs::msg::Lane computePairedCenterline(const wuta_msgs::msg::ConeMap & map) const;
   autoware_msgs::msg::Lane computeLocalFrameCenterline(const wuta_msgs::msg::ConeMap & map) const;
+  bool hasSevereColorImbalance(const wuta_msgs::msg::ConeMap & map) const;
 
   void publishVisualization(const autoware_msgs::msg::Lane & lane);
 
@@ -54,6 +55,7 @@ private:
   double lookahead_distance_{15.0};  // m — how far ahead to plan
   double desired_velocity_{7.0};     // m/s — default, overridden by path_generator
   int local_pairing_min_streak_{10}; // cycles before geometry-only pairing is allowed
+  double local_pairing_color_imbalance_ratio_{0.20};
 
   // Subscribers
   rclcpp::Subscription<wuta_msgs::msg::ConeMap>::SharedPtr cone_map_sub_;

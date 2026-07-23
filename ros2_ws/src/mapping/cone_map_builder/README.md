@@ -15,9 +15,10 @@
   distance < merge_distance(0.5m) → 加权平均更新位置
   否则 → 新增锥桶
         │
-        ▼ 颜色分配（叉积法）
-  锥桶在车辆左侧 → COLOR_BLUE
-  锥桶在车辆右侧 → COLOR_YELLOW
+        ▼ 颜色分配（默认左右法）
+  传感器坐标系 y>0 → COLOR_BLUE
+  传感器坐标系 y<0 → COLOR_YELLOW
+  同一锥桶多次观测采用颜色投票，避免单帧误染长期保留
         │
         ▼ hit_count >= min_hit_count(2) → 发布
         │
@@ -45,7 +46,7 @@
 | `merge_distance` | 1.2m | 同一锥桶合并距离；Mode B 中用于吸收 INS/EKF 与检测噪声导致的重复锥桶，仍需小于相邻锥桶间距 |
 | `min_hit_count` | 2 | 发布前的最低检测次数，过滤单帧噪声 |
 | `loop_closure_distance` | 3.0m | 判定回到起点的距离阈值 |
-| `assign_colors` | true | 接入相机 fusion 后改为 false |
+| `assign_colors` | true | true 时按 LiDAR/body 坐标系左右分色；false 时保留上游 detection/fusion 给出的颜色 |
 | `map_save_path` | `/tmp/wuta_cone_map.yaml` | 地图保存路径 |
 
 ## 线程模型
@@ -76,6 +77,6 @@ cone_map:
 
 ## 待完善
 
-- [ ] 上相机后将 `assign_colors` 改为 false，由 detection_fusion 提供颜色
+- [ ] 上相机后将 `assign_colors` 改为 false，由 detection_fusion 提供颜色；builder 将保留上游颜色并继续做合并投票
 - [ ] 地图加载接口（供 NDT 模式初始化使用）
 - [ ] 橙色锥桶（起终点）的特殊处理

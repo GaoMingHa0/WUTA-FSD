@@ -76,6 +76,8 @@ BoundaryDetectorNode::BoundaryDetectorNode(const rclcpp::NodeOptions & options)
   desired_velocity_   = declare_parameter("desired_velocity",   desired_velocity_);
   local_pairing_min_streak_ = declare_parameter(
     "local_pairing_min_streak", local_pairing_min_streak_);
+  local_pairing_color_imbalance_ratio_ = declare_parameter(
+    "local_pairing_color_imbalance_ratio", local_pairing_color_imbalance_ratio_);
 
   // Subscribers
   cone_map_sub_ = create_subscription<wuta_msgs::msg::ConeMap>(
@@ -125,12 +127,15 @@ void BoundaryDetectorNode::onConeMap(const wuta_msgs::msg::ConeMap::SharedPtr ms
     ++short_color_pair_streak_;
   }
 
-  if (!using_pair_lane && short_color_pair_streak_ >= local_pairing_min_streak_) {
+  const bool color_imbalanced = hasSevereColorImbalance(*msg);
+
+  if (!using_pair_lane &&
+      (color_imbalanced || short_color_pair_streak_ >= local_pairing_min_streak_)) {
     auto local_lane = computeLocalFrameCenterline(*msg);
     if (local_lane.waypoints.size() > lane.waypoints.size()) {
       RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
-        "Using local-frame cone pairing (%zu waypoints)",
-        local_lane.waypoints.size());
+        "Using local-frame cone pairing (%zu waypoints, color_imbalanced=%s)",
+        local_lane.waypoints.size(), color_imbalanced ? "true" : "false");
       lane = local_lane;
       using_pair_lane = true;
     }
@@ -465,6 +470,8 @@ autoware_msgs::msg::Lane BoundaryDetectorNode::computeLocalFrameCenterline(
     return lane;
   }
 
+  lane.header.stamp = now();
+  lane.header.frame_id = "map";
   for (const auto & candidate : ordered_candidates) {
     autoware_msgs::msg::Waypoint wp;
     wp.pose.pose.position.x = candidate.x;
@@ -476,6 +483,18 @@ autoware_msgs::msg::Lane BoundaryDetectorNode::computeLocalFrameCenterline(
   }
 
   return lane;
+}
+
+bool BoundaryDetectorNode::hasSevereColorImbalance(const wuta_msgs::msg::ConeMap & map) const
+{
+  const std::size_t blue_count = map.blue_cones.size();
+  const std::size_t yellow_count = map.yellow_cones.size();
+  const std::size_t colored_count = blue_count + yellow_count;
+  if (colored_count < 6) return false;
+
+  const double min_fraction = static_cast<double>(std::min(blue_count, yellow_count)) /
+    static_cast<double>(colored_count);
+  return min_fraction < local_pairing_color_imbalance_ratio_;
 }
 
 autoware_msgs::msg::Lane BoundaryDetectorNode::computePairedCenterline(

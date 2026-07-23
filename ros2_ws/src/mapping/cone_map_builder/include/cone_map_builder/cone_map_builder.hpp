@@ -22,6 +22,10 @@ struct TrackedCone
   double x, y, z;
   uint8_t color;
   int hit_count{1};       // Number of times detected (confidence proxy)
+  int blue_votes{0};
+  int yellow_votes{0};
+  int orange_votes{0};
+  int unknown_votes{0};
 };
 
 struct PendingDetection
@@ -43,7 +47,9 @@ private:
   // Core logic
   bool integrateDetections(const wuta_msgs::msg::ConeArray & cones_in_sensor_frame);
   void processPendingDetections();
-  uint8_t assignColor(double cone_x_map, double cone_y_map) const;
+  uint8_t classifyConeObservation(const wuta_msgs::msg::Cone & cone) const;
+  void addColorVote(TrackedCone & tracked, uint8_t color) const;
+  uint8_t majorityColor(const TrackedCone & tracked) const;
   bool checkLoopClosure();
   void publishMap();
   void publishVisualization();
