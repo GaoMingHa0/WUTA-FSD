@@ -1,7 +1,9 @@
 cone_map_builder:
   ros__parameters:
-    # Cone merging: cones closer than this are considered the same physical cone
-    merge_distance: 1.2         # m
+    # Cone merging: keep this below tight-corner cone spacing. A large radius
+    # (for example 1.2 m) can merge neighbouring cones in Trackdrive hairpins
+    # and make the online centerline disappear or fold back.
+    merge_distance: 0.6         # m
 
     # Only publish cones seen at least this many times (noise filter)
     min_hit_count: 2

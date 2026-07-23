@@ -43,6 +43,10 @@ PathGeneratorNode::PathGeneratorNode(const rclcpp::NodeOptions & options)
     "trackdrive_lateral_accel_limit", trackdrive_lateral_accel_limit_);
   trackdrive_min_forward_target_ = declare_parameter(
     "trackdrive_min_forward_target", trackdrive_min_forward_target_);
+  trackdrive_short_centerline_velocity_ = declare_parameter(
+    "trackdrive_short_centerline_velocity", trackdrive_short_centerline_velocity_);
+  trackdrive_short_centerline_points_ = declare_parameter(
+    "trackdrive_short_centerline_points", trackdrive_short_centerline_points_);
   skidpad_radius_         = declare_parameter("skidpad_radius",         skidpad_radius_);
   skidpad_velocity_       = declare_parameter("skidpad_velocity",       skidpad_velocity_);
   skidpad_points_         = declare_parameter("skidpad_points",         skidpad_points_);
@@ -187,8 +191,20 @@ void PathGeneratorNode::onCenterline(const autoware_msgs::msg::Lane::SharedPtr m
   if (mission_mode_ != State::MISSION_TRACKDRIVE) return;
   if (system_state_ != State::EXPLORE && system_state_ != State::RACE) return;
 
+  const bool short_centerline = msg->waypoints.size() <=
+    static_cast<std::size_t>(std::max(2, trackdrive_short_centerline_points_));
   auto lane = resampleTrackdriveLane(*msg);
   applyTrackdriveSpeedProfile(lane);
+  if (short_centerline) {
+    const double velocity_cap = std::clamp(
+      trackdrive_short_centerline_velocity_, 0.0, std::max(0.0, trackdrive_velocity_));
+    for (auto & waypoint : lane.waypoints) {
+      waypoint.twist.twist.linear.x = std::min(waypoint.twist.twist.linear.x, velocity_cap);
+    }
+    RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
+      "Short Trackdrive centerline (%zu source waypoints); capping speed to %.2f m/s",
+      msg->waypoints.size(), velocity_cap);
+  }
   if (!trackdriveLaneHasForwardTarget(lane)) {
     if (last_trackdrive_lane_ready_ &&
         trackdriveLaneHasForwardTarget(last_trackdrive_lane_))

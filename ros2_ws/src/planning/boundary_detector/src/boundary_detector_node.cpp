@@ -78,6 +78,7 @@ BoundaryDetectorNode::BoundaryDetectorNode(const rclcpp::NodeOptions & options)
     "local_pairing_min_streak", local_pairing_min_streak_);
   local_pairing_color_imbalance_ratio_ = declare_parameter(
     "local_pairing_color_imbalance_ratio", local_pairing_color_imbalance_ratio_);
+  delaunay_min_waypoints_ = declare_parameter("delaunay_min_waypoints", delaunay_min_waypoints_);
 
   // Subscribers
   cone_map_sub_ = create_subscription<wuta_msgs::msg::ConeMap>(
@@ -152,15 +153,25 @@ void BoundaryDetectorNode::onConeMap(const wuta_msgs::msg::ConeMap::SharedPtr ms
 
   if (lane.waypoints.size() < 3) {
     auto fallback_lane = computeCenterline(points);
-    if (!fallback_lane.waypoints.empty()) {
+    const std::size_t min_delaunay_waypoints =
+      static_cast<std::size_t>(std::max(3, delaunay_min_waypoints_));
+    if (fallback_lane.waypoints.size() >= min_delaunay_waypoints) {
       RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
         "Using Delaunay centerline fallback (%zu waypoints)",
         fallback_lane.waypoints.size());
       lane = fallback_lane;
       using_pair_lane = false;
+    } else if (!fallback_lane.waypoints.empty()) {
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
+        "Rejected short Delaunay centerline fallback (%zu waypoints, min=%zu)",
+        fallback_lane.waypoints.size(), min_delaunay_waypoints);
     }
   }
-  if (lane.waypoints.empty()) return;
+  if (lane.waypoints.size() < 3) {
+    RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
+      "Rejected short Trackdrive centerline (%zu waypoints)", lane.waypoints.size());
+    return;
+  }
   if (using_pair_lane && lane.waypoints.size() >= 3) {
     last_midps_.clear();
   }

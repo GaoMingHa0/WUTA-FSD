@@ -6,6 +6,8 @@ path_generator_node:
     trackdrive_min_velocity: 3.0   # m/s, lower bound for tight corners
     trackdrive_lateral_accel_limit: 4.0 # m/s^2, curvature speed cap
     trackdrive_min_forward_target: 0.5 # m, reject locally reversed centerlines
+    trackdrive_short_centerline_velocity: 3.0 # m/s, cap unstable 2-3 point fallback paths
+    trackdrive_short_centerline_points: 3 # source centerline points at or below this are speed-capped
 
     # SKIDPAD (FSG standard geometry)
     skidpad_radius: 9.125          # m
