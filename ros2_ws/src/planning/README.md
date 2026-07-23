@@ -78,6 +78,7 @@ planning/
 - 使用 `boundary_detector` 基于在线锥桶地图输出的局部中心线
 - 将稀疏局部中心线按 `trackdrive_resample_spacing` 重采样
 - 根据重采样后的局部曲率限制 waypoint 速度：直道不超过 `trackdrive_velocity`，弯道不低于 `trackdrive_min_velocity`，横向加速度上限由 `trackdrive_lateral_accel_limit` 控制
+- 发布前检查 Trackdrive 局部中心线是否仍有车头前方目标点；若没有，则拒绝该帧反向/不可追踪路径并保持上一条有效路径，避免车辆被短局部路径诱导掉头
 
 #### SKIDPAD（八字绕桩）
 - 使用 `skidpad_start_*` 固定 map 参考，与 `tracks/skidpad.yaml` 对齐，不随定位位姿重建
@@ -112,6 +113,7 @@ planning/
 | `trackdrive_resample_spacing` | 1.0 m | 高速循迹局部中心线重采样间距，用于给 Pure Pursuit 提供连续前向目标 |
 | `trackdrive_min_velocity` | 3.0 m/s | Trackdrive 曲率限速的最低目标速度 |
 | `trackdrive_lateral_accel_limit` | 4.0 m/s^2 | Trackdrive 曲率限速使用的横向加速度上限 |
+| `trackdrive_min_forward_target` | 0.5 m | Trackdrive 新局部路径至少需要包含一个车头前方目标点，否则保持上一条有效路径 |
 | `skidpad_radius` | 9.125m | FSG 标准圆半径 |
 | `skidpad_velocity` | 5.0 m/s | 八字速度 |
 | `skidpad_entry_x/y` | -15.0 / 0.0 m | 相对交叉点的入口参考 |

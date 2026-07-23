@@ -42,7 +42,7 @@
 
 | 参数 | 默认值 | 说明 |
 |------|--------|------|
-| `merge_distance` | 0.5m | 同一锥桶合并距离，太大会合并相邻锥桶 |
+| `merge_distance` | 1.2m | 同一锥桶合并距离；Mode B 中用于吸收 INS/EKF 与检测噪声导致的重复锥桶，仍需小于相邻锥桶间距 |
 | `min_hit_count` | 2 | 发布前的最低检测次数，过滤单帧噪声 |
 | `loop_closure_distance` | 3.0m | 判定回到起点的距离阈值 |
 | `assign_colors` | true | 接入相机 fusion 后改为 false |

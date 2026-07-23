@@ -8,6 +8,26 @@
 
 namespace path_generator
 {
+namespace
+{
+double yawFromPose(const geometry_msgs::msg::PoseStamped & pose)
+{
+  const auto & q = pose.pose.orientation;
+  return std::atan2(
+    2.0 * (q.w * q.z + q.x * q.y),
+    1.0 - 2.0 * (q.y * q.y + q.z * q.z));
+}
+
+double longitudinalOffset(
+  const geometry_msgs::msg::PoseStamped & pose,
+  double yaw,
+  const geometry_msgs::msg::Point & point)
+{
+  const double dx = point.x - pose.pose.position.x;
+  const double dy = point.y - pose.pose.position.y;
+  return std::cos(yaw) * dx + std::sin(yaw) * dy;
+}
+}  // namespace
 
 using State = wuta_msgs::msg::MissionState;
 
@@ -21,6 +41,8 @@ PathGeneratorNode::PathGeneratorNode(const rclcpp::NodeOptions & options)
     "trackdrive_min_velocity", trackdrive_min_velocity_);
   trackdrive_lateral_accel_limit_ = declare_parameter(
     "trackdrive_lateral_accel_limit", trackdrive_lateral_accel_limit_);
+  trackdrive_min_forward_target_ = declare_parameter(
+    "trackdrive_min_forward_target", trackdrive_min_forward_target_);
   skidpad_radius_         = declare_parameter("skidpad_radius",         skidpad_radius_);
   skidpad_velocity_       = declare_parameter("skidpad_velocity",       skidpad_velocity_);
   skidpad_points_         = declare_parameter("skidpad_points",         skidpad_points_);
@@ -126,6 +148,7 @@ void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
   if (mission_changed) {
     skidpad_path_ready_ = false;
     acceleration_path_ready_ = false;
+    last_trackdrive_lane_ready_ = false;
   }
 
   // Trigger non-trackdrive paths when system is active
@@ -166,6 +189,26 @@ void PathGeneratorNode::onCenterline(const autoware_msgs::msg::Lane::SharedPtr m
 
   auto lane = resampleTrackdriveLane(*msg);
   applyTrackdriveSpeedProfile(lane);
+  if (!trackdriveLaneHasForwardTarget(lane)) {
+    if (last_trackdrive_lane_ready_ &&
+        trackdriveLaneHasForwardTarget(last_trackdrive_lane_))
+    {
+      auto cached_lane = last_trackdrive_lane_;
+      cached_lane.header.stamp = now();
+      waypoints_pub_->publish(cached_lane);
+      publishVisualization(cached_lane, 0.0f, 0.8f, 0.2f);
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
+        "Rejected reverse/no-forward Trackdrive lane (%zu waypoints); holding last valid lane",
+        lane.waypoints.size());
+    } else {
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
+        "Rejected reverse/no-forward Trackdrive lane (%zu waypoints); no valid cached lane",
+        lane.waypoints.size());
+    }
+    return;
+  }
+  last_trackdrive_lane_ = lane;
+  last_trackdrive_lane_ready_ = true;
   waypoints_pub_->publish(lane);
   publishVisualization(lane, 0.0f, 1.0f, 0.0f);  // green for trackdrive
 }
@@ -278,6 +321,23 @@ void PathGeneratorNode::applyTrackdriveSpeedProfile(autoware_msgs::msg::Lane & l
     lane.waypoints[i].twist.twist.linear.x =
       std::clamp(target_velocity, min_velocity, max_velocity);
   }
+}
+
+bool PathGeneratorNode::trackdriveLaneHasForwardTarget(
+  const autoware_msgs::msg::Lane & lane) const
+{
+  if (!pose_ready_ || lane.waypoints.empty()) {
+    return true;
+  }
+
+  const double yaw = yawFromPose(current_pose_);
+  const double min_forward = std::max(0.0, trackdrive_min_forward_target_);
+  for (const auto & wp : lane.waypoints) {
+    if (longitudinalOffset(current_pose_, yaw, wp.pose.pose.position) > min_forward) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void PathGeneratorNode::exportSkidpadCsv(const std::vector<SkidpadCsvRow> & rows) const

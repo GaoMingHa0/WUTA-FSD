@@ -41,6 +41,7 @@ private:
   autoware_msgs::msg::Lane generateAccelerationPath() const;
   autoware_msgs::msg::Lane resampleTrackdriveLane(const autoware_msgs::msg::Lane & lane) const;
   void applyTrackdriveSpeedProfile(autoware_msgs::msg::Lane & lane) const;
+  bool trackdriveLaneHasForwardTarget(const autoware_msgs::msg::Lane & lane) const;
 
   struct SkidpadCsvRow
   {
@@ -67,6 +68,8 @@ private:
   bool skidpad_path_ready_{false};
   autoware_msgs::msg::Lane acceleration_path_;
   bool acceleration_path_ready_{false};
+  autoware_msgs::msg::Lane last_trackdrive_lane_;
+  bool last_trackdrive_lane_ready_{false};
 
   // Trajectory history — accumulates driven positions for visualization
   std::vector<geometry_msgs::msg::Point> trajectory_;
@@ -80,6 +83,7 @@ private:
   double trackdrive_resample_spacing_{1.0};  // m
   double trackdrive_min_velocity_{3.0}; // m/s
   double trackdrive_lateral_accel_limit_{4.0}; // m/s^2
+  double trackdrive_min_forward_target_{0.5}; // m
 
   // Skidpad reference in map.  This matches tracks/skidpad.yaml by default.
   double skidpad_radius_{9.125};       // m
