@@ -49,8 +49,8 @@ planning/
 3. 按车辆航向投影，过滤左右关系错误、赛道宽度异常、前向间隔过大的锥桶组合
 4. 对可用蓝/黄锥桶做唯一配对，取两锥中点作为中心线候选点
 5. 使用车辆当前航向、候选点间距离、蓝/黄锥横向向量推导出的局部赛道切向进行连续性排序，避免在相邻赛段较近时跳到错误分支
-6. 若颜色信息连续不足，则可按车辆局部坐标将可见锥桶分为左右两侧，做几何配对兜底；该策略由 `local_pairing_min_streak` 控制，当前默认下一帧即启用，优先避免颜色误判导致断路
-7. 若建图颜色严重失衡（例如局部几乎全蓝/全黄），立即使用车辆局部坐标系左右配对兜底，避免错误颜色把中心线拉到赛道外；若上述配对仍不足，则从 `/mapping/cone_map` 的局部锥桶做 Delaunay 三角剖分兜底（BowyerWatson 算法），但少于 `delaunay_min_waypoints` 的短兜底路径会被拒绝；默认允许 3 点兜底，但下游会对短中心线自动降速
+6. If color-based pairing is short for local_pairing_min_streak consecutive cycles, local-frame left/right geometric pairing may be used as a fallback. The default is 3 cycles, so fallback does not replace normal blue/yellow pairing too early.
+7. If colors are severely imbalanced, local-frame pairing is allowed immediately; if that still fails, Delaunay fallback is used only when it produces at least `delaunay_min_waypoints` centerline points. The default is 3 because the current online cone map often exposes only a short local fallback; path_generator caps these short centerlines to low speed.
 8. 兜底路径会按当前车辆航向过滤明显位于车后的中点，并在必要时翻转局部路径顺序，降低中心线反向导致掉头的概率
 9. 输出为 `autoware_msgs/Lane`
 
@@ -108,10 +108,10 @@ planning/
 
 | 参数 | 默认值 | 说明 |
 |------|--------|------|
-| `boundary_detector.lookahead_distance` | 22.0 m | 高速循迹在线蓝/黄锥配对和 Delaunay 兜底的局部取锥范围；大于控制器 8.4 m 高速前视，同时减少紧凑图上跨分支误配 |
-| `boundary_detector.local_pairing_min_streak` | 1 | 颜色配对连续不足多少个周期后，允许车辆局部坐标系左右锥几何配对兜底；仿真中优先避免颜色误判后长时间断路 |
+| `boundary_detector.lookahead_distance` | 15.0 m | 高速循迹在线蓝/黄锥配对和 Delaunay 兜底的局部取锥范围；大于控制器 14 m 高速前视，同时减少紧凑图上跨分支误配 |
+| `boundary_detector.local_pairing_min_streak` | 3 | 颜色配对连续不足多少个周期后，允许车辆局部坐标系左右锥几何配对兜底；仿真中优先避免颜色误判后长时间断路 |
 | `boundary_detector.local_pairing_color_imbalance_ratio` | 0.20 | 蓝/黄较少一侧低于该比例时，认为颜色严重失衡并立即启用局部左右配对兜底 |
-| `boundary_detector.delaunay_min_waypoints` | 3 | Delaunay 兜底至少需要的中心线点数；默认允许 3 点临时兜底，短中心线由 path_generator 降速 |
+| `boundary_detector.delaunay_min_waypoints` | 3 | Delaunay fallback must produce at least this many centerline points; 3-point fallback is allowed but path_generator caps short centerlines to low speed |
 | `trackdrive_velocity` | 7.0 m/s | 循迹速度 |
 | `trackdrive_resample_spacing` | 1.0 m | 高速循迹局部中心线重采样间距，用于给 Pure Pursuit 提供连续前向目标 |
 | `trackdrive_min_velocity` | 3.0 m/s | Trackdrive 曲率限速的最低目标速度 |

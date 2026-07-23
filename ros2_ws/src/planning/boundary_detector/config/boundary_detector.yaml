@@ -1,10 +1,10 @@
 boundary_detector_node:
   ros__parameters:
-    # Keep this above the controller high-speed lookahead (7 m/s * 1.2 = 8.4 m),
+    # Keep this above the controller high-speed lookahead (7 m/s * 2.0 = 14 m),
     # but avoid pulling in far hairpin branches from the other side of a compact map.
-    lookahead_distance: 22.0   # m - cones within this range used for online centerline
+    lookahead_distance: 15.0   # m - cones within this range used for online centerline
     desired_velocity: 7.0      # m/s — waypoint velocity (overridden by path_generator)
-    local_pairing_min_streak: 1 # cycles before geometry-only pairing fallback
+    local_pairing_min_streak: 3 # cycles before geometry-only pairing fallback
     # If one color is nearly missing, use local left/right pairing immediately.
     local_pairing_color_imbalance_ratio: 0.20
     delaunay_min_waypoints: 3  # reject shorter Delaunay fallbacks; they often reverse in tight turns

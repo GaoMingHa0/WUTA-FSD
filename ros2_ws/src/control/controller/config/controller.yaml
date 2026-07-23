@@ -6,9 +6,9 @@ controller_node:
     max_steer_angle: 25.0   # degrees
 
     # Pure Pursuit lookahead
-    ld_ratio: 1.2           # lookahead = velocity × ratio
+    ld_ratio: 2.0           # lookahead = velocity × ratio
     min_lookahead: 2.0      # m — clamp at low speed
-    max_lookahead: 10.0     # m — clamp at high speed
+    max_lookahead: 20.0     # m — clamp at high speed
     max_progress_advance: 4 # waypoints per 50 Hz control update; keeps skidpad progress continuous
     # Fixed local preview for the 9.125 m skidpad circles.  This avoids the
     # generic 10 m preview shortcutting the curvature changes at the crossing.
@@ -16,8 +16,8 @@ controller_node:
     # Trackdrive local mapping can briefly emit an unusable/reversed centerline.
     # Hold the last valid command at low speed for a short window instead of
     # stopping on a single bad frame; stop if the outage persists.
-    trackdrive_target_loss_hold_time: 0.9  # s
-    trackdrive_target_loss_hold_speed: 2.5 # m/s
+    trackdrive_target_loss_hold_time: 0.5  # s
+    trackdrive_target_loss_hold_speed: 2.0 # m/s
 
     # Control loop
     control_rate_hz: 50

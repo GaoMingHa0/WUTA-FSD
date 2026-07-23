@@ -27,8 +27,8 @@ Pure Pursuit 横向控制 + 速度跟踪纵向控制节点。
 ### Skidpad 专用前视距离
 
 Trackdrive 与 Acceleration 保持通用动态前视：`LD = |velocity| × ld_ratio`，并限制在
-`[min_lookahead, max_lookahead]`；当前高速循迹默认 `ld_ratio=1.2`、`max_lookahead=10.0 m`，
-使 7 m/s 下前视约为 8.4 m，避免局部在线中心线过短时追向末端或切弯。`MISSION_SKIDPAD` 下，控制器使用
+`[min_lookahead, max_lookahead]`；当前高速循迹默认 `ld_ratio=2.0`、`max_lookahead=20.0 m`，
+使 7 m/s 下前视约为 14 m，避免局部在线中心线过短时追向末端或切弯。`MISSION_SKIDPAD` 下，控制器使用
 `skidpad_lookahead` 固定覆盖该计算，默认 **3.0 m**。
 
 Skidpad 目标速度为 5 m/s 时，过大的通用前视会接近 9.125 m 圆半径。
@@ -85,14 +85,14 @@ Skidpad 目标速度为 5 m/s 时，过大的通用前视会接近 9.125 m 圆�
 |------|--------|------|
 | `wheel_base` | 1.53m | 轴距 |
 | `max_steer_angle` | 25° | 最大转向角 |
-| `ld_ratio` | 1.2 | 前视距离系数；Trackdrive 7 m/s 时前视约 8.4 m |
+| `ld_ratio` | 2.0 | 前视距离系数；Trackdrive 7 m/s 时前视约 14 m |
 | `min_lookahead` | 2.0m | 前视距离下限（低速） |
-| `max_lookahead` | 10.0m | 前视距离上限（高速） |
+| `max_lookahead` | 20.0m | 前视距离上限（高速） |
 | `max_progress_advance` | 4 | 单次控制循环允许推进的最大路径点数；防止 Skidpad 跳至出口 |
 | 前向目标保护 | 内置 | Pure Pursuit 只选择车体前方的目标点；Trackdrive 局部中心线瞬时反向时不会掉头追车后点 |
 | `skidpad_lookahead` | 3.0m | 仅 `MISSION_SKIDPAD` 使用的固定前视距离；5 m/s 下替代通用 10 m 前视，避免跨越交叉点的曲率切换 |
-| `trackdrive_target_loss_hold_time` | 0.9s | Trackdrive 局部中心线短暂不可追踪时，允许沿用上一条有效控制指令的时间窗口 |
-| `trackdrive_target_loss_hold_speed` | 2.5m/s | 沿用上一条 Trackdrive 控制指令时的速度上限，避免一帧坏路径立即停车但仍限制盲开距离 |
+| `trackdrive_target_loss_hold_time` | 0.5s | Trackdrive 局部中心线短暂不可追踪时，允许沿用上一条有效控制指令的时间窗口 |
+| `trackdrive_target_loss_hold_speed` | 2.0m/s | 沿用上一条 Trackdrive 控制指令时的速度上限，避免一帧坏路径立即停车但仍限制盲开距离 |
 | `control_rate_hz` | 50 | 控制频率 |
 | `max_steering_rate_deg_s` | 180°/s | 每个控制周期限制转向变化量，抑制定位噪声和目标点离散化导致的指令抖动 |
 | `finish_position_tolerance` | 0.75m | Skidpad 出口停车位置阈值 |
