@@ -39,6 +39,8 @@ private:
   // A figure-eight has tangent-continuous but curvature-discontinuous joins at
   // the timing-line crossing.  It needs a shorter preview than open tracks.
   double skidpad_lookahead_{3.0};
+  double trackdrive_target_loss_hold_time_{0.5};
+  double trackdrive_target_loss_hold_speed_{2.0};
 
   // State
   VehicleState vehicle_state_;
@@ -50,6 +52,9 @@ private:
   bool mission_complete_{false};
   double finish_position_tolerance_{0.75};
   double finish_speed_threshold_{0.2};
+  ControlCommand last_valid_trackdrive_cmd_;
+  rclcpp::Time last_valid_trackdrive_cmd_time_;
+  bool last_valid_trackdrive_cmd_ready_{false};
 
   // Subscribers
   rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_sub_;
