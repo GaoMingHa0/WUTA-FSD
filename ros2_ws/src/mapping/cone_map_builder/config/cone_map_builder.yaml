@@ -11,10 +11,12 @@ cone_map_builder:
     # Loop closure detection
     loop_closure_distance: 3.0  # m — distance back to start position
     min_cones_for_closure: 10   # Minimum confirmed cones before checking closure
-    start_skip_distance: 5.0    # m — don't check closure until we've moved this far
+    start_skip_distance: 30.0   # m — accumulated travel required before closure
+    loop_closure_heading_tolerance_deg: 60.0 # require start-direction agreement
 
-    # Color heuristic: blue=left, yellow=right based on vehicle heading
-    # Set false if camera detection will provide colors downstream
+    # Color heuristic: preserve upstream blue/yellow/orange colors, and only
+    # assign blue=left/yellow=right when a detection arrives as UNKNOWN.
+    # Set false once camera/detection_fusion provides complete colors.
     assign_colors: true
 
     # Sensor messages retain acquisition timestamps. Only the TF at that

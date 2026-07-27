@@ -113,7 +113,10 @@ void ControllerNode::onWaypoints(const autoware_msgs::msg::Lane::SharedPtr msg)
 void ControllerNode::onMissionState(const MissionState::SharedPtr msg)
 {
   mission_mode_ = msg->mission_mode;
-  enabled_ = (msg->state == MissionState::EXPLORE || msg->state == MissionState::RACE);
+  enabled_ = (
+    msg->state == MissionState::EXPLORE ||
+    msg->state == MissionState::MAPPING_DONE ||
+    msg->state == MissionState::RACE);
 
   if (!enabled_) {
     twist_filter_->reset();

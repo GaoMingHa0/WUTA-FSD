@@ -4,6 +4,7 @@
 #include <nav_msgs/msg/odometry.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <std_msgs/msg/bool.hpp>
+#include <std_msgs/msg/float32.hpp>
 
 #include "wuta_msgs/msg/mission_state.hpp"
 
@@ -32,7 +33,7 @@ private:
   void onEkfOdom(const nav_msgs::msg::Odometry::SharedPtr msg);
   void onNdtPose(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
 
-  void publishLocalizationReady(bool ready);
+  void publishLocalizationStatus(bool ready, double confidence);
 
   uint8_t active_mode_{wuta_msgs::msg::MissionState::LOC_KISS_ICP};
 
@@ -44,6 +45,7 @@ private:
   // Publishers
   rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pose_pub_;
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr ready_pub_;
+  rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr confidence_pub_;
 };
 
 }  // namespace localization_manager

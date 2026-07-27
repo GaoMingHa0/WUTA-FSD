@@ -1,0 +1,21 @@
+mission_manager_node:
+  ros__parameters:
+    # MAPPING_DONE -> RACE gates.
+    min_blue_cones: 12
+    min_yellow_cones: 12
+    min_map_average_confidence: 0.40
+    min_map_color_balance: 0.35
+    min_localization_confidence: 0.45
+    localization_timeout_sec: 0.50
+
+    # Real lap counting from /localization/pose and the start heading.
+    trackdrive_finish_laps: 3
+    lap_min_duration_sec: 10.0
+    lap_min_distance: 30.0
+    lap_arm_distance: 10.0
+    lap_line_half_width: 4.0
+    lap_heading_tolerance_deg: 75.0
+
+    # Keep the validated EKF localization through race laps by default.
+    # Enable only when map_saver and NDT initialization are both integrated.
+    use_ndt_race_localization: false

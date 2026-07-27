@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
+#include <limits>
 
 namespace path_generator
 {
@@ -41,12 +42,38 @@ PathGeneratorNode::PathGeneratorNode(const rclcpp::NodeOptions & options)
     "trackdrive_min_velocity", trackdrive_min_velocity_);
   trackdrive_lateral_accel_limit_ = declare_parameter(
     "trackdrive_lateral_accel_limit", trackdrive_lateral_accel_limit_);
+  trackdrive_race_lap2_velocity_ = declare_parameter(
+    "trackdrive_race_lap2_velocity", trackdrive_race_lap2_velocity_);
+  trackdrive_race_velocity_ = declare_parameter(
+    "trackdrive_race_velocity", trackdrive_race_velocity_);
+  trackdrive_race_min_velocity_ = declare_parameter(
+    "trackdrive_race_min_velocity", trackdrive_race_min_velocity_);
+  trackdrive_race_lateral_accel_limit_ = declare_parameter(
+    "trackdrive_race_lateral_accel_limit", trackdrive_race_lateral_accel_limit_);
   trackdrive_min_forward_target_ = declare_parameter(
     "trackdrive_min_forward_target", trackdrive_min_forward_target_);
   trackdrive_short_centerline_velocity_ = declare_parameter(
     "trackdrive_short_centerline_velocity", trackdrive_short_centerline_velocity_);
   trackdrive_short_centerline_points_ = declare_parameter(
     "trackdrive_short_centerline_points", trackdrive_short_centerline_points_);
+  trackdrive_global_horizon_distance_ = declare_parameter(
+    "trackdrive_global_horizon_distance", trackdrive_global_horizon_distance_);
+  trackdrive_global_search_points_ = declare_parameter(
+    "trackdrive_global_search_points", trackdrive_global_search_points_);
+  trackdrive_global_min_points_ = declare_parameter(
+    "trackdrive_global_min_points", trackdrive_global_min_points_);
+  trackdrive_global_publish_period_sec_ = declare_parameter(
+    "trackdrive_global_publish_period_sec", trackdrive_global_publish_period_sec_);
+  trackdrive_full_speed_forward_distance_ = declare_parameter(
+    "trackdrive_full_speed_forward_distance", trackdrive_full_speed_forward_distance_);
+  trackdrive_low_confidence_velocity_ = declare_parameter(
+    "trackdrive_low_confidence_velocity", trackdrive_low_confidence_velocity_);
+  trackdrive_confidence_slow_threshold_ = declare_parameter(
+    "trackdrive_confidence_slow_threshold", trackdrive_confidence_slow_threshold_);
+  trackdrive_confidence_full_threshold_ = declare_parameter(
+    "trackdrive_confidence_full_threshold", trackdrive_confidence_full_threshold_);
+  localization_timeout_sec_ = declare_parameter(
+    "localization_timeout_sec", localization_timeout_sec_);
   skidpad_radius_         = declare_parameter("skidpad_radius",         skidpad_radius_);
   skidpad_velocity_       = declare_parameter("skidpad_velocity",       skidpad_velocity_);
   skidpad_points_         = declare_parameter("skidpad_points",         skidpad_points_);
@@ -87,6 +114,25 @@ PathGeneratorNode::PathGeneratorNode(const rclcpp::NodeOptions & options)
     "/localization/pose", 10,
     std::bind(&PathGeneratorNode::onPose, this, std::placeholders::_1));
 
+  const auto status_qos = rclcpp::QoS(1).reliable().transient_local();
+  global_centerline_ready_sub_ = create_subscription<std_msgs::msg::Bool>(
+    "/planning/global_centerline_ready", status_qos,
+    std::bind(
+      &PathGeneratorNode::onGlobalCenterlineReady, this, std::placeholders::_1));
+  path_confidence_sub_ = create_subscription<std_msgs::msg::Float32>(
+    "/planning/path_confidence", status_qos,
+    std::bind(&PathGeneratorNode::onPathConfidence, this, std::placeholders::_1));
+  localization_ready_sub_ = create_subscription<std_msgs::msg::Bool>(
+    "/system/localization_ready", 10,
+    std::bind(&PathGeneratorNode::onLocalizationReady, this, std::placeholders::_1));
+  localization_confidence_sub_ = create_subscription<std_msgs::msg::Float32>(
+    "/system/localization_confidence", 10,
+    std::bind(
+      &PathGeneratorNode::onLocalizationConfidence, this, std::placeholders::_1));
+  lap_count_sub_ = create_subscription<std_msgs::msg::UInt32>(
+    "/system/lap_count", status_qos,
+    std::bind(&PathGeneratorNode::onLapCount, this, std::placeholders::_1));
+
   // Publisher — final_waypoints consumed by controller
   waypoints_pub_ = create_publisher<autoware_msgs::msg::Lane>("/planning/final_waypoints", 10);
 
@@ -105,6 +151,7 @@ void PathGeneratorNode::onPose(const geometry_msgs::msg::PoseStamped::SharedPtr 
 {
   current_pose_ = *msg;
   pose_ready_ = true;
+  last_pose_received_at_ = now();
 
   // Smooth and spatially decimate the visualization history.  The raw pose
   // still reaches the controller unchanged; this only makes the RViz line
@@ -141,6 +188,54 @@ void PathGeneratorNode::onPose(const geometry_msgs::msg::PoseStamped::SharedPtr 
       publishTrajectory();
     }
   }
+
+  if (global_centerline_ready_ && global_trackdrive_lane_ready_ &&
+      trackdriveStateActive())
+  {
+    const auto current_time = now();
+    if (last_global_publish_at_.nanoseconds() == 0 ||
+        (current_time - last_global_publish_at_).seconds() >=
+          std::max(0.02, trackdrive_global_publish_period_sec_))
+    {
+      publishGlobalTrackdriveHorizon();
+      last_global_publish_at_ = current_time;
+    }
+  }
+}
+
+void PathGeneratorNode::onGlobalCenterlineReady(
+  const std_msgs::msg::Bool::SharedPtr msg)
+{
+  global_centerline_ready_ = msg->data;
+  if (!global_centerline_ready_) {
+    global_trackdrive_lane_ready_ = false;
+    global_progress_ready_ = false;
+  }
+}
+
+void PathGeneratorNode::onPathConfidence(
+  const std_msgs::msg::Float32::SharedPtr msg)
+{
+  path_confidence_ = std::clamp(static_cast<double>(msg->data), 0.0, 1.0);
+}
+
+void PathGeneratorNode::onLocalizationReady(
+  const std_msgs::msg::Bool::SharedPtr msg)
+{
+  localization_ready_ = msg->data;
+}
+
+void PathGeneratorNode::onLocalizationConfidence(
+  const std_msgs::msg::Float32::SharedPtr msg)
+{
+  localization_confidence_ = std::clamp(
+    static_cast<double>(msg->data), 0.0, 1.0);
+}
+
+void PathGeneratorNode::onLapCount(
+  const std_msgs::msg::UInt32::SharedPtr msg)
+{
+  lap_count_ = msg->data;
 }
 
 void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
@@ -153,10 +248,12 @@ void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
     skidpad_path_ready_ = false;
     acceleration_path_ready_ = false;
     last_trackdrive_lane_ready_ = false;
+    global_trackdrive_lane_ready_ = false;
+    global_progress_ready_ = false;
   }
 
   // Trigger non-trackdrive paths when system is active
-  if (system_state_ != State::EXPLORE && system_state_ != State::RACE) return;
+  if (!trackdriveStateActive()) return;
 
   if (mission_mode_ == State::MISSION_SKIDPAD) {
     if (!skidpad_path_ready_) {
@@ -189,22 +286,74 @@ void PathGeneratorNode::onCenterline(const autoware_msgs::msg::Lane::SharedPtr m
 {
   // Only forward trackdrive centerline
   if (mission_mode_ != State::MISSION_TRACKDRIVE) return;
-  if (system_state_ != State::EXPLORE && system_state_ != State::RACE) return;
+  if (!trackdriveStateActive()) return;
 
   const bool short_centerline = msg->waypoints.size() <=
     static_cast<std::size_t>(std::max(2, trackdrive_short_centerline_points_));
-  auto lane = resampleTrackdriveLane(*msg);
+  const bool closed_map_lane =
+    system_state_ != State::EXPLORE &&
+    msg->waypoints.size() >=
+      static_cast<std::size_t>(std::max(3, trackdrive_global_min_points_));
+  if (global_centerline_ready_ || closed_map_lane) {
+    global_trackdrive_lane_ = *msg;
+    global_trackdrive_lane_ready_ = msg->waypoints.size() >= 3;
+    if (global_trackdrive_lane_ready_ && pose_ready_) {
+      publishGlobalTrackdriveHorizon();
+    }
+    return;
+  }
+
+  publishTrackdriveLane(*msg, short_centerline);
+}
+
+void PathGeneratorNode::publishTrackdriveLane(
+  const autoware_msgs::msg::Lane & source, bool short_source)
+{
+  auto lane = resampleTrackdriveLane(source);
   applyTrackdriveSpeedProfile(lane);
-  if (short_centerline) {
+  const double max_velocity = activeTrackdriveMaxVelocity();
+  if (short_source) {
     const double velocity_cap = std::clamp(
-      trackdrive_short_centerline_velocity_, 0.0, std::max(0.0, trackdrive_velocity_));
+      trackdrive_short_centerline_velocity_, 0.0, std::max(0.0, max_velocity));
     for (auto & waypoint : lane.waypoints) {
       waypoint.twist.twist.linear.x = std::min(waypoint.twist.twist.linear.x, velocity_cap);
     }
     RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
       "Short Trackdrive centerline (%zu source waypoints); capping speed to %.2f m/s",
-      msg->waypoints.size(), velocity_cap);
+      source.waypoints.size(), velocity_cap);
   }
+
+  double path_length = 0.0;
+  for (std::size_t i = 1; i < lane.waypoints.size(); ++i) {
+    const auto & previous = lane.waypoints[i - 1].pose.pose.position;
+    const auto & current = lane.waypoints[i].pose.pose.position;
+    path_length += std::hypot(current.x - previous.x, current.y - previous.y);
+  }
+  const double distance_ratio = std::clamp(
+    path_length / std::max(1.0, trackdrive_full_speed_forward_distance_), 0.0, 1.0);
+  const double distance_cap =
+    activeTrackdriveMinVelocity() +
+    distance_ratio * (max_velocity - activeTrackdriveMinVelocity());
+
+  const double confidence = currentTrackdriveConfidence();
+  const double slow_threshold = std::clamp(
+    trackdrive_confidence_slow_threshold_, 0.0, 1.0);
+  const double full_threshold = std::max(
+    slow_threshold + 1e-3,
+    std::clamp(trackdrive_confidence_full_threshold_, 0.0, 1.0));
+  const double confidence_scale = std::clamp(
+    (confidence - slow_threshold) / (full_threshold - slow_threshold), 0.0, 1.0);
+  const double confidence_cap =
+    std::clamp(trackdrive_low_confidence_velocity_, 0.0, max_velocity) +
+    confidence_scale * (
+      max_velocity - std::clamp(
+        trackdrive_low_confidence_velocity_, 0.0, max_velocity));
+  const double safety_cap = std::min(distance_cap, confidence_cap);
+  for (auto & waypoint : lane.waypoints) {
+    waypoint.twist.twist.linear.x =
+      std::min(waypoint.twist.twist.linear.x, safety_cap);
+  }
+
   if (!trackdriveLaneHasForwardTarget(lane)) {
     if (last_trackdrive_lane_ready_ &&
         trackdriveLaneHasForwardTarget(last_trackdrive_lane_))
@@ -227,6 +376,142 @@ void PathGeneratorNode::onCenterline(const autoware_msgs::msg::Lane::SharedPtr m
   last_trackdrive_lane_ready_ = true;
   waypoints_pub_->publish(lane);
   publishVisualization(lane, 0.0f, 1.0f, 0.0f);  // green for trackdrive
+}
+
+autoware_msgs::msg::Lane PathGeneratorNode::extractGlobalTrackdriveHorizon()
+{
+  autoware_msgs::msg::Lane horizon;
+  horizon.header = global_trackdrive_lane_.header;
+  horizon.header.stamp = now();
+  horizon.header.frame_id = "map";
+  const auto & waypoints = global_trackdrive_lane_.waypoints;
+  if (!pose_ready_ || waypoints.size() < 3) {
+    return horizon;
+  }
+
+  const double yaw = yawFromPose(current_pose_);
+  const double heading_x = std::cos(yaw);
+  const double heading_y = std::sin(yaw);
+  const auto candidate_score = [this, &waypoints, heading_x, heading_y](
+      std::size_t index) {
+      const auto & point = waypoints[index].pose.pose.position;
+      const auto & next = waypoints[(index + 1) % waypoints.size()].pose.pose.position;
+      const double distance = std::hypot(
+        point.x - current_pose_.pose.position.x,
+        point.y - current_pose_.pose.position.y);
+      const double segment_length = std::hypot(next.x - point.x, next.y - point.y);
+      const double alignment = segment_length < 1e-6
+        ? -1.0
+        : ((next.x - point.x) * heading_x + (next.y - point.y) * heading_y) /
+          segment_length;
+      return distance + 3.0 * (1.0 - alignment);
+    };
+
+  std::size_t best_index = 0;
+  double best_score = std::numeric_limits<double>::max();
+  if (!global_progress_ready_) {
+    for (std::size_t index = 0; index < waypoints.size(); ++index) {
+      const double score = candidate_score(index);
+      if (score < best_score) {
+        best_score = score;
+        best_index = index;
+      }
+    }
+  } else {
+    const int backwards = 3;
+    const int forwards = std::max(3, trackdrive_global_search_points_);
+    const int count = static_cast<int>(waypoints.size());
+    for (int offset = -backwards; offset <= forwards; ++offset) {
+      const int wrapped =
+        (static_cast<int>(global_progress_index_) + offset + count) % count;
+      const auto index = static_cast<std::size_t>(wrapped);
+      const double score = candidate_score(index);
+      if (score < best_score) {
+        best_score = score;
+        best_index = index;
+      }
+    }
+  }
+  global_progress_index_ = best_index;
+  global_progress_ready_ = true;
+
+  horizon.waypoints.push_back(waypoints[best_index]);
+  double accumulated_distance = 0.0;
+  std::size_t index = best_index;
+  const double horizon_distance = std::max(5.0, trackdrive_global_horizon_distance_);
+  for (std::size_t step = 1; step < waypoints.size(); ++step) {
+    const std::size_t next_index = (index + 1) % waypoints.size();
+    const auto & previous = waypoints[index].pose.pose.position;
+    const auto & next = waypoints[next_index].pose.pose.position;
+    accumulated_distance += std::hypot(next.x - previous.x, next.y - previous.y);
+    horizon.waypoints.push_back(waypoints[next_index]);
+    index = next_index;
+    if (accumulated_distance >= horizon_distance && horizon.waypoints.size() >= 3) {
+      break;
+    }
+  }
+  return horizon;
+}
+
+void PathGeneratorNode::publishGlobalTrackdriveHorizon()
+{
+  auto horizon = extractGlobalTrackdriveHorizon();
+  if (horizon.waypoints.size() < 3) {
+    RCLCPP_WARN_THROTTLE(
+      get_logger(), *get_clock(), 1000,
+      "Frozen global centerline has no usable local horizon.");
+    return;
+  }
+  publishTrackdriveLane(horizon, false);
+}
+
+bool PathGeneratorNode::trackdriveStateActive() const
+{
+  return system_state_ == State::EXPLORE ||
+         system_state_ == State::MAPPING_DONE ||
+         system_state_ == State::RACE;
+}
+
+double PathGeneratorNode::activeTrackdriveMaxVelocity() const
+{
+  if (system_state_ != State::RACE) {
+    return std::max(0.0, trackdrive_velocity_);
+  }
+  return std::max(
+    0.0,
+    lap_count_ <= 1 ? trackdrive_race_lap2_velocity_ : trackdrive_race_velocity_);
+}
+
+double PathGeneratorNode::activeTrackdriveMinVelocity() const
+{
+  const double max_velocity = activeTrackdriveMaxVelocity();
+  const double requested = system_state_ == State::RACE
+    ? trackdrive_race_min_velocity_
+    : trackdrive_min_velocity_;
+  return std::clamp(requested, 0.0, max_velocity);
+}
+
+double PathGeneratorNode::activeTrackdriveLateralAccelLimit() const
+{
+  return system_state_ == State::RACE
+    ? std::max(0.1, trackdrive_race_lateral_accel_limit_)
+    : std::max(0.1, trackdrive_lateral_accel_limit_);
+}
+
+double PathGeneratorNode::currentTrackdriveConfidence() const
+{
+  if (!pose_ready_ || !localization_ready_ ||
+      last_pose_received_at_.nanoseconds() == 0)
+  {
+    return 0.0;
+  }
+  const double pose_age = (now() - last_pose_received_at_).seconds();
+  if (pose_age > std::max(0.05, localization_timeout_sec_)) {
+    return 0.0;
+  }
+  return std::min(
+    std::clamp(path_confidence_, 0.0, 1.0),
+    std::clamp(localization_confidence_, 0.0, 1.0));
 }
 
 autoware_msgs::msg::Lane PathGeneratorNode::resampleTrackdriveLane(
@@ -293,9 +578,9 @@ void PathGeneratorNode::applyTrackdriveSpeedProfile(autoware_msgs::msg::Lane & l
 {
   if (lane.waypoints.empty()) return;
 
-  const double max_velocity = std::max(0.0, trackdrive_velocity_);
-  const double min_velocity = std::clamp(trackdrive_min_velocity_, 0.0, max_velocity);
-  const double lateral_accel = std::max(0.1, trackdrive_lateral_accel_limit_);
+  const double max_velocity = activeTrackdriveMaxVelocity();
+  const double min_velocity = activeTrackdriveMinVelocity();
+  const double lateral_accel = activeTrackdriveLateralAccelLimit();
 
   if (lane.waypoints.size() < 3 || max_velocity <= 0.0) {
     for (auto & wp : lane.waypoints) {

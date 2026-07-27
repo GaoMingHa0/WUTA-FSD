@@ -59,21 +59,25 @@ private:
   std::vector<TrackedCone> cone_map_;
   geometry_msgs::msg::PoseStamped current_pose_;
   geometry_msgs::msg::PoseStamped start_pose_;
+  geometry_msgs::msg::PoseStamped last_travel_pose_;
   bool pose_initialized_{false};
   bool loop_closed_{false};
   bool start_pose_set_{false};
+  bool travel_pose_ready_{false};
+  double traveled_distance_{0.0};
 
   // Parameters
   double merge_distance_{0.5};         // m — cones closer than this are merged
   int min_hit_count_{2};               // Minimum detections before cone is added to published map
   double loop_closure_distance_{3.0};  // m — distance to start to trigger loop closure
   int min_cones_for_closure_{10};      // Minimum cones before loop closure is considered
-  bool assign_colors_{true};           // Assign blue/yellow based on left/right heuristic
+  bool assign_colors_{true};           // Assign blue/yellow only for UNKNOWN observations
   double tf_lookup_timeout_sec_{0.1};  // Wait for EKF TF at the sensor stamp
   bool use_latest_tf_fallback_{false};  // Unsafe compatibility fallback; disabled by default
   double pending_detection_timeout_sec_{0.5};  // Keep a scan while its exact TF arrives
   int max_pending_detections_{20};
-  double start_skip_distance_{5.0};    // m — skip loop closure check until we've moved this far
+  double start_skip_distance_{30.0};   // m — minimum accumulated travel before closure
+  double loop_closure_heading_tolerance_deg_{60.0};
   std::string map_save_path_{"/tmp/cone_map.yaml"};
   std::deque<PendingDetection> pending_detections_;
 

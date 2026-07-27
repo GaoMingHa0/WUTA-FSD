@@ -8,3 +8,12 @@ boundary_detector_node:
     # If one color is nearly missing, use local left/right pairing immediately.
     local_pairing_color_imbalance_ratio: 0.20
     delaunay_min_waypoints: 3  # reject shorter Delaunay fallbacks; they often reverse in tight turns
+
+    # Frozen centerline built once from the confirmed closed cone map.
+    global_pairing_min_width: 1.5
+    global_pairing_max_width: 7.5
+    global_pairing_dedup_distance: 0.75
+    global_max_segment_length: 10.0
+    global_max_closure_distance: 8.0
+    global_min_waypoints: 20
+    global_min_coverage_ratio: 0.60

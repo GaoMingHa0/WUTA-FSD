@@ -1,5 +1,8 @@
 #include "localization_manager/localization_manager.hpp"
 
+#include <algorithm>
+#include <cmath>
+
 namespace localization_manager
 {
 
@@ -26,6 +29,8 @@ LocalizationManager::LocalizationManager(const rclcpp::NodeOptions & options)
   // Publishers
   pose_pub_  = create_publisher<geometry_msgs::msg::PoseStamped>("/localization/pose", 10);
   ready_pub_ = create_publisher<std_msgs::msg::Bool>("/system/localization_ready", 10);
+  confidence_pub_ = create_publisher<std_msgs::msg::Float32>(
+    "/system/localization_confidence", 10);
 
   RCLCPP_INFO(get_logger(), "LocalizationManager ready. Default mode: KISS-ICP + EKF");
 }
@@ -53,7 +58,12 @@ void LocalizationManager::onEkfOdom(const nav_msgs::msg::Odometry::SharedPtr msg
   pose.pose = msg->pose.pose;
   pose_pub_->publish(pose);
 
-  publishLocalizationReady(true);
+  const double position_variance = std::max(
+    0.0, msg->pose.covariance[0] + msg->pose.covariance[7]);
+  const double yaw_variance = std::max(0.0, msg->pose.covariance[35]);
+  const double confidence = std::clamp(
+    std::exp(-0.5 * position_variance - 2.0 * yaw_variance), 0.0, 1.0);
+  publishLocalizationStatus(true, confidence);
 }
 
 void LocalizationManager::onNdtPose(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
@@ -61,14 +71,21 @@ void LocalizationManager::onNdtPose(const geometry_msgs::msg::PoseStamped::Share
   if (active_mode_ != MissionState::LOC_NDT) return;
 
   pose_pub_->publish(*msg);
-  publishLocalizationReady(true);
+  // PoseStamped carries no covariance. NDT convergence gating remains inside
+  // ndt_localization; a published pose is treated as accepted here.
+  publishLocalizationStatus(true, 1.0);
 }
 
-void LocalizationManager::publishLocalizationReady(bool ready)
+void LocalizationManager::publishLocalizationStatus(bool ready, double confidence)
 {
-  std_msgs::msg::Bool msg;
-  msg.data = ready;
-  ready_pub_->publish(msg);
+  std_msgs::msg::Bool ready_msg;
+  ready_msg.data = ready;
+  ready_pub_->publish(ready_msg);
+
+  std_msgs::msg::Float32 confidence_msg;
+  confidence_msg.data = static_cast<float>(
+    ready ? std::clamp(confidence, 0.0, 1.0) : 0.0);
+  confidence_pub_->publish(confidence_msg);
 }
 
 }  // namespace localization_manager

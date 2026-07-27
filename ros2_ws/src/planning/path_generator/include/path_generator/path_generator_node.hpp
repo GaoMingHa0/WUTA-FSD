@@ -3,6 +3,9 @@
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <autoware_msgs/msg/lane.hpp>
+#include <std_msgs/msg/bool.hpp>
+#include <std_msgs/msg/float32.hpp>
+#include <std_msgs/msg/u_int32.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
 #include <string>
@@ -35,13 +38,27 @@ private:
   void onMissionState(const wuta_msgs::msg::MissionState::SharedPtr msg);
   void onCenterline(const autoware_msgs::msg::Lane::SharedPtr msg);    // from boundary_detector
   void onPose(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
+  void onGlobalCenterlineReady(const std_msgs::msg::Bool::SharedPtr msg);
+  void onPathConfidence(const std_msgs::msg::Float32::SharedPtr msg);
+  void onLocalizationReady(const std_msgs::msg::Bool::SharedPtr msg);
+  void onLocalizationConfidence(const std_msgs::msg::Float32::SharedPtr msg);
+  void onLapCount(const std_msgs::msg::UInt32::SharedPtr msg);
 
   // Mode-specific path generators
   autoware_msgs::msg::Lane generateSkidpadPath() const;
   autoware_msgs::msg::Lane generateAccelerationPath() const;
   autoware_msgs::msg::Lane resampleTrackdriveLane(const autoware_msgs::msg::Lane & lane) const;
+  autoware_msgs::msg::Lane extractGlobalTrackdriveHorizon();
   void applyTrackdriveSpeedProfile(autoware_msgs::msg::Lane & lane) const;
+  void publishTrackdriveLane(
+    const autoware_msgs::msg::Lane & source, bool short_source);
+  void publishGlobalTrackdriveHorizon();
   bool trackdriveLaneHasForwardTarget(const autoware_msgs::msg::Lane & lane) const;
+  bool trackdriveStateActive() const;
+  double activeTrackdriveMaxVelocity() const;
+  double activeTrackdriveMinVelocity() const;
+  double activeTrackdriveLateralAccelLimit() const;
+  double currentTrackdriveConfidence() const;
 
   struct SkidpadCsvRow
   {
@@ -70,6 +87,17 @@ private:
   bool acceleration_path_ready_{false};
   autoware_msgs::msg::Lane last_trackdrive_lane_;
   bool last_trackdrive_lane_ready_{false};
+  autoware_msgs::msg::Lane global_trackdrive_lane_;
+  bool global_centerline_ready_{false};
+  bool global_trackdrive_lane_ready_{false};
+  bool global_progress_ready_{false};
+  std::size_t global_progress_index_{0};
+  uint32_t lap_count_{0};
+  double path_confidence_{0.0};
+  bool localization_ready_{false};
+  double localization_confidence_{0.0};
+  rclcpp::Time last_pose_received_at_;
+  rclcpp::Time last_global_publish_at_;
 
   // Trajectory history — accumulates driven positions for visualization
   std::vector<geometry_msgs::msg::Point> trajectory_;
@@ -83,9 +111,22 @@ private:
   double trackdrive_resample_spacing_{1.0};  // m
   double trackdrive_min_velocity_{3.0}; // m/s
   double trackdrive_lateral_accel_limit_{4.0}; // m/s^2
+  double trackdrive_race_lap2_velocity_{9.0}; // m/s
+  double trackdrive_race_velocity_{10.0}; // m/s
+  double trackdrive_race_min_velocity_{4.0}; // m/s
+  double trackdrive_race_lateral_accel_limit_{6.0}; // m/s^2
   double trackdrive_min_forward_target_{0.5}; // m
   double trackdrive_short_centerline_velocity_{3.0}; // m/s
   int trackdrive_short_centerline_points_{3}; // source centerline points
+  double trackdrive_global_horizon_distance_{40.0}; // m
+  int trackdrive_global_search_points_{24};
+  int trackdrive_global_min_points_{20};
+  double trackdrive_global_publish_period_sec_{0.10};
+  double trackdrive_full_speed_forward_distance_{15.0}; // m
+  double trackdrive_low_confidence_velocity_{3.0}; // m/s
+  double trackdrive_confidence_slow_threshold_{0.45};
+  double trackdrive_confidence_full_threshold_{0.75};
+  double localization_timeout_sec_{0.50};
 
   // Skidpad reference in map.  This matches tracks/skidpad.yaml by default.
   double skidpad_radius_{9.125};       // m
@@ -122,6 +163,11 @@ private:
   rclcpp::Subscription<wuta_msgs::msg::MissionState>::SharedPtr mission_sub_;
   rclcpp::Subscription<autoware_msgs::msg::Lane>::SharedPtr centerline_sub_;
   rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_sub_;
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr global_centerline_ready_sub_;
+  rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr path_confidence_sub_;
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr localization_ready_sub_;
+  rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr localization_confidence_sub_;
+  rclcpp::Subscription<std_msgs::msg::UInt32>::SharedPtr lap_count_sub_;
 
   // Publishers
   rclcpp::Publisher<autoware_msgs::msg::Lane>::SharedPtr waypoints_pub_;

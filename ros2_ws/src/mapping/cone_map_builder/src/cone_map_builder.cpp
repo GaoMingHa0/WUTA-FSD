@@ -24,6 +24,8 @@ ConeMapBuilder::ConeMapBuilder(const rclcpp::NodeOptions & options)
     "pending_detection_timeout_sec", pending_detection_timeout_sec_);
   max_pending_detections_ = declare_parameter("max_pending_detections", max_pending_detections_);
   start_skip_distance_    = declare_parameter("start_skip_distance",    start_skip_distance_);
+  loop_closure_heading_tolerance_deg_ = declare_parameter(
+    "loop_closure_heading_tolerance_deg", loop_closure_heading_tolerance_deg_);
   map_save_path_          = declare_parameter("map_save_path",          map_save_path_);
 
   // TF2
@@ -73,7 +75,25 @@ ConeMapBuilder::ConeMapBuilder(const rclcpp::NodeOptions & options)
 
 void ConeMapBuilder::onPose(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
 {
+  if (start_pose_set_ && travel_pose_ready_ && !loop_closed_) {
+    const double step = std::hypot(
+      msg->pose.position.x - last_travel_pose_.pose.position.x,
+      msg->pose.position.y - last_travel_pose_.pose.position.y);
+    // Ignore localization discontinuities while retaining normal high-rate motion.
+    if (step <= 5.0) {
+      traveled_distance_ += step;
+    } else {
+      RCLCPP_WARN_THROTTLE(
+        get_logger(), *get_clock(), 2000,
+        "Ignoring %.2f m localization jump in loop-closure distance.", step);
+    }
+  }
+
   current_pose_ = *msg;
+  if (start_pose_set_) {
+    last_travel_pose_ = *msg;
+    travel_pose_ready_ = true;
+  }
 
   if (!pose_initialized_) {
     pose_initialized_ = true;
@@ -207,7 +227,10 @@ bool ConeMapBuilder::integrateDetections(const wuta_msgs::msg::ConeArray & cones
       // Record start pose on first cone detection
       if (!start_pose_set_ && cone_map_.size() == 1) {
         start_pose_ = current_pose_;
+        last_travel_pose_ = current_pose_;
         start_pose_set_ = true;
+        travel_pose_ready_ = true;
+        traveled_distance_ = 0.0;
       }
     }
   }
@@ -216,13 +239,16 @@ bool ConeMapBuilder::integrateDetections(const wuta_msgs::msg::ConeArray & cones
 
 uint8_t ConeMapBuilder::classifyConeObservation(const wuta_msgs::msg::Cone & cone) const
 {
+  if (cone.color != wuta_msgs::msg::Cone::COLOR_UNKNOWN) {
+    return cone.color;
+  }
+
   if (!assign_colors_) {
     return cone.color;
   }
 
-  // The detector publishes cones in the LiDAR/body-aligned sensor frame. In ROS
-  // base_link convention y>0 is the vehicle left side, so this does not depend
-  // on delayed EKF yaw while preserving the default left/right heuristic.
+  // Traditional LiDAR detection has no color.  Use the LiDAR/body-aligned
+  // lateral sign only as a fallback for those UNKNOWN observations.
   return cone.position.y >= 0.0
     ? wuta_msgs::msg::Cone::COLOR_BLUE
     : wuta_msgs::msg::Cone::COLOR_YELLOW;
@@ -277,15 +303,30 @@ bool ConeMapBuilder::checkLoopClosure()
     [this](const TrackedCone & c) { return c.hit_count >= min_hit_count_; });
   if (confirmed_cones < min_cones_for_closure_) return false;
 
-  // Must have moved at least start_skip_distance_ before checking
+  // A Euclidean "moved away" check cannot also detect returning near the
+  // start. Accumulated travel distinguishes a completed lap from startup.
+  if (traveled_distance_ < start_skip_distance_) return false;
+
   const double dx = current_pose_.pose.position.x - start_pose_.pose.position.x;
   const double dy = current_pose_.pose.position.y - start_pose_.pose.position.y;
   const double dist_from_start = std::sqrt(dx * dx + dy * dy);
+  if (dist_from_start >= loop_closure_distance_) return false;
 
-  if (dist_from_start < start_skip_distance_) return false;
+  const auto yaw_from_pose = [](const geometry_msgs::msg::PoseStamped & pose) {
+      const auto & q = pose.pose.orientation;
+      return std::atan2(
+        2.0 * (q.w * q.z + q.x * q.y),
+        1.0 - 2.0 * (q.y * q.y + q.z * q.z));
+    };
+  const double start_yaw = yaw_from_pose(start_pose_);
+  const double current_yaw = yaw_from_pose(current_pose_);
+  const double heading_error = std::abs(std::atan2(
+      std::sin(current_yaw - start_yaw),
+      std::cos(current_yaw - start_yaw)));
+  const double heading_tolerance =
+    std::clamp(loop_closure_heading_tolerance_deg_, 0.0, 180.0) * M_PI / 180.0;
 
-  // Check if we've returned close to start
-  return dist_from_start < loop_closure_distance_;
+  return heading_error <= heading_tolerance;
 }
 
 void ConeMapBuilder::publishMap()

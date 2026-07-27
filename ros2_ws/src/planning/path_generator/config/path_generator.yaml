@@ -5,9 +5,24 @@ path_generator_node:
     trackdrive_resample_spacing: 1.0 # m
     trackdrive_min_velocity: 3.0   # m/s, lower bound for tight corners
     trackdrive_lateral_accel_limit: 4.0 # m/s^2, curvature speed cap
+    # Lap 1 retains the validated 7 m/s profile. Laps 2 and 3 progressively
+    # raise the cap only after the frozen global centerline is accepted.
+    trackdrive_race_lap2_velocity: 9.0 # m/s
+    trackdrive_race_velocity: 10.0 # m/s
+    trackdrive_race_min_velocity: 4.0 # m/s
+    trackdrive_race_lateral_accel_limit: 6.0 # m/s^2
     trackdrive_min_forward_target: 0.5 # m, reject locally reversed centerlines
     trackdrive_short_centerline_velocity: 3.0 # m/s, cap unstable 2-3 point fallback paths
     trackdrive_short_centerline_points: 3 # source centerline points at or below this are speed-capped
+    trackdrive_global_horizon_distance: 40.0 # m, local slice of frozen loop
+    trackdrive_global_search_points: 24 # bounded progress search avoids nearby-branch jumps
+    trackdrive_global_min_points: 20 # distinguish a frozen loop from local EXPLORE paths
+    trackdrive_global_publish_period_sec: 0.10
+    trackdrive_full_speed_forward_distance: 15.0 # m
+    trackdrive_low_confidence_velocity: 3.0 # m/s
+    trackdrive_confidence_slow_threshold: 0.45
+    trackdrive_confidence_full_threshold: 0.75
+    localization_timeout_sec: 0.50
 
     # SKIDPAD (FSG standard geometry)
     skidpad_radius: 9.125          # m

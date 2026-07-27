@@ -79,6 +79,20 @@ BoundaryDetectorNode::BoundaryDetectorNode(const rclcpp::NodeOptions & options)
   local_pairing_color_imbalance_ratio_ = declare_parameter(
     "local_pairing_color_imbalance_ratio", local_pairing_color_imbalance_ratio_);
   delaunay_min_waypoints_ = declare_parameter("delaunay_min_waypoints", delaunay_min_waypoints_);
+  global_pairing_min_width_ = declare_parameter(
+    "global_pairing_min_width", global_pairing_min_width_);
+  global_pairing_max_width_ = declare_parameter(
+    "global_pairing_max_width", global_pairing_max_width_);
+  global_pairing_dedup_distance_ = declare_parameter(
+    "global_pairing_dedup_distance", global_pairing_dedup_distance_);
+  global_max_segment_length_ = declare_parameter(
+    "global_max_segment_length", global_max_segment_length_);
+  global_max_closure_distance_ = declare_parameter(
+    "global_max_closure_distance", global_max_closure_distance_);
+  global_min_waypoints_ = declare_parameter(
+    "global_min_waypoints", global_min_waypoints_);
+  global_min_coverage_ratio_ = declare_parameter(
+    "global_min_coverage_ratio", global_min_coverage_ratio_);
 
   // Subscribers
   cone_map_sub_ = create_subscription<wuta_msgs::msg::ConeMap>(
@@ -97,6 +111,12 @@ BoundaryDetectorNode::BoundaryDetectorNode(const rclcpp::NodeOptions & options)
   centerline_pub_ = create_publisher<autoware_msgs::msg::Lane>("/planning/centerline", 10);
   marker_pub_     = create_publisher<visualization_msgs::msg::MarkerArray>(
     "/planning/centerline_viz", 10);
+  const auto status_qos = rclcpp::QoS(1).reliable().transient_local();
+  global_ready_pub_ = create_publisher<std_msgs::msg::Bool>(
+    "/planning/global_centerline_ready", status_qos);
+  confidence_pub_ = create_publisher<std_msgs::msg::Float32>(
+    "/planning/path_confidence", status_qos);
+  publishPlanningStatus(false, 0.0);
 
   RCLCPP_INFO(get_logger(), "BoundaryDetectorNode ready.");
 }
@@ -110,6 +130,7 @@ void BoundaryDetectorNode::onPose(const geometry_msgs::msg::PoseStamped::SharedP
 void BoundaryDetectorNode::onMissionState(const wuta_msgs::msg::MissionState::SharedPtr msg)
 {
   mission_mode_ = msg->mission_mode;
+  system_state_ = msg->state;
 }
 
 void BoundaryDetectorNode::onConeMap(const wuta_msgs::msg::ConeMap::SharedPtr msg)
@@ -119,6 +140,39 @@ void BoundaryDetectorNode::onConeMap(const wuta_msgs::msg::ConeMap::SharedPtr ms
   // Only TRACKDRIVE uses online boundary detection
   // SKIDPAD and ACCELERATION handle their own path in path_generator
   if (mission_mode_ != wuta_msgs::msg::MissionState::MISSION_TRACKDRIVE) return;
+
+  if (msg->is_closed) {
+    if (!global_centerline_ready_) {
+      double confidence = 0.0;
+      auto candidate = computeGlobalCenterline(*msg, confidence);
+      if (!candidate.waypoints.empty()) {
+        frozen_global_centerline_ = std::move(candidate);
+        global_centerline_confidence_ = confidence;
+        global_centerline_ready_ = true;
+        last_midps_.clear();
+        RCLCPP_INFO(
+          get_logger(),
+          "Frozen global centerline ready: %zu waypoints, confidence=%.3f",
+          frozen_global_centerline_.waypoints.size(), global_centerline_confidence_);
+      }
+    }
+
+    publishPlanningStatus(global_centerline_ready_, global_centerline_confidence_);
+    if (!global_centerline_ready_) {
+      RCLCPP_ERROR_THROTTLE(
+        get_logger(), *get_clock(), 2000,
+        "Closed cone map rejected: no valid global centerline.");
+      return;
+    }
+
+    auto lane = frozen_global_centerline_;
+    lane.header.stamp = now();
+    centerline_pub_->publish(lane);
+    if (marker_pub_->get_subscription_count() > 0) {
+      publishVisualization(lane);
+    }
+    return;
+  }
 
   auto lane = computePairedCenterline(*msg);
   bool using_pair_lane = lane.waypoints.size() >= 3;
@@ -179,6 +233,9 @@ void BoundaryDetectorNode::onConeMap(const wuta_msgs::msg::ConeMap::SharedPtr ms
   lane.header.stamp    = now();
   lane.header.frame_id = "map";
   centerline_pub_->publish(lane);
+  const double local_confidence = std::clamp(
+    static_cast<double>(lane.waypoints.size()) / 6.0, 0.0, 1.0);
+  publishPlanningStatus(false, local_confidence);
 
   if (marker_pub_->get_subscription_count() > 0) {
     publishVisualization(lane);
@@ -496,6 +553,282 @@ autoware_msgs::msg::Lane BoundaryDetectorNode::computeLocalFrameCenterline(
   return lane;
 }
 
+autoware_msgs::msg::Lane BoundaryDetectorNode::computeGlobalCenterline(
+  const wuta_msgs::msg::ConeMap & map, double & confidence) const
+{
+  autoware_msgs::msg::Lane lane;
+  confidence = 0.0;
+  if (!pose_ready_ || map.blue_cones.empty() || map.yellow_cones.empty()) {
+    return lane;
+  }
+
+  struct Candidate
+  {
+    double x;
+    double y;
+    double tangent_x;
+    double tangent_y;
+    double width;
+  };
+
+  const double min_width = std::max(0.1, global_pairing_min_width_);
+  const double max_width = std::max(min_width, global_pairing_max_width_);
+  std::vector<Candidate> raw_candidates;
+  raw_candidates.reserve(map.blue_cones.size() + map.yellow_cones.size());
+
+  const auto append_nearest_pairs = [&raw_candidates, min_width, max_width](
+      const auto & sources, const auto & targets, bool source_is_yellow) {
+      for (const auto & source : sources) {
+        const auto nearest = std::min_element(
+          targets.begin(), targets.end(),
+          [&source](const auto & lhs, const auto & rhs) {
+            return planeDistance(
+              source.position.x, source.position.y,
+              lhs.position.x, lhs.position.y) <
+                   planeDistance(
+              source.position.x, source.position.y,
+              rhs.position.x, rhs.position.y);
+          });
+        if (nearest == targets.end()) continue;
+
+        const auto & blue = source_is_yellow ? *nearest : source;
+        const auto & yellow = source_is_yellow ? source : *nearest;
+        const double width = planeDistance(
+          blue.position.x, blue.position.y,
+          yellow.position.x, yellow.position.y);
+        if (width < min_width || width > max_width) continue;
+
+        const double left_x = (blue.position.x - yellow.position.x) / width;
+        const double left_y = (blue.position.y - yellow.position.y) / width;
+        raw_candidates.push_back({
+          0.5 * (blue.position.x + yellow.position.x),
+          0.5 * (blue.position.y + yellow.position.y),
+          left_y,
+          -left_x,
+          width});
+      }
+    };
+
+  // Pair in both directions. The two nearest-neighbour sets fill staggered
+  // cone layouts without assuming that the color arrays are already ordered.
+  append_nearest_pairs(map.blue_cones, map.yellow_cones, false);
+  append_nearest_pairs(map.yellow_cones, map.blue_cones, true);
+  if (raw_candidates.size() < 3) {
+    return lane;
+  }
+
+  std::vector<double> widths;
+  widths.reserve(raw_candidates.size());
+  for (const auto & candidate : raw_candidates) {
+    widths.push_back(candidate.width);
+  }
+  const auto median_it = widths.begin() + static_cast<std::ptrdiff_t>(widths.size() / 2);
+  std::nth_element(widths.begin(), median_it, widths.end());
+  const double median_width = *median_it;
+  std::sort(
+    raw_candidates.begin(), raw_candidates.end(),
+    [median_width](const Candidate & lhs, const Candidate & rhs) {
+      return std::abs(lhs.width - median_width) < std::abs(rhs.width - median_width);
+    });
+
+  std::vector<Candidate> candidates;
+  candidates.reserve(raw_candidates.size());
+  const double dedup_distance = std::max(0.1, global_pairing_dedup_distance_);
+  for (const auto & candidate : raw_candidates) {
+    const bool duplicate = std::any_of(
+      candidates.begin(), candidates.end(),
+      [&candidate, dedup_distance](const Candidate & existing) {
+        return planeDistance(candidate.x, candidate.y, existing.x, existing.y) <
+               dedup_distance;
+      });
+    if (!duplicate) {
+      candidates.push_back(candidate);
+    }
+  }
+  if (candidates.size() < 3) {
+    return lane;
+  }
+
+  std::vector<std::size_t> start_indices(candidates.size());
+  for (std::size_t i = 0; i < start_indices.size(); ++i) {
+    start_indices[i] = i;
+  }
+  std::sort(
+    start_indices.begin(), start_indices.end(),
+    [this, &candidates](std::size_t lhs, std::size_t rhs) {
+      return planeDistance(
+        candidates[lhs].x, candidates[lhs].y,
+        current_pose_.pose.position.x, current_pose_.pose.position.y) <
+             planeDistance(
+        candidates[rhs].x, candidates[rhs].y,
+        current_pose_.pose.position.x, current_pose_.pose.position.y);
+    });
+  if (start_indices.size() > 12) {
+    start_indices.resize(12);
+  }
+
+  const double initial_yaw = yawFromPose(current_pose_);
+  const double max_segment = std::max(1.0, global_max_segment_length_);
+  std::vector<std::size_t> best_order;
+  double best_closure_distance = std::numeric_limits<double>::max();
+
+  for (const std::size_t start_index : start_indices) {
+    std::vector<std::size_t> order{start_index};
+    std::vector<bool> used(candidates.size(), false);
+    used[start_index] = true;
+    double cursor_x = candidates[start_index].x;
+    double cursor_y = candidates[start_index].y;
+    double heading_x = std::cos(initial_yaw);
+    double heading_y = std::sin(initial_yaw);
+
+    for (std::size_t step = 1; step < candidates.size(); ++step) {
+      int best_index = -1;
+      double best_score = std::numeric_limits<double>::max();
+      double best_segment_x = 0.0;
+      double best_segment_y = 0.0;
+
+      for (std::size_t index = 0; index < candidates.size(); ++index) {
+        if (used[index]) continue;
+        const auto & candidate = candidates[index];
+        const double dx = candidate.x - cursor_x;
+        const double dy = candidate.y - cursor_y;
+        const double distance = std::hypot(dx, dy);
+        if (distance < 0.4 || distance > max_segment) continue;
+
+        const double segment_x = dx / distance;
+        const double segment_y = dy / distance;
+        const double segment_alignment =
+          segment_x * heading_x + segment_y * heading_y;
+        const double tangent_alignment = std::abs(
+          candidate.tangent_x * heading_x + candidate.tangent_y * heading_y);
+        if (segment_alignment < -0.35 || tangent_alignment < 0.05) continue;
+
+        const double score =
+          distance +
+          4.0 * (1.0 - segment_alignment) +
+          1.5 * (1.0 - tangent_alignment) +
+          0.3 * std::abs(candidate.width - median_width);
+        if (score < best_score) {
+          best_score = score;
+          best_index = static_cast<int>(index);
+          best_segment_x = segment_x;
+          best_segment_y = segment_y;
+        }
+      }
+
+      if (best_index < 0) break;
+      const auto selected_index = static_cast<std::size_t>(best_index);
+      const auto & selected = candidates[selected_index];
+      used[selected_index] = true;
+      order.push_back(selected_index);
+
+      double tangent_x = selected.tangent_x;
+      double tangent_y = selected.tangent_y;
+      if (tangent_x * heading_x + tangent_y * heading_y < 0.0) {
+        tangent_x = -tangent_x;
+        tangent_y = -tangent_y;
+      }
+      heading_x = best_segment_x + tangent_x;
+      heading_y = best_segment_y + tangent_y;
+      const double heading_norm = std::hypot(heading_x, heading_y);
+      if (heading_norm > 1e-6) {
+        heading_x /= heading_norm;
+        heading_y /= heading_norm;
+      } else {
+        heading_x = best_segment_x;
+        heading_y = best_segment_y;
+      }
+      cursor_x = selected.x;
+      cursor_y = selected.y;
+    }
+
+    const double closure_distance = planeDistance(
+      candidates[order.front()].x, candidates[order.front()].y,
+      candidates[order.back()].x, candidates[order.back()].y);
+    if (order.size() > best_order.size() ||
+        (order.size() == best_order.size() && closure_distance < best_closure_distance))
+    {
+      best_order = std::move(order);
+      best_closure_distance = closure_distance;
+    }
+  }
+
+  const std::size_t boundary_count =
+    std::min(map.blue_cones.size(), map.yellow_cones.size());
+  const double coverage = std::clamp(
+    static_cast<double>(best_order.size()) /
+    static_cast<double>(std::max<std::size_t>(1, boundary_count)),
+    0.0, 1.0);
+  if (best_order.size() < static_cast<std::size_t>(std::max(3, global_min_waypoints_)) ||
+      coverage < std::clamp(global_min_coverage_ratio_, 0.0, 1.0) ||
+      best_closure_distance > std::max(1.0, global_max_closure_distance_))
+  {
+    RCLCPP_ERROR(
+      get_logger(),
+      "Global centerline quality rejected: points=%zu coverage=%.3f closure=%.2f m",
+      best_order.size(), coverage, best_closure_distance);
+    return lane;
+  }
+
+  std::vector<geometry_msgs::msg::Point> ordered_points;
+  ordered_points.reserve(best_order.size());
+  for (const auto index : best_order) {
+    geometry_msgs::msg::Point point;
+    point.x = candidates[index].x;
+    point.y = candidates[index].y;
+    point.z = current_pose_.pose.position.z;
+    ordered_points.push_back(point);
+  }
+
+  // One circular smoothing pass removes alternating nearest-neighbour
+  // midpoints while preserving the closed topology and measured center.
+  std::vector<geometry_msgs::msg::Point> smoothed_points = ordered_points;
+  for (std::size_t i = 0; i < ordered_points.size(); ++i) {
+    const auto & previous = ordered_points[
+      (i + ordered_points.size() - 1) % ordered_points.size()];
+    const auto & current = ordered_points[i];
+    const auto & next = ordered_points[(i + 1) % ordered_points.size()];
+    smoothed_points[i].x = 0.25 * previous.x + 0.50 * current.x + 0.25 * next.x;
+    smoothed_points[i].y = 0.25 * previous.y + 0.50 * current.y + 0.25 * next.y;
+  }
+
+  lane.header.stamp = now();
+  lane.header.frame_id = "map";
+  for (std::size_t i = 0; i < smoothed_points.size(); ++i) {
+    const auto & point = smoothed_points[i];
+    const auto & next = smoothed_points[(i + 1) % smoothed_points.size()];
+    const double yaw = std::atan2(next.y - point.y, next.x - point.x);
+    autoware_msgs::msg::Waypoint waypoint;
+    waypoint.pose.pose.position = point;
+    waypoint.pose.pose.orientation.z = std::sin(0.5 * yaw);
+    waypoint.pose.pose.orientation.w = std::cos(0.5 * yaw);
+    waypoint.twist.twist.linear.x = desired_velocity_;
+    lane.waypoints.push_back(waypoint);
+  }
+
+  double cone_confidence_sum = 0.0;
+  std::size_t cone_confidence_count = 0;
+  const auto accumulate_confidence = [&cone_confidence_sum, &cone_confidence_count](
+      const auto & cones) {
+      for (const auto & cone : cones) {
+        cone_confidence_sum += std::clamp(static_cast<double>(cone.confidence), 0.0, 1.0);
+        ++cone_confidence_count;
+      }
+    };
+  accumulate_confidence(map.blue_cones);
+  accumulate_confidence(map.yellow_cones);
+  const double average_cone_confidence = cone_confidence_count == 0
+    ? 0.0
+    : cone_confidence_sum / static_cast<double>(cone_confidence_count);
+  const double closure_score = std::clamp(
+    1.0 - best_closure_distance / std::max(1.0, global_max_closure_distance_),
+    0.0, 1.0);
+  confidence = std::clamp(
+    0.45 * coverage + 0.25 * closure_score + 0.30 * average_cone_confidence,
+    0.0, 1.0);
+  return lane;
+}
+
 bool BoundaryDetectorNode::hasSevereColorImbalance(const wuta_msgs::msg::ConeMap & map) const
 {
   const std::size_t blue_count = map.blue_cones.size();
@@ -720,6 +1053,17 @@ autoware_msgs::msg::Lane BoundaryDetectorNode::computePairedCenterline(
   }
 
   return lane;
+}
+
+void BoundaryDetectorNode::publishPlanningStatus(bool global_ready, double confidence)
+{
+  std_msgs::msg::Bool ready_msg;
+  ready_msg.data = global_ready;
+  global_ready_pub_->publish(ready_msg);
+
+  std_msgs::msg::Float32 confidence_msg;
+  confidence_msg.data = static_cast<float>(std::clamp(confidence, 0.0, 1.0));
+  confidence_pub_->publish(confidence_msg);
 }
 
 void BoundaryDetectorNode::publishVisualization(const autoware_msgs::msg::Lane & lane)

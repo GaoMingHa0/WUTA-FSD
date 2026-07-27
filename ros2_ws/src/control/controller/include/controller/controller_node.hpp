@@ -50,7 +50,7 @@ private:
   std::vector<autoware_msgs::msg::Waypoint> waypoints_;
   bool pose_ready_{false};
   bool waypoints_ready_{false};
-  bool enabled_{false};  // Only run when mission is EXPLORE or RACE
+  bool enabled_{false};  // Run while Trackdrive can still make forward progress
   uint8_t mission_mode_{wuta_msgs::msg::MissionState::MISSION_TRACKDRIVE};
   bool mission_complete_{false};
   double finish_position_tolerance_{0.75};

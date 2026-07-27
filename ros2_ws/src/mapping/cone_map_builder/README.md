@@ -49,6 +49,10 @@
 | `assign_colors` | true | true 时按 LiDAR/body 坐标系左右分色；false 时保留上游 detection/fusion 给出的颜色 |
 | `map_save_path` | `/tmp/wuta_cone_map.yaml` | 地图保存路径 |
 
+Note: `assign_colors=true` only fills in `COLOR_UNKNOWN` detections. If an
+upstream detector or fusion node already provides blue/yellow/orange, the
+builder preserves that color and uses it in the merge vote.
+
 ## 线程模型
 
 使用 `MultiThreadedExecutor` + 两个 `MutuallyExclusiveCallbackGroup`：
