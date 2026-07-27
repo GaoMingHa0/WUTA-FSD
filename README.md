@@ -33,7 +33,7 @@
   ConeArray + pose ──→ cone_map_builder ──→ ConeMap（loop closure检测）
 
 规划层
-  ConeMap ──→ boundary_detector(Delaunay) ──→ path_generator ──→ Lane
+  ConeMap ──→ boundary_detector(局部路径/冻结全局中心线) ──→ path_generator ──→ Lane
   三模式：trackdrive / skidpad / acceleration
 
 控制层
@@ -127,9 +127,16 @@ ros2 run controller controller_node \
 
 由上层 `WUTA-SIM/simulator_bringup` 启动时，`mission_manager` 是
 `/system/mission_state` 的唯一发布者：LiDAR 与定位 ready 后进入 `READY`，收到
-`/system/start_command=true` 后进入 `EXPLORE`，控制器完成 Skidpad/Acceleration 停车后经
-`/system/mission_complete=true` 进入 `FINISH`。不要与 `simulation_bridge` 或外部节点同时
-发布 MissionState。
+`/system/start_command=true` 后进入 `EXPLORE`。Trackdrive 第一圈用局部中心线建图；闭环后，
+`boundary_detector` 仅从冻结的 `ConeMap` 生成有序全局中心线。地图闭合、地图质量、定位质量、
+全局中心线和首圈完成五项条件同时满足后进入 `RACE`。`mission_manager` 根据
+`/localization/pose` 穿越有限起终线发布 `/system/lap_count`，第三圈后进入 `FINISH`。
+Skidpad/Acceleration 仍由控制器停车后经 `/system/mission_complete=true` 完成。不要与
+`simulation_bridge` 或外部节点同时发布 MissionState。
+
+Trackdrive 默认分圈速度上限为第一圈 7 m/s、第二圈 9 m/s、第三圈 10 m/s，并同时受曲率、
+前向路径长度、`/planning/path_confidence` 和 `/system/localization_confidence` 限制。
+第一圈保留已经验证的速度，不因建图阶段无条件降速；低置信度或短路径会自动限制到保守速度。
 
 控制侧使用连续的 Pure Pursuit 曲率，并以 `max_steering_rate_deg_s` 限制转向命令变化；该参数
 是仿真初值，实车必须依转向执行器反馈与允许转向速率标定。
