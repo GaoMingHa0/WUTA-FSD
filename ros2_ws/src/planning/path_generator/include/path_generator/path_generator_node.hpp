@@ -84,6 +84,8 @@ private:
   double trackdrive_min_velocity_{3.0}; // m/s
   double trackdrive_lateral_accel_limit_{4.0}; // m/s^2
   double trackdrive_min_forward_target_{0.5}; // m
+  double trackdrive_short_centerline_velocity_{3.0}; // m/s
+  int trackdrive_short_centerline_points_{3}; // source centerline points
 
   // Skidpad reference in map.  This matches tracks/skidpad.yaml by default.
   double skidpad_radius_{9.125};       // m

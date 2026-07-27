@@ -27,6 +27,10 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
   skidpad_lookahead_ = declare_parameter("skidpad_lookahead", skidpad_lookahead_);
   trackdrive_lookahead_ = declare_parameter(
     "trackdrive_lookahead", trackdrive_lookahead_);
+  trackdrive_target_loss_hold_time_ = declare_parameter(
+    "trackdrive_target_loss_hold_time", trackdrive_target_loss_hold_time_);
+  trackdrive_target_loss_hold_speed_ = declare_parameter(
+    "trackdrive_target_loss_hold_speed", trackdrive_target_loss_hold_speed_);
 
   // --- Control loop rate ---
   const int rate_hz = declare_parameter("control_rate_hz", 50);
@@ -113,6 +117,7 @@ void ControllerNode::onMissionState(const MissionState::SharedPtr msg)
 
   if (!enabled_) {
     twist_filter_->reset();
+    last_valid_trackdrive_cmd_ready_ = false;
     // Publish stop command
     autoware_msgs::msg::Command stop;
     stop.header.stamp = now();
@@ -129,6 +134,7 @@ void ControllerNode::controlLoop()
   if (!enabled_ || !pose_ready_ || !waypoints_ready_) return;
 
   if (mission_complete_) return;
+  const auto loop_time = now();
 
   // 1. Pure Pursuit
   // At 5 m/s the generic LD=v*2 would preview 10 m, almost one skidpad
@@ -144,6 +150,11 @@ void ControllerNode::controlLoop()
   }
   auto raw_cmd = pure_pursuit_->compute(
     vehicle_state_, waypoints_, lookahead_override);
+  if (mission_mode_ == MissionState::MISSION_TRACKDRIVE && raw_cmd.valid) {
+    last_valid_trackdrive_cmd_ = raw_cmd;
+    last_valid_trackdrive_cmd_time_ = loop_time;
+    last_valid_trackdrive_cmd_ready_ = true;
+  }
 
   const bool stopping_mission =
     mission_mode_ == MissionState::MISSION_SKIDPAD ||
@@ -160,17 +171,33 @@ void ControllerNode::controlLoop()
   }
 
   if (!raw_cmd.valid) {
-    twist_filter_->reset();
-    autoware_msgs::msg::Command stop;
-    stop.header.stamp = now();
-    stop.header.frame_id = "base_link";
-    stop.speed = 0.0;
-    stop.angle = 0.0;
-    stop.dv_state = 4;
-    cmd_pub_->publish(stop);
-    RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
-      "No forward waypoint target available; publishing stop command.");
-    return;
+    const bool can_hold_trackdrive_cmd =
+      mission_mode_ == MissionState::MISSION_TRACKDRIVE &&
+      last_valid_trackdrive_cmd_ready_ &&
+      (loop_time - last_valid_trackdrive_cmd_time_).seconds() <=
+        std::max(0.0, trackdrive_target_loss_hold_time_);
+
+    if (can_hold_trackdrive_cmd) {
+      raw_cmd = last_valid_trackdrive_cmd_;
+      raw_cmd.velocity = std::min(
+        raw_cmd.velocity, std::max(0.0, trackdrive_target_loss_hold_speed_));
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
+        "No forward waypoint target available; holding last Trackdrive command at %.2f m/s.",
+        raw_cmd.velocity);
+    } else {
+      last_valid_trackdrive_cmd_ready_ = false;
+      twist_filter_->reset();
+      autoware_msgs::msg::Command stop;
+      stop.header.stamp = loop_time;
+      stop.header.frame_id = "base_link";
+      stop.speed = 0.0;
+      stop.angle = 0.0;
+      stop.dv_state = 4;
+      cmd_pub_->publish(stop);
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
+        "No forward waypoint target available; publishing stop command.");
+      return;
+    }
   }
 
   // 2. Safety filter
@@ -178,7 +205,7 @@ void ControllerNode::controlLoop()
 
   // 3. Publish command
   autoware_msgs::msg::Command cmd;
-  cmd.header.stamp = now();
+  cmd.header.stamp = loop_time;
   cmd.header.frame_id = "base_link";
   cmd.speed    = filtered.velocity;
   cmd.angle    = filtered.steering_angle;
@@ -235,6 +262,7 @@ void ControllerNode::publishMissionComplete()
   mission_complete_ = true;
   enabled_ = false;
   twist_filter_->reset();
+  last_valid_trackdrive_cmd_ready_ = false;
 
   autoware_msgs::msg::Command stop;
   stop.header.stamp = now();

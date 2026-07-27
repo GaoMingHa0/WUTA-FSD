@@ -43,7 +43,7 @@
 
 | 参数 | 默认值 | 说明 |
 |------|--------|------|
-| `merge_distance` | 1.2m | 同一锥桶合并距离；Mode B 中用于吸收 INS/EKF 与检测噪声导致的重复锥桶，仍需小于相邻锥桶间距 |
+| `merge_distance` | 0.5m | 同一锥桶合并距离；用于吸收检测与定位小噪声，同时避免 Trackdrive 密集弯道把相邻锥桶融合掉 |
 | `min_hit_count` | 2 | 发布前的最低检测次数，过滤单帧噪声 |
 | `loop_closure_distance` | 3.0m | 判定回到起点的距离阈值 |
 | `assign_colors` | true | true 时按 LiDAR/body 坐标系左右分色；false 时保留上游 detection/fusion 给出的颜色 |

@@ -56,6 +56,7 @@ private:
   double desired_velocity_{7.0};     // m/s — default, overridden by path_generator
   int local_pairing_min_streak_{10}; // cycles before geometry-only pairing is allowed
   double local_pairing_color_imbalance_ratio_{0.20};
+  int delaunay_min_waypoints_{5};     // reject short fallback paths that can reverse in tight turns
 
   // Subscribers
   rclcpp::Subscription<wuta_msgs::msg::ConeMap>::SharedPtr cone_map_sub_;

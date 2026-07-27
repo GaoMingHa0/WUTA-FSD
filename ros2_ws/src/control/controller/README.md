@@ -86,13 +86,17 @@ Skidpad 目标速度为 5 m/s 时，过大的通用前视会接近 9.125 m 圆�
 |------|--------|------|
 | `wheel_base` | 1.53m | 轴距 |
 | `max_steer_angle` | 25° | 最大转向角 |
-| `ld_ratio` | 1.2 | Acceleration 的动态前视距离系数 |
+| `ld_ratio` | 2.0 | Acceleration 的动态前视距离系数 |
 | `min_lookahead` | 2.0m | 动态前视距离下限（低速） |
-| `max_lookahead` | 10.0m | 动态前视距离上限（高速） |
+| `max_lookahead` | 20.0m | 动态前视距离上限（高速） |
 | `trackdrive_lookahead` | 5.0m | 仅 `MISSION_TRACKDRIVE` 使用的固定前视距离；不随规划目标速度变化 |
+| `trackdrive_target_loss_hold_time` | 0.5s | Trackdrive 短暂没有前向目标时，保留上一有效命令的最长时间 |
+| `trackdrive_target_loss_hold_speed` | 2.0m/s | 保留命令期间的速度上限；超时后控制器停车 |
 | `max_progress_advance` | 4 | 单次控制循环允许推进的最大路径点数；防止 Skidpad 跳至出口 |
 | 前向目标保护 | 内置 | Pure Pursuit 只选择车体前方的目标点；Trackdrive 局部中心线瞬时反向时不会掉头追车后点 |
 | `skidpad_lookahead` | 3.0m | 仅 `MISSION_SKIDPAD` 使用的固定前视距离；5 m/s 下替代通用 10 m 前视，避免跨越交叉点的曲率切换 |
+| `trackdrive_target_loss_hold_time` | 0.5s | Trackdrive 局部中心线短暂不可追踪时，允许沿用上一条有效控制指令的时间窗口 |
+| `trackdrive_target_loss_hold_speed` | 2.0m/s | 沿用上一条 Trackdrive 控制指令时的速度上限，避免一帧坏路径立即停车但仍限制盲开距离 |
 | `control_rate_hz` | 50 | 控制频率 |
 | `max_steering_rate_deg_s` | 180°/s | 每个控制周期限制转向变化量，抑制定位噪声和目标点离散化导致的指令抖动 |
 | `finish_position_tolerance` | 0.75m | Skidpad 出口停车位置阈值 |
