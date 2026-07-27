@@ -151,6 +151,17 @@ void ControllerNode::controlLoop()
   auto raw_cmd = pure_pursuit_->compute(
     vehicle_state_, waypoints_, lookahead_override);
   if (mission_mode_ == MissionState::MISSION_TRACKDRIVE && raw_cmd.valid) {
+    // Trackdrive receives a freshly rebuilt local centerline on every map
+    // update. Its progress index therefore restarts at the vehicle-origin
+    // waypoint, whose curvature and speed are normally zero/maximum. Use the
+    // same forward target selected for lateral Pure Pursuit so the curvature
+    // speed profile is effective before entering the bend. Skidpad and
+    // Acceleration keep progress-point speed for their ordered stop paths.
+    const int target_index = pure_pursuit_->targetIndex();
+    if (target_index >= 0 &&
+        target_index < static_cast<int>(waypoints_.size())) {
+      raw_cmd.velocity = waypoints_[target_index].twist.twist.linear.x;
+    }
     last_valid_trackdrive_cmd_ = raw_cmd;
     last_valid_trackdrive_cmd_time_ = loop_time;
     last_valid_trackdrive_cmd_ready_ = true;

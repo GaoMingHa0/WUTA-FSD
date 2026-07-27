@@ -39,7 +39,7 @@ Skidpad 目标速度为 5 m/s 时，过大的通用前视会接近 9.125 m 圆�
 
 ### 纵向控制：速度跟踪
 
-- 转向目标取前视 waypoint；目标速度取当前单调路径进度 waypoint 的 `twist.twist.linear.x`，避免在 Skidpad 出口提前一个前视距离停车
+- 转向目标取前视 waypoint。Trackdrive 的目标速度也取该前视点，保证每次在线局部中心线刷新后仍能采用即将进入弯道的曲率限速；Skidpad 与 Acceleration 保持取当前单调路径进度 waypoint 的速度，避免在停车出口提前一个前视距离减速
 - 由 path_generator 在各模式下写入（trackdrive=7m/s, skidpad=5m/s, acceleration=15m/s）
 - TwistFilter 做平滑处理，避免急加速/急减速
 
@@ -110,5 +110,5 @@ ROS callbacks（pose/vel/waypoints）与 timer 在同一线程顺序执行。
 ## 待完善
 
 - [ ] 速度 PID 闭环（目前仅前馈，无速度误差反馈）
-- [ ] 曲率自适应速度规划（大曲率 → 自动降速）
+- [x] Trackdrive 曲率速度规划：`path_generator` 为在线局部中心线生成速度剖面，控制器采用前视目标点速度以在路径刷新后保持弯道减速
 - [ ] `/control/command` → VCU CAN 帧的转换（待 VCU 协议确认）
