@@ -25,6 +25,8 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
   pp_cfg.max_progress_advance = declare_parameter(
     "max_progress_advance", pp_cfg.max_progress_advance);
   skidpad_lookahead_ = declare_parameter("skidpad_lookahead", skidpad_lookahead_);
+  trackdrive_lookahead_ = declare_parameter(
+    "trackdrive_lookahead", trackdrive_lookahead_);
 
   // --- Control loop rate ---
   const int rate_hz = declare_parameter("control_rate_hz", 50);
@@ -130,12 +132,16 @@ void ControllerNode::controlLoop()
 
   // 1. Pure Pursuit
   // At 5 m/s the generic LD=v*2 would preview 10 m, almost one skidpad
-  // radius.  At the entry, circle transition, and exit this selects a point
+  // radius. At the entry, circle transition, and exit this selects a point
   // from the following path segment and makes the bicycle model cut inward or
-  // unload steering before the crossing.  Keep that behaviour for other
-  // missions, but use the calibrated local preview for skidpad.
-  const double lookahead_override =
-    mission_mode_ == MissionState::MISSION_SKIDPAD ? skidpad_lookahead_ : 0.0;
+  // unload steering before the crossing. Trackdrive also deliberately uses a
+  // fixed preview, keeping steering independent of planner target velocity.
+  double lookahead_override = 0.0;
+  if (mission_mode_ == MissionState::MISSION_SKIDPAD) {
+    lookahead_override = skidpad_lookahead_;
+  } else if (mission_mode_ == MissionState::MISSION_TRACKDRIVE) {
+    lookahead_override = trackdrive_lookahead_;
+  }
   auto raw_cmd = pure_pursuit_->compute(
     vehicle_state_, waypoints_, lookahead_override);
 
