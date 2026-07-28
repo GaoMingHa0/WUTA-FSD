@@ -37,6 +37,7 @@ public:
     double min_lookahead{2.0};    // m — clamp at low speed
     double max_lookahead{20.0};   // m — clamp at high speed
     int max_progress_advance{4};  // waypoints per control update
+    double terminal_progress_distance{0.75};  // m
   };
 
   explicit PurePursuit(const VehicleParams & params, const Config & cfg);

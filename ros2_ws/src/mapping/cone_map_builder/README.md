@@ -23,12 +23,20 @@
         ▼ hit_count >= min_hit_count(2) → 发布
         │
         ▼ Loop Closure 检测
-  已移动 > start_skip_distance(5m)
+  累计行驶 > start_skip_distance(30m)
   AND 返回起点距离 < loop_closure_distance(3m)
+  AND 当前朝向与起点朝向差 <= 60°
   AND 已确认锥桶数 >= min_cones_for_closure(10)
+        │
+        ▼ 闭环最终收敛合并
+  同色或未知色兼容轨迹且 distance < merge_distance
+  → 按 hit_count 加权合并坐标、命中次数和颜色投票
         │
         ▼ is_closed = true → 保存 YAML → 通知 MissionManager
 ```
+
+在线阶段不扩大 `merge_distance`，避免紧邻赛段误合并真实相邻锥桶。两个独立轨迹的
+运行均值可能在一圈内逐渐收敛到现有半径内，因此只在闭环冻结前做一次传递式最终合并。
 
 ## Topics
 

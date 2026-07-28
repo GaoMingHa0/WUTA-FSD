@@ -123,6 +123,22 @@ int PurePursuit::findNearestForwardIndex(
       waypoints[i].pose.pose.position.x,
       waypoints[i].pose.pose.position.y,
       state.x, state.y);
+    const bool is_zero_speed_terminal =
+      i == static_cast<int>(waypoints.size()) - 1 &&
+      std::abs(waypoints[i].twist.twist.linear.x) < 1e-6;
+    if (is_zero_speed_terminal) {
+      if (distance > std::max(0.0, cfg_.terminal_progress_distance)) {
+        // Keep commanding the final positive-speed waypoint until the vehicle
+        // is close enough to stop. This prevents pose noise from selecting the
+        // zero-speed endpoint several metres early on ordered stopping paths.
+        continue;
+      }
+      if (distance < nearest_distance) {
+        nearest_distance = distance;
+        nearest = i;
+      }
+      continue;
+    }
     const double forward = longitudinalOffset(
       waypoints[i].pose.pose.position.x,
       waypoints[i].pose.pose.position.y,

@@ -40,6 +40,7 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
     "finish_position_tolerance", finish_position_tolerance_);
   finish_speed_threshold_ = declare_parameter(
     "finish_speed_threshold", finish_speed_threshold_);
+  pp_cfg.terminal_progress_distance = finish_position_tolerance_;
 
   pure_pursuit_ = std::make_unique<PurePursuit>(vp, pp_cfg);
   twist_filter_ = std::make_unique<TwistFilter>(

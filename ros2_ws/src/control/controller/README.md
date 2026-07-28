@@ -40,6 +40,7 @@ Skidpad 目标速度为 5 m/s 时，过大的通用前视会接近 9.125 m 圆�
 ### 纵向控制：速度跟踪
 
 - 转向目标取前视 waypoint。Trackdrive 的目标速度也取该前视点，保证每次在线局部中心线刷新后仍能采用即将进入弯道的曲率限速；Skidpad 与 Acceleration 保持取当前单调路径进度 waypoint 的速度，避免在停车出口提前一个前视距离减速
+- Skidpad/Acceleration 的零速终点只有在车辆进入 `finish_position_tolerance` 后才允许成为单调进度点；此前保持倒数正速度点，避免定位噪声让车辆在终点前数米停车
 - 由 path_generator 在各模式下写入（trackdrive=7m/s, skidpad=5m/s, acceleration=15m/s）
 - TwistFilter 做平滑处理，避免急加速/急减速
 
@@ -99,8 +100,8 @@ Skidpad 目标速度为 5 m/s 时，过大的通用前视会接近 9.125 m 圆�
 | `trackdrive_target_loss_hold_speed` | 2.0m/s | 沿用上一条 Trackdrive 控制指令时的速度上限，避免一帧坏路径立即停车但仍限制盲开距离 |
 | `control_rate_hz` | 50 | 控制频率 |
 | `max_steering_rate_deg_s` | 180°/s | 每个控制周期限制转向变化量，抑制定位噪声和目标点离散化导致的指令抖动 |
-| `finish_position_tolerance` | 0.75m | Skidpad 出口停车位置阈值 |
-| `finish_speed_threshold` | 0.2m/s | Skidpad 出口完成速度阈值 |
+| `finish_position_tolerance` | 0.75m | Skidpad/Acceleration 零速终点进度与任务完成的位置阈值 |
+| `finish_speed_threshold` | 0.2m/s | Skidpad/Acceleration 终点完成速度阈值 |
 
 ## 线程模型
 

@@ -4,6 +4,7 @@
 #include <yaml-cpp/yaml.h>
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <fstream>
 
 namespace cone_map_builder
@@ -141,7 +142,13 @@ void ConeMapBuilder::processPendingDetections()
     pending_detections_.pop_front();
 
     if (checkLoopClosure()) {
+      const size_t consolidated_count = consolidateMap();
       loop_closed_ = true;
+      if (consolidated_count > 0) {
+        RCLCPP_INFO(
+          get_logger(), "Consolidated %zu duplicate cone tracks at loop closure.",
+          consolidated_count);
+      }
       RCLCPP_INFO(get_logger(), "Loop closed! %zu cones in map. Saving map...", cone_map_.size());
       saveMapToYaml();
       publishMap();  // Publish immediately with is_closed = true
@@ -327,6 +334,53 @@ bool ConeMapBuilder::checkLoopClosure()
     std::clamp(loop_closure_heading_tolerance_deg_, 0.0, 180.0) * M_PI / 180.0;
 
   return heading_error <= heading_tolerance;
+}
+
+size_t ConeMapBuilder::consolidateMap()
+{
+  size_t consolidated_count = 0;
+  bool merged = true;
+
+  // Separate tracks can be created while their noisy centroids are farther
+  // apart, then converge inside the normal merge radius over a full lap.
+  while (merged) {
+    merged = false;
+    for (size_t i = 0; i < cone_map_.size() && !merged; ++i) {
+      for (size_t j = i + 1; j < cone_map_.size(); ++j) {
+        auto & first = cone_map_[i];
+        const auto & second = cone_map_[j];
+        const bool colors_compatible =
+          first.color == second.color ||
+          first.color == wuta_msgs::msg::Cone::COLOR_UNKNOWN ||
+          second.color == wuta_msgs::msg::Cone::COLOR_UNKNOWN;
+        if (!colors_compatible || std::hypot(first.x - second.x, first.y - second.y) >=
+          merge_distance_)
+        {
+          continue;
+        }
+
+        const int combined_hits = first.hit_count + second.hit_count;
+        first.x =
+          (first.x * first.hit_count + second.x * second.hit_count) / combined_hits;
+        first.y =
+          (first.y * first.hit_count + second.y * second.hit_count) / combined_hits;
+        first.z =
+          (first.z * first.hit_count + second.z * second.hit_count) / combined_hits;
+        first.hit_count = combined_hits;
+        first.blue_votes += second.blue_votes;
+        first.yellow_votes += second.yellow_votes;
+        first.orange_votes += second.orange_votes;
+        first.unknown_votes += second.unknown_votes;
+        first.color = majorityColor(first);
+        cone_map_.erase(cone_map_.begin() + static_cast<std::ptrdiff_t>(j));
+        ++consolidated_count;
+        merged = true;
+        break;
+      }
+    }
+  }
+
+  return consolidated_count;
 }
 
 void ConeMapBuilder::publishMap()

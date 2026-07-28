@@ -51,6 +51,7 @@ private:
   void addColorVote(TrackedCone & tracked, uint8_t color) const;
   uint8_t majorityColor(const TrackedCone & tracked) const;
   bool checkLoopClosure();
+  size_t consolidateMap();
   void publishMap();
   void publishVisualization();
   void saveMapToYaml() const;
