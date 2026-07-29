@@ -69,6 +69,9 @@ private:
   double global_pairing_min_width_{1.5};
   double global_pairing_max_width_{7.5};
   double global_pairing_dedup_distance_{0.75};
+  int global_geometry_neighbor_count_{8};
+  double global_geometry_neighbor_distance_{5.0};
+  double global_geometry_max_tangent_alignment_{0.45};
   double global_max_segment_length_{10.0};
   double global_max_closure_distance_{8.0};
   int global_min_waypoints_{20};

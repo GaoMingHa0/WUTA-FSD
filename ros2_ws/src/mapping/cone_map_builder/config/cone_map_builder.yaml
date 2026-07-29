@@ -4,13 +4,17 @@ cone_map_builder:
     # (for example 1.2 m) can merge neighbouring cones in Trackdrive hairpins
     # and make the online centerline disappear or fold back.
     merge_distance: 0.5         # m
+    # A separate, still sub-spacing radius removes parallel tracks created by
+    # localization corrections after their running centroids have stabilized.
+    consolidation_distance: 1.0 # m
 
     # Only publish cones seen at least this many times (noise filter)
-    min_hit_count: 2
+    min_hit_count: 3
 
     # Loop closure detection
     loop_closure_distance: 3.0  # m — distance back to start position
     min_cones_for_closure: 10   # Minimum confirmed cones before checking closure
+    mapping_laps: 1             # Freeze when formal /system/lap_count reaches this
     start_skip_distance: 30.0   # m — accumulated travel required before closure
     loop_closure_heading_tolerance_deg: 60.0 # require start-direction agreement
 

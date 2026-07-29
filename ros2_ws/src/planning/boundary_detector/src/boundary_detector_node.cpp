@@ -85,6 +85,12 @@ BoundaryDetectorNode::BoundaryDetectorNode(const rclcpp::NodeOptions & options)
     "global_pairing_max_width", global_pairing_max_width_);
   global_pairing_dedup_distance_ = declare_parameter(
     "global_pairing_dedup_distance", global_pairing_dedup_distance_);
+  global_geometry_neighbor_count_ = declare_parameter(
+    "global_geometry_neighbor_count", global_geometry_neighbor_count_);
+  global_geometry_neighbor_distance_ = declare_parameter(
+    "global_geometry_neighbor_distance", global_geometry_neighbor_distance_);
+  global_geometry_max_tangent_alignment_ = declare_parameter(
+    "global_geometry_max_tangent_alignment", global_geometry_max_tangent_alignment_);
   global_max_segment_length_ = declare_parameter(
     "global_max_segment_length", global_max_segment_length_);
   global_max_closure_distance_ = declare_parameter(
@@ -571,12 +577,18 @@ autoware_msgs::msg::Lane BoundaryDetectorNode::computeGlobalCenterline(
     double width;
   };
 
+  struct OrderedCandidateSet
+  {
+    std::vector<Candidate> candidates;
+    std::vector<std::size_t> order;
+    double median_width{0.0};
+    double closure_distance{std::numeric_limits<double>::max()};
+  };
+
   const double min_width = std::max(0.1, global_pairing_min_width_);
   const double max_width = std::max(min_width, global_pairing_max_width_);
-  std::vector<Candidate> raw_candidates;
-  raw_candidates.reserve(map.blue_cones.size() + map.yellow_cones.size());
-
-  const auto append_nearest_pairs = [&raw_candidates, min_width, max_width](
+  const auto append_nearest_pairs = [min_width, max_width](
+      std::vector<Candidate> & raw_candidates,
       const auto & sources, const auto & targets, bool source_is_yellow) {
       for (const auto & source : sources) {
         const auto nearest = std::min_element(
@@ -611,164 +623,320 @@ autoware_msgs::msg::Lane BoundaryDetectorNode::computeGlobalCenterline(
 
   // Pair in both directions. The two nearest-neighbour sets fill staggered
   // cone layouts without assuming that the color arrays are already ordered.
-  append_nearest_pairs(map.blue_cones, map.yellow_cones, false);
-  append_nearest_pairs(map.yellow_cones, map.blue_cones, true);
-  if (raw_candidates.size() < 3) {
-    return lane;
-  }
+  std::vector<Candidate> colored_raw_candidates;
+  colored_raw_candidates.reserve(map.blue_cones.size() + map.yellow_cones.size());
+  append_nearest_pairs(
+    colored_raw_candidates, map.blue_cones, map.yellow_cones, false);
+  append_nearest_pairs(
+    colored_raw_candidates, map.yellow_cones, map.blue_cones, true);
 
-  std::vector<double> widths;
-  widths.reserve(raw_candidates.size());
-  for (const auto & candidate : raw_candidates) {
-    widths.push_back(candidate.width);
-  }
-  const auto median_it = widths.begin() + static_cast<std::ptrdiff_t>(widths.size() / 2);
-  std::nth_element(widths.begin(), median_it, widths.end());
-  const double median_width = *median_it;
-  std::sort(
-    raw_candidates.begin(), raw_candidates.end(),
-    [median_width](const Candidate & lhs, const Candidate & rhs) {
-      return std::abs(lhs.width - median_width) < std::abs(rhs.width - median_width);
-    });
+  const auto order_candidates =
+    [this](std::vector<Candidate> raw_candidates) -> OrderedCandidateSet {
+      OrderedCandidateSet result;
+      if (raw_candidates.size() < 3) {
+        return result;
+      }
 
-  std::vector<Candidate> candidates;
-  candidates.reserve(raw_candidates.size());
-  const double dedup_distance = std::max(0.1, global_pairing_dedup_distance_);
-  for (const auto & candidate : raw_candidates) {
-    const bool duplicate = std::any_of(
-      candidates.begin(), candidates.end(),
-      [&candidate, dedup_distance](const Candidate & existing) {
-        return planeDistance(candidate.x, candidate.y, existing.x, existing.y) <
-               dedup_distance;
-      });
-    if (!duplicate) {
-      candidates.push_back(candidate);
-    }
-  }
-  if (candidates.size() < 3) {
-    return lane;
-  }
+      std::vector<double> widths;
+      widths.reserve(raw_candidates.size());
+      for (const auto & candidate : raw_candidates) {
+        widths.push_back(candidate.width);
+      }
+      const auto median_it =
+        widths.begin() + static_cast<std::ptrdiff_t>(widths.size() / 2);
+      std::nth_element(widths.begin(), median_it, widths.end());
+      result.median_width = *median_it;
+      std::sort(
+        raw_candidates.begin(), raw_candidates.end(),
+        [&result](const Candidate & lhs, const Candidate & rhs) {
+          return std::abs(lhs.width - result.median_width) <
+                 std::abs(rhs.width - result.median_width);
+        });
 
-  std::vector<std::size_t> start_indices(candidates.size());
-  for (std::size_t i = 0; i < start_indices.size(); ++i) {
-    start_indices[i] = i;
-  }
-  std::sort(
-    start_indices.begin(), start_indices.end(),
-    [this, &candidates](std::size_t lhs, std::size_t rhs) {
-      return planeDistance(
-        candidates[lhs].x, candidates[lhs].y,
-        current_pose_.pose.position.x, current_pose_.pose.position.y) <
-             planeDistance(
-        candidates[rhs].x, candidates[rhs].y,
-        current_pose_.pose.position.x, current_pose_.pose.position.y);
-    });
-  if (start_indices.size() > 12) {
-    start_indices.resize(12);
-  }
+      const double dedup_distance = std::max(0.1, global_pairing_dedup_distance_);
+      result.candidates.reserve(raw_candidates.size());
+      for (const auto & candidate : raw_candidates) {
+        const bool duplicate = std::any_of(
+          result.candidates.begin(), result.candidates.end(),
+          [&candidate, dedup_distance](const Candidate & existing) {
+            return planeDistance(candidate.x, candidate.y, existing.x, existing.y) <
+                   dedup_distance;
+          });
+        if (!duplicate) {
+          result.candidates.push_back(candidate);
+        }
+      }
+      if (result.candidates.size() < 3) {
+        return result;
+      }
 
-  const double initial_yaw = yawFromPose(current_pose_);
-  const double max_segment = std::max(1.0, global_max_segment_length_);
-  std::vector<std::size_t> best_order;
-  double best_closure_distance = std::numeric_limits<double>::max();
+      std::vector<std::size_t> start_indices(result.candidates.size());
+      for (std::size_t i = 0; i < start_indices.size(); ++i) {
+        start_indices[i] = i;
+      }
+      std::sort(
+        start_indices.begin(), start_indices.end(),
+        [this, &result](std::size_t lhs, std::size_t rhs) {
+          return planeDistance(
+            result.candidates[lhs].x, result.candidates[lhs].y,
+            current_pose_.pose.position.x, current_pose_.pose.position.y) <
+                 planeDistance(
+            result.candidates[rhs].x, result.candidates[rhs].y,
+            current_pose_.pose.position.x, current_pose_.pose.position.y);
+        });
+      if (start_indices.size() > 12) {
+        start_indices.resize(12);
+      }
 
-  for (const std::size_t start_index : start_indices) {
-    std::vector<std::size_t> order{start_index};
-    std::vector<bool> used(candidates.size(), false);
-    used[start_index] = true;
-    double cursor_x = candidates[start_index].x;
-    double cursor_y = candidates[start_index].y;
-    double heading_x = std::cos(initial_yaw);
-    double heading_y = std::sin(initial_yaw);
+      const double initial_yaw = yawFromPose(current_pose_);
+      const double max_segment = std::max(1.0, global_max_segment_length_);
+      for (const std::size_t start_index : start_indices) {
+        std::vector<std::size_t> order{start_index};
+        std::vector<bool> used(result.candidates.size(), false);
+        used[start_index] = true;
+        double cursor_x = result.candidates[start_index].x;
+        double cursor_y = result.candidates[start_index].y;
+        double heading_x = std::cos(initial_yaw);
+        double heading_y = std::sin(initial_yaw);
 
-    for (std::size_t step = 1; step < candidates.size(); ++step) {
-      int best_index = -1;
+        for (std::size_t step = 1; step < result.candidates.size(); ++step) {
+          int best_index = -1;
+          double best_score = std::numeric_limits<double>::max();
+          double best_segment_x = 0.0;
+          double best_segment_y = 0.0;
+
+          for (std::size_t index = 0; index < result.candidates.size(); ++index) {
+            if (used[index]) continue;
+            const auto & candidate = result.candidates[index];
+            const double dx = candidate.x - cursor_x;
+            const double dy = candidate.y - cursor_y;
+            const double distance = std::hypot(dx, dy);
+            if (distance < 0.4 || distance > max_segment) continue;
+
+            const double segment_x = dx / distance;
+            const double segment_y = dy / distance;
+            const double segment_alignment =
+              segment_x * heading_x + segment_y * heading_y;
+            const double tangent_alignment = std::abs(
+              candidate.tangent_x * heading_x + candidate.tangent_y * heading_y);
+            if (segment_alignment < -0.35 || tangent_alignment < 0.05) continue;
+
+            const double score =
+              distance +
+              4.0 * (1.0 - segment_alignment) +
+              1.5 * (1.0 - tangent_alignment) +
+              0.3 * std::abs(candidate.width - result.median_width);
+            if (score < best_score) {
+              best_score = score;
+              best_index = static_cast<int>(index);
+              best_segment_x = segment_x;
+              best_segment_y = segment_y;
+            }
+          }
+
+          if (best_index < 0) break;
+          const auto selected_index = static_cast<std::size_t>(best_index);
+          const auto & selected = result.candidates[selected_index];
+          used[selected_index] = true;
+          order.push_back(selected_index);
+
+          double tangent_x = selected.tangent_x;
+          double tangent_y = selected.tangent_y;
+          if (tangent_x * heading_x + tangent_y * heading_y < 0.0) {
+            tangent_x = -tangent_x;
+            tangent_y = -tangent_y;
+          }
+          heading_x = best_segment_x + tangent_x;
+          heading_y = best_segment_y + tangent_y;
+          const double heading_norm = std::hypot(heading_x, heading_y);
+          if (heading_norm > 1e-6) {
+            heading_x /= heading_norm;
+            heading_y /= heading_norm;
+          } else {
+            heading_x = best_segment_x;
+            heading_y = best_segment_y;
+          }
+          cursor_x = selected.x;
+          cursor_y = selected.y;
+        }
+
+        const double closure_distance = planeDistance(
+          result.candidates[order.front()].x, result.candidates[order.front()].y,
+          result.candidates[order.back()].x, result.candidates[order.back()].y);
+        if (order.size() > result.order.size() ||
+            (order.size() == result.order.size() &&
+            closure_distance < result.closure_distance))
+        {
+          result.order = std::move(order);
+          result.closure_distance = closure_distance;
+        }
+      }
+      return result;
+    };
+
+  const auto passes_quality =
+    [this](const OrderedCandidateSet & result, std::size_t expected_count, double & coverage) {
+      coverage = std::clamp(
+        static_cast<double>(result.order.size()) /
+        static_cast<double>(std::max<std::size_t>(1, expected_count)),
+        0.0, 1.0);
+      return
+        result.order.size() >=
+        static_cast<std::size_t>(std::max(3, global_min_waypoints_)) &&
+        coverage >= std::clamp(global_min_coverage_ratio_, 0.0, 1.0) &&
+        result.closure_distance <= std::max(1.0, global_max_closure_distance_);
+    };
+
+  auto selected = order_candidates(std::move(colored_raw_candidates));
+  const std::size_t colored_boundary_count =
+    std::min(map.blue_cones.size(), map.yellow_cones.size());
+  double coverage = 0.0;
+  bool using_geometry_fallback =
+    !passes_quality(selected, colored_boundary_count, coverage);
+
+  if (using_geometry_fallback) {
+    const std::size_t colored_points = selected.order.size();
+    const double colored_coverage = coverage;
+    const double colored_closure = selected.closure_distance;
+
+    struct GeometryPoint
+    {
+      double x;
+      double y;
+    };
+    std::vector<GeometryPoint> points;
+    points.reserve(
+      map.blue_cones.size() + map.yellow_cones.size() + map.unknown_cones.size());
+    const auto append_points = [&points](const auto & cones) {
+        for (const auto & cone : cones) {
+          points.push_back({cone.position.x, cone.position.y});
+        }
+      };
+    append_points(map.blue_cones);
+    append_points(map.yellow_cones);
+    append_points(map.unknown_cones);
+
+    struct LocalTangent
+    {
+      bool valid{false};
+      double x{0.0};
+      double y{0.0};
+    };
+    std::vector<LocalTangent> tangents(points.size());
+    const std::size_t neighbor_count = static_cast<std::size_t>(
+      std::max(2, global_geometry_neighbor_count_));
+    const double neighbor_distance =
+      std::max(0.5, global_geometry_neighbor_distance_);
+
+    for (std::size_t i = 0; i < points.size(); ++i) {
+      std::vector<std::pair<double, std::size_t>> nearest;
+      nearest.reserve(points.size() - 1);
+      for (std::size_t j = 0; j < points.size(); ++j) {
+        if (i == j) continue;
+        const double distance = planeDistance(
+          points[i].x, points[i].y, points[j].x, points[j].y);
+        if (distance > 1e-6) {
+          nearest.emplace_back(distance, j);
+        }
+      }
+      std::sort(nearest.begin(), nearest.end());
+      if (nearest.size() > neighbor_count) {
+        nearest.resize(neighbor_count);
+      }
+
       double best_score = std::numeric_limits<double>::max();
-      double best_segment_x = 0.0;
-      double best_segment_y = 0.0;
+      std::size_t best_first = points.size();
+      std::size_t best_second = points.size();
+      for (std::size_t first = 0; first < nearest.size(); ++first) {
+        for (std::size_t second = first + 1; second < nearest.size(); ++second) {
+          const auto [first_distance, first_index] = nearest[first];
+          const auto [second_distance, second_index] = nearest[second];
+          if (first_distance > neighbor_distance || second_distance > neighbor_distance) {
+            continue;
+          }
 
-      for (std::size_t index = 0; index < candidates.size(); ++index) {
-        if (used[index]) continue;
-        const auto & candidate = candidates[index];
-        const double dx = candidate.x - cursor_x;
-        const double dy = candidate.y - cursor_y;
-        const double distance = std::hypot(dx, dy);
-        if (distance < 0.4 || distance > max_segment) continue;
-
-        const double segment_x = dx / distance;
-        const double segment_y = dy / distance;
-        const double segment_alignment =
-          segment_x * heading_x + segment_y * heading_y;
-        const double tangent_alignment = std::abs(
-          candidate.tangent_x * heading_x + candidate.tangent_y * heading_y);
-        if (segment_alignment < -0.35 || tangent_alignment < 0.05) continue;
-
-        const double score =
-          distance +
-          4.0 * (1.0 - segment_alignment) +
-          1.5 * (1.0 - tangent_alignment) +
-          0.3 * std::abs(candidate.width - median_width);
-        if (score < best_score) {
-          best_score = score;
-          best_index = static_cast<int>(index);
-          best_segment_x = segment_x;
-          best_segment_y = segment_y;
+          const double first_x =
+            (points[first_index].x - points[i].x) / first_distance;
+          const double first_y =
+            (points[first_index].y - points[i].y) / first_distance;
+          const double second_x =
+            (points[second_index].x - points[i].x) / second_distance;
+          const double second_y =
+            (points[second_index].y - points[i].y) / second_distance;
+          const double score =
+            first_x * second_x + first_y * second_y +
+            0.05 * (first_distance + second_distance);
+          if (score < best_score) {
+            best_score = score;
+            best_first = first_index;
+            best_second = second_index;
+          }
         }
       }
 
-      if (best_index < 0) break;
-      const auto selected_index = static_cast<std::size_t>(best_index);
-      const auto & selected = candidates[selected_index];
-      used[selected_index] = true;
-      order.push_back(selected_index);
-
-      double tangent_x = selected.tangent_x;
-      double tangent_y = selected.tangent_y;
-      if (tangent_x * heading_x + tangent_y * heading_y < 0.0) {
-        tangent_x = -tangent_x;
-        tangent_y = -tangent_y;
+      if (best_first == points.size()) continue;
+      const double tangent_x = points[best_second].x - points[best_first].x;
+      const double tangent_y = points[best_second].y - points[best_first].y;
+      const double tangent_norm = std::hypot(tangent_x, tangent_y);
+      if (tangent_norm > 1e-6) {
+        tangents[i] = {true, tangent_x / tangent_norm, tangent_y / tangent_norm};
       }
-      heading_x = best_segment_x + tangent_x;
-      heading_y = best_segment_y + tangent_y;
-      const double heading_norm = std::hypot(heading_x, heading_y);
-      if (heading_norm > 1e-6) {
-        heading_x /= heading_norm;
-        heading_y /= heading_norm;
-      } else {
-        heading_x = best_segment_x;
-        heading_y = best_segment_y;
-      }
-      cursor_x = selected.x;
-      cursor_y = selected.y;
     }
 
-    const double closure_distance = planeDistance(
-      candidates[order.front()].x, candidates[order.front()].y,
-      candidates[order.back()].x, candidates[order.back()].y);
-    if (order.size() > best_order.size() ||
-        (order.size() == best_order.size() && closure_distance < best_closure_distance))
-    {
-      best_order = std::move(order);
-      best_closure_distance = closure_distance;
-    }
-  }
+    std::vector<Candidate> geometry_raw_candidates;
+    const double max_tangent_alignment = std::clamp(
+      global_geometry_max_tangent_alignment_, 0.0, 1.0);
+    for (std::size_t i = 0; i < points.size(); ++i) {
+      if (!tangents[i].valid) continue;
+      for (std::size_t j = i + 1; j < points.size(); ++j) {
+        if (!tangents[j].valid) continue;
+        const double pair_x = points[i].x - points[j].x;
+        const double pair_y = points[i].y - points[j].y;
+        const double width = std::hypot(pair_x, pair_y);
+        if (width < min_width || width > max_width) continue;
 
-  const std::size_t boundary_count =
-    std::min(map.blue_cones.size(), map.yellow_cones.size());
-  const double coverage = std::clamp(
-    static_cast<double>(best_order.size()) /
-    static_cast<double>(std::max<std::size_t>(1, boundary_count)),
-    0.0, 1.0);
-  if (best_order.size() < static_cast<std::size_t>(std::max(3, global_min_waypoints_)) ||
-      coverage < std::clamp(global_min_coverage_ratio_, 0.0, 1.0) ||
-      best_closure_distance > std::max(1.0, global_max_closure_distance_))
-  {
-    RCLCPP_ERROR(
+        const double pair_unit_x = pair_x / width;
+        const double pair_unit_y = pair_y / width;
+        const double tangent_alignment = 0.5 * (
+          std::abs(
+            pair_unit_x * tangents[i].x + pair_unit_y * tangents[i].y) +
+          std::abs(
+            pair_unit_x * tangents[j].x + pair_unit_y * tangents[j].y));
+        if (tangent_alignment >= max_tangent_alignment) continue;
+
+        geometry_raw_candidates.push_back({
+          0.5 * (points[i].x + points[j].x),
+          0.5 * (points[i].y + points[j].y),
+          pair_unit_y,
+          -pair_unit_x,
+          width});
+      }
+    }
+
+    auto geometry_result = order_candidates(std::move(geometry_raw_candidates));
+    const std::size_t geometry_boundary_count = points.size() / 2;
+    if (!passes_quality(geometry_result, geometry_boundary_count, coverage)) {
+      RCLCPP_ERROR(
+        get_logger(),
+        "Global centerline quality rejected: colored(points=%zu coverage=%.3f closure=%.2f m), "
+        "geometry(points=%zu coverage=%.3f closure=%.2f m)",
+        colored_points, colored_coverage, colored_closure,
+        geometry_result.order.size(), coverage, geometry_result.closure_distance);
+      return lane;
+    }
+
+    RCLCPP_WARN(
       get_logger(),
-      "Global centerline quality rejected: points=%zu coverage=%.3f closure=%.2f m",
-      best_order.size(), coverage, best_closure_distance);
-    return lane;
+      "Colored global pairing was incomplete (points=%zu coverage=%.3f closure=%.2f m); "
+      "using geometry-only fallback (%zu points, coverage=%.3f, closure=%.2f m).",
+      colored_points, colored_coverage, colored_closure,
+      geometry_result.order.size(), coverage, geometry_result.closure_distance);
+    selected = std::move(geometry_result);
   }
+
+  const auto & candidates = selected.candidates;
+  const auto & best_order = selected.order;
+  const double best_closure_distance = selected.closure_distance;
 
   std::vector<geometry_msgs::msg::Point> ordered_points;
   ordered_points.reserve(best_order.size());
@@ -817,6 +985,7 @@ autoware_msgs::msg::Lane BoundaryDetectorNode::computeGlobalCenterline(
     };
   accumulate_confidence(map.blue_cones);
   accumulate_confidence(map.yellow_cones);
+  accumulate_confidence(map.unknown_cones);
   const double average_cone_confidence = cone_confidence_count == 0
     ? 0.0
     : cone_confidence_sum / static_cast<double>(cone_confidence_count);

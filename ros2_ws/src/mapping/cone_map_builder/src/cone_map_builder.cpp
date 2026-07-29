@@ -15,9 +15,12 @@ ConeMapBuilder::ConeMapBuilder(const rclcpp::NodeOptions & options)
 {
   // Parameters
   merge_distance_         = declare_parameter("merge_distance",         merge_distance_);
+  consolidation_distance_ = declare_parameter(
+    "consolidation_distance", consolidation_distance_);
   min_hit_count_          = declare_parameter("min_hit_count",          min_hit_count_);
   loop_closure_distance_  = declare_parameter("loop_closure_distance",  loop_closure_distance_);
   min_cones_for_closure_  = declare_parameter("min_cones_for_closure",  min_cones_for_closure_);
+  mapping_laps_           = declare_parameter("mapping_laps",           mapping_laps_);
   assign_colors_          = declare_parameter("assign_colors",          assign_colors_);
   tf_lookup_timeout_sec_  = declare_parameter("tf_lookup_timeout_sec",  tf_lookup_timeout_sec_);
   use_latest_tf_fallback_ = declare_parameter("use_latest_tf_fallback", use_latest_tf_fallback_);
@@ -50,6 +53,11 @@ ConeMapBuilder::ConeMapBuilder(const rclcpp::NodeOptions & options)
     "/localization/pose", 10,
     std::bind(&ConeMapBuilder::onPose, this, std::placeholders::_1), pose_opts);
 
+  const auto latched_qos = rclcpp::QoS(1).transient_local().reliable();
+  lap_count_sub_ = create_subscription<std_msgs::msg::UInt32>(
+    "/system/lap_count", latched_qos,
+    std::bind(&ConeMapBuilder::onLapCount, this, std::placeholders::_1), cones_opts);
+
   // Publishers
   map_pub_    = create_publisher<wuta_msgs::msg::ConeMap>("/mapping/cone_map", 10);
   marker_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("/mapping/cone_map_viz", 10);
@@ -62,7 +70,8 @@ ConeMapBuilder::ConeMapBuilder(const rclcpp::NodeOptions & options)
         publishMap();
         publishVisualization();
       }
-    });
+    },
+    cones_cbg_);
 
   // Retry scans whose exact-time TF was not available when they arrived.
   // This preserves temporal correctness without blocking the sensor callback.
@@ -122,6 +131,18 @@ void ConeMapBuilder::onCones(const wuta_msgs::msg::ConeArray::SharedPtr msg)
   processPendingDetections();
 }
 
+void ConeMapBuilder::onLapCount(const std_msgs::msg::UInt32::SharedPtr msg)
+{
+  if (msg->data < static_cast<uint32_t>(std::max(1, mapping_laps_))) {
+    return;
+  }
+
+  formal_mapping_lap_completed_ = true;
+  if (!loop_closed_ && hasMinimumConesForClosure()) {
+    closeMap("formal lap count");
+  }
+}
+
 void ConeMapBuilder::processPendingDetections()
 {
   while (!pending_detections_.empty() && !loop_closed_) {
@@ -141,17 +162,15 @@ void ConeMapBuilder::processPendingDetections()
     }
     pending_detections_.pop_front();
 
-    if (checkLoopClosure()) {
-      const size_t consolidated_count = consolidateMap();
-      loop_closed_ = true;
-      if (consolidated_count > 0) {
-        RCLCPP_INFO(
-          get_logger(), "Consolidated %zu duplicate cone tracks at loop closure.",
-          consolidated_count);
-      }
-      RCLCPP_INFO(get_logger(), "Loop closed! %zu cones in map. Saving map...", cone_map_.size());
-      saveMapToYaml();
-      publishMap();  // Publish immediately with is_closed = true
+    // A noisy track can be created just outside the merge radius and later
+    // converge onto an existing track. Remove such duplicates as soon as they
+    // become compatible instead of leaving them visible until loop closure.
+    online_consolidated_count_ += consolidateMap();
+
+    if (formal_mapping_lap_completed_ && hasMinimumConesForClosure()) {
+      closeMap("formal lap count");
+    } else if (checkLoopClosure()) {
+      closeMap("geometric fallback");
     }
   }
 }
@@ -202,8 +221,6 @@ bool ConeMapBuilder::integrateDetections(const wuta_msgs::msg::ConeArray & cones
     const double cx = pt_map.point.x;
     const double cy = pt_map.point.y;
     const double cz = pt_map.point.z;
-    const uint8_t observed_color = classifyConeObservation(cone);
-
     // Search for existing cone within merge_distance
     bool merged = false;
     for (auto & tracked : cone_map_) {
@@ -215,8 +232,7 @@ bool ConeMapBuilder::integrateDetections(const wuta_msgs::msg::ConeArray & cones
         tracked.y = (tracked.y * tracked.hit_count + cy) / (tracked.hit_count + 1);
         tracked.z = (tracked.z * tracked.hit_count + cz) / (tracked.hit_count + 1);
         tracked.hit_count++;
-        addColorVote(tracked, observed_color);
-        tracked.color = majorityColor(tracked);
+        updateColorEstimate(tracked, cone);
         merged = true;
         break;
       }
@@ -227,8 +243,8 @@ bool ConeMapBuilder::integrateDetections(const wuta_msgs::msg::ConeArray & cones
       new_cone.x     = cx;
       new_cone.y     = cy;
       new_cone.z     = cz;
-      new_cone.color = observed_color;
-      addColorVote(new_cone, observed_color);
+      new_cone.color = wuta_msgs::msg::Cone::COLOR_UNKNOWN;
+      updateColorEstimate(new_cone, cone);
       cone_map_.push_back(new_cone);
 
       // Record start pose on first cone detection
@@ -259,6 +275,33 @@ uint8_t ConeMapBuilder::classifyConeObservation(const wuta_msgs::msg::Cone & con
   return cone.position.y >= 0.0
     ? wuta_msgs::msg::Cone::COLOR_BLUE
     : wuta_msgs::msg::Cone::COLOR_YELLOW;
+}
+
+void ConeMapBuilder::updateColorEstimate(
+  TrackedCone & tracked, const wuta_msgs::msg::Cone & observation) const
+{
+  if (observation.color != wuta_msgs::msg::Cone::COLOR_UNKNOWN) {
+    tracked.has_semantic_color = true;
+    addColorVote(tracked, observation.color);
+    tracked.color = majorityColor(tracked);
+    return;
+  }
+
+  ++tracked.unknown_votes;
+  if (!assign_colors_ || tracked.has_semantic_color) {
+    return;
+  }
+
+  // A cone on a nearby section can be visible from the wrong side of the car
+  // for many distant frames. The side observed at the closest pass is a much
+  // stronger fallback signal for the section the vehicle is actually driving.
+  const double observation_distance =
+    std::hypot(observation.position.x, observation.position.y);
+  if (observation_distance < tracked.closest_fallback_distance) {
+    tracked.closest_fallback_distance = observation_distance;
+    tracked.closest_fallback_color = classifyConeObservation(observation);
+    tracked.color = tracked.closest_fallback_color;
+  }
 }
 
 void ConeMapBuilder::addColorVote(TrackedCone & tracked, uint8_t color) const
@@ -301,14 +344,19 @@ uint8_t ConeMapBuilder::majorityColor(const TrackedCone & tracked) const
   return wuta_msgs::msg::Cone::COLOR_ORANGE;
 }
 
+bool ConeMapBuilder::hasMinimumConesForClosure() const
+{
+  const int confirmed_cones = std::count_if(
+    cone_map_.begin(), cone_map_.end(),
+    [this](const TrackedCone & cone) { return cone.hit_count >= min_hit_count_; });
+  return confirmed_cones >= min_cones_for_closure_;
+}
+
 bool ConeMapBuilder::checkLoopClosure()
 {
   if (!start_pose_set_) return false;
 
-  // Need minimum cones before considering closure
-  const int confirmed_cones = std::count_if(cone_map_.begin(), cone_map_.end(),
-    [this](const TrackedCone & c) { return c.hit_count >= min_hit_count_; });
-  if (confirmed_cones < min_cones_for_closure_) return false;
+  if (!hasMinimumConesForClosure()) return false;
 
   // A Euclidean "moved away" check cannot also detect returning near the
   // start. Accumulated travel distinguishes a completed lap from startup.
@@ -336,6 +384,35 @@ bool ConeMapBuilder::checkLoopClosure()
   return heading_error <= heading_tolerance;
 }
 
+void ConeMapBuilder::closeMap(const char * reason)
+{
+  if (loop_closed_) return;
+
+  const size_t consolidated_count = consolidateMap();
+  loop_closed_ = true;
+  pending_detections_.clear();
+
+  if (online_consolidated_count_ > 0) {
+    RCLCPP_INFO(
+      get_logger(), "Consolidated %zu duplicate cone tracks during online mapping.",
+      online_consolidated_count_);
+  }
+  if (consolidated_count > 0) {
+    RCLCPP_INFO(
+      get_logger(), "Consolidated %zu duplicate cone tracks while freezing the map.",
+      consolidated_count);
+  }
+  const auto confirmed_count = static_cast<std::size_t>(std::count_if(
+      cone_map_.begin(), cone_map_.end(),
+      [this](const TrackedCone & cone) { return cone.hit_count >= min_hit_count_; }));
+  RCLCPP_INFO(
+    get_logger(),
+    "Loop closed! reason=%s, %zu confirmed cones (%zu internal tracks). Saving map...",
+    reason, confirmed_count, cone_map_.size());
+  saveMapToYaml();
+  publishMap();
+}
+
 size_t ConeMapBuilder::consolidateMap()
 {
   size_t consolidated_count = 0;
@@ -352,9 +429,10 @@ size_t ConeMapBuilder::consolidateMap()
         const bool colors_compatible =
           first.color == second.color ||
           first.color == wuta_msgs::msg::Cone::COLOR_UNKNOWN ||
-          second.color == wuta_msgs::msg::Cone::COLOR_UNKNOWN;
+          second.color == wuta_msgs::msg::Cone::COLOR_UNKNOWN ||
+          (!first.has_semantic_color && !second.has_semantic_color);
         if (!colors_compatible || std::hypot(first.x - second.x, first.y - second.y) >=
-          merge_distance_)
+          consolidation_distance_)
         {
           continue;
         }
@@ -371,7 +449,15 @@ size_t ConeMapBuilder::consolidateMap()
         first.yellow_votes += second.yellow_votes;
         first.orange_votes += second.orange_votes;
         first.unknown_votes += second.unknown_votes;
-        first.color = majorityColor(first);
+        first.has_semantic_color =
+          first.has_semantic_color || second.has_semantic_color;
+        if (second.closest_fallback_distance < first.closest_fallback_distance) {
+          first.closest_fallback_distance = second.closest_fallback_distance;
+          first.closest_fallback_color = second.closest_fallback_color;
+        }
+        first.color = first.has_semantic_color
+          ? majorityColor(first)
+          : first.closest_fallback_color;
         cone_map_.erase(cone_map_.begin() + static_cast<std::ptrdiff_t>(j));
         ++consolidated_count;
         merged = true;
@@ -479,7 +565,12 @@ void ConeMapBuilder::saveMapToYaml() const
   std::ofstream file(map_save_path_);
   if (file.is_open()) {
     file << out.c_str();
-    RCLCPP_INFO(get_logger(), "Map saved to %s (%zu cones)", map_save_path_.c_str(), cone_map_.size());
+    const auto confirmed_count = static_cast<std::size_t>(std::count_if(
+        cone_map_.begin(), cone_map_.end(),
+        [this](const TrackedCone & cone) { return cone.hit_count >= min_hit_count_; }));
+    RCLCPP_INFO(
+      get_logger(), "Map saved to %s (%zu cones)",
+      map_save_path_.c_str(), confirmed_count);
   } else {
     RCLCPP_ERROR(get_logger(), "Failed to save map to %s", map_save_path_.c_str());
   }

@@ -15,28 +15,34 @@
   distance < merge_distance(0.5m) → 加权平均更新位置
   否则 → 新增锥桶
         │
-        ▼ 颜色分配（默认左右法）
-  传感器坐标系 y>0 → COLOR_BLUE
-  传感器坐标系 y<0 → COLOR_YELLOW
-  同一锥桶多次观测采用颜色投票，避免单帧误染长期保留
+        ▼ 在线收敛合并
+  兼容轨迹 distance < consolidation_distance(1.0m)
+  → 按 hit_count 加权合并，清除定位修正形成的平行重复轨迹
         │
-        ▼ hit_count >= min_hit_count(2) → 发布
+        ▼ 颜色融合
+  上游已知颜色 → 多帧投票并始终优先
+  上游未知颜色 → 使用距离最近的一次车体左右观测
+  （y>0 为 BLUE，y<0 为 YELLOW）
         │
-        ▼ Loop Closure 检测
+        ▼ hit_count >= min_hit_count(3) → 发布
+        │
+        ▼ 地图闭合（任一条件）
+  正式 /system/lap_count >= mapping_laps(1)
+  OR 几何回环兜底：
   累计行驶 > start_skip_distance(30m)
   AND 返回起点距离 < loop_closure_distance(3m)
   AND 当前朝向与起点朝向差 <= 60°
   AND 已确认锥桶数 >= min_cones_for_closure(10)
         │
-        ▼ 闭环最终收敛合并
-  同色或未知色兼容轨迹且 distance < merge_distance
-  → 按 hit_count 加权合并坐标、命中次数和颜色投票
+        ▼ 冻结前再次收敛合并
         │
         ▼ is_closed = true → 保存 YAML → 通知 MissionManager
 ```
 
-在线阶段不扩大 `merge_distance`，避免紧邻赛段误合并真实相邻锥桶。两个独立轨迹的
-运行均值可能在一圈内逐渐收敛到现有半径内，因此只在闭环冻结前做一次传递式最终合并。
+`merge_distance` 只负责把当前检测关联到已有轨迹；更大的
+`consolidation_distance` 专门合并已收敛的重复轨迹，并在每个成功处理的检测帧后执行，
+因此重复锥桶不会一直显示到闭环时。该半径仍低于赛道真实相邻锥桶间距，闭环冻结前再执行
+一次相同的传递式合并。
 
 ## Topics
 
@@ -44,6 +50,7 @@
 |------|-------|------|------|
 | 订阅 | `/perception/lidar/cones` | `ConeArray` | 传感器坐标系锥桶 |
 | 订阅 | `/localization/pose` | `PoseStamped` | 当前位姿（map frame） |
+| 订阅 | `/system/lap_count` | `UInt32` | 正式定位圈次；达到 `mapping_laps` 后冻结地图 |
 | 发布 | `/mapping/cone_map` | `ConeMap` | 全局锥桶地图，5Hz |
 | 发布 | `/mapping/cone_map_viz` | `MarkerArray` | 可视化 |
 
@@ -52,20 +59,25 @@
 | 参数 | 默认值 | 说明 |
 |------|--------|------|
 | `merge_distance` | 0.5m | 同一锥桶合并距离；用于吸收检测与定位小噪声，同时避免 Trackdrive 密集弯道把相邻锥桶融合掉 |
-| `min_hit_count` | 2 | 发布前的最低检测次数，过滤单帧噪声 |
+| `consolidation_distance` | 1.0m | 已有轨迹收敛后的在线重复清理半径 |
+| `min_hit_count` | 3 | 发布前的最低检测次数，过滤短寿命定位/检测轨迹 |
 | `loop_closure_distance` | 3.0m | 判定回到起点的距离阈值 |
+| `mapping_laps` | 1 | 正式圈次达到该值时冻结地图；几何闭环仍作为兜底 |
 | `assign_colors` | true | true 时按 LiDAR/body 坐标系左右分色；false 时保留上游 detection/fusion 给出的颜色 |
 | `map_save_path` | `/tmp/wuta_cone_map.yaml` | 地图保存路径 |
 
 Note: `assign_colors=true` only fills in `COLOR_UNKNOWN` detections. If an
 upstream detector or fusion node already provides blue/yellow/orange, the
-builder preserves that color and uses it in the merge vote.
+builder preserves that semantic color and uses it in the merge vote. For
+unknown detections, the closest observation is used instead of all-frame
+majority voting so that distant visible sections do not dominate the side label.
 
 ## 线程模型
 
 使用 `MultiThreadedExecutor` + 两个 `MutuallyExclusiveCallbackGroup`：
 - **pose_cbg**：处理 `/localization/pose`（50Hz，仅存储，极轻）
-- **cones_cbg**：处理 `/perception/lidar/cones`（10Hz，含 TF 变换和去重计算）
+- **cones_cbg**：串行处理 `/perception/lidar/cones`、`/system/lap_count` 和地图发布，
+  避免在线合并删除轨迹时与可视化遍历并发
 
 `ConeMapBuilder` 对检测消息先按其采样时间查询 `map <- lidar` TF，等待
 `tf_lookup_timeout_sec`（默认 0.1 s）。检测消息在队列中等待精确采样时刻的 TF，最长

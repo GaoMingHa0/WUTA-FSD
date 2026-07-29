@@ -2,6 +2,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include <std_msgs/msg/u_int32.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
@@ -13,6 +14,7 @@
 #include <vector>
 #include <string>
 #include <deque>
+#include <limits>
 
 namespace cone_map_builder
 {
@@ -26,6 +28,9 @@ struct TrackedCone
   int yellow_votes{0};
   int orange_votes{0};
   int unknown_votes{0};
+  bool has_semantic_color{false};
+  double closest_fallback_distance{std::numeric_limits<double>::infinity()};
+  uint8_t closest_fallback_color{wuta_msgs::msg::Cone::COLOR_UNKNOWN};
 };
 
 struct PendingDetection
@@ -43,14 +48,19 @@ private:
   // Callbacks
   void onCones(const wuta_msgs::msg::ConeArray::SharedPtr msg);
   void onPose(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
+  void onLapCount(const std_msgs::msg::UInt32::SharedPtr msg);
 
   // Core logic
   bool integrateDetections(const wuta_msgs::msg::ConeArray & cones_in_sensor_frame);
   void processPendingDetections();
   uint8_t classifyConeObservation(const wuta_msgs::msg::Cone & cone) const;
+  void updateColorEstimate(
+    TrackedCone & tracked, const wuta_msgs::msg::Cone & observation) const;
   void addColorVote(TrackedCone & tracked, uint8_t color) const;
   uint8_t majorityColor(const TrackedCone & tracked) const;
+  bool hasMinimumConesForClosure() const;
   bool checkLoopClosure();
+  void closeMap(const char * reason);
   size_t consolidateMap();
   void publishMap();
   void publishVisualization();
@@ -65,13 +75,17 @@ private:
   bool loop_closed_{false};
   bool start_pose_set_{false};
   bool travel_pose_ready_{false};
+  bool formal_mapping_lap_completed_{false};
   double traveled_distance_{0.0};
+  size_t online_consolidated_count_{0};
 
   // Parameters
   double merge_distance_{0.5};         // m — cones closer than this are merged
-  int min_hit_count_{2};               // Minimum detections before cone is added to published map
+  double consolidation_distance_{1.0}; // m — converged duplicate-track cleanup radius
+  int min_hit_count_{3};               // Minimum detections before cone is added to published map
   double loop_closure_distance_{3.0};  // m — distance to start to trigger loop closure
   int min_cones_for_closure_{10};      // Minimum cones before loop closure is considered
+  int mapping_laps_{1};                // Formal laps required before freezing the map
   bool assign_colors_{true};           // Assign blue/yellow only for UNKNOWN observations
   double tf_lookup_timeout_sec_{0.1};  // Wait for EKF TF at the sensor stamp
   bool use_latest_tf_fallback_{false};  // Unsafe compatibility fallback; disabled by default
@@ -93,6 +107,7 @@ private:
   // Subscribers
   rclcpp::Subscription<wuta_msgs::msg::ConeArray>::SharedPtr cones_sub_;
   rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_sub_;
+  rclcpp::Subscription<std_msgs::msg::UInt32>::SharedPtr lap_count_sub_;
 
   // Callback groups (separate so pose is never blocked by cone processing)
   rclcpp::CallbackGroup::SharedPtr pose_cbg_;

@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
@@ -27,6 +28,7 @@ target_link_libraries(cone_map_builder_node
 ament_target_dependencies(cone_map_builder_node
   rclcpp
   geometry_msgs
+  std_msgs
   visualization_msgs
   tf2_ros
   tf2_geometry_msgs

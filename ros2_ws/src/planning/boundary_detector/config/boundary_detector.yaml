@@ -13,6 +13,11 @@ boundary_detector_node:
     global_pairing_min_width: 1.5
     global_pairing_max_width: 7.5
     global_pairing_dedup_distance: 0.75
+    # If sparse side-label errors break the colored loop, estimate each cone's
+    # boundary tangent and retain only cross-track pairs nearly perpendicular to it.
+    global_geometry_neighbor_count: 8
+    global_geometry_neighbor_distance: 5.0
+    global_geometry_max_tangent_alignment: 0.45
     global_max_segment_length: 10.0
     global_max_closure_distance: 8.0
     global_min_waypoints: 20
