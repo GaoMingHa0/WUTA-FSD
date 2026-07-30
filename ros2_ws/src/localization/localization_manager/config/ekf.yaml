@@ -10,28 +10,34 @@ ekf_node:
     world_frame: odom        # EKF is the sole publisher of odom→base_link
 
     # --- Input 0: KISS-ICP odometry ---
-    # Provides: position + orientation + linear/angular velocity
-    # High frequency, no absolute reference, drifts over time
-    odom0: /kiss/odometry
+    # Provides local pose only. Its cone-only registration can accumulate
+    # curvature-dependent error, so it must not directly define map pose.
+    odom0: /kiss/odometry_gated
     odom0_config:
       #    x      y      z
       - [true,  true,  false,
       #  roll  pitch    yaw
          false, false, true,
-      # KISS-ICP publishes pose only; its Twist fields are not estimates.
+      # KISS-ICP publishes pose only; robot_localization converts the selected
+      # pose variables into differential motion updates below.
       #  vx     vy     vz
          false, false, false,
       #  vroll vpitch  vyaw
          false, false, false,
       #  ax     ay     az
          false, false, false]
-    odom0_differential: false
+    # Treat KISS as local odometry: it contributes incremental motion, while
+    # odom1 (INS/RTK) remains the absolute map-frame position and heading.
+    # This prevents a curved-track registration bias from being accumulated as
+    # a global pose correction on every KISS message.
+    odom0_differential: true
     odom0_relative: false
     odom0_queue_size: 10
     # KISS may relocalize to a visually similar cone section in Trackdrive.
     # robot_localization otherwise defaults this to infinity and accepts every
     # pose update, including a catastrophic wrong-segment match.
     odom0_pose_rejection_threshold: 3.0
+    odom0_twist_rejection_threshold: 3.0
 
     # --- Input 1: CG-410 INS fused pose (nav_msgs/Odometry) ---
     # Provides: absolute position (from GNSS RTK) + orientation (from IMU fusion)
