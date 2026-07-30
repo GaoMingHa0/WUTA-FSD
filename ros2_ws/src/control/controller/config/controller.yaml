@@ -28,6 +28,10 @@ controller_node:
     # stopping on a single bad frame; stop if the outage persists.
     trackdrive_target_loss_hold_time: 0.5  # s
     trackdrive_target_loss_hold_speed: 2.0 # m/s
+    # Hold the planned Trackdrive speed at 3 m/s while the initial online map
+    # and local centreline settle. The timer starts at the first valid target.
+    trackdrive_start_speed: 3.0           # m/s
+    trackdrive_start_speed_duration: 4.0  # s
 
     # Control loop
     control_rate_hz: 50

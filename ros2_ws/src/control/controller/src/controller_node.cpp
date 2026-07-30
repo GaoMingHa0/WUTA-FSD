@@ -57,6 +57,10 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
     "trackdrive_target_loss_hold_time", trackdrive_target_loss_hold_time_);
   trackdrive_target_loss_hold_speed_ = declare_parameter(
     "trackdrive_target_loss_hold_speed", trackdrive_target_loss_hold_speed_);
+  trackdrive_start_speed_ = declare_parameter(
+    "trackdrive_start_speed", trackdrive_start_speed_);
+  trackdrive_start_speed_duration_ = declare_parameter(
+    "trackdrive_start_speed_duration", trackdrive_start_speed_duration_);
 
   // --- Control loop rate ---
   const int rate_hz = declare_parameter("control_rate_hz", 50);
@@ -148,6 +152,7 @@ void ControllerNode::onMissionState(const MissionState::SharedPtr msg)
   if (!enabled_) {
     twist_filter_->reset();
     last_valid_trackdrive_cmd_ready_ = false;
+    trackdrive_start_speed_started_ = false;
     // Publish stop command
     autoware_msgs::msg::Command stop;
     stop.header.stamp = now();
@@ -237,6 +242,26 @@ void ControllerNode::controlLoop()
       RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
         "No forward waypoint target available; publishing stop command.");
       return;
+    }
+  }
+
+  if (mission_mode_ == MissionState::MISSION_TRACKDRIVE && raw_cmd.valid &&
+      trackdrive_start_speed_duration_ > 0.0)
+  {
+    // Start this interval only when planning first offers a forward target.
+    // Starting it at EXPLORE would consume the protection while mapping is
+    // still empty and the vehicle is stationary.
+    if (!trackdrive_start_speed_started_) {
+      trackdrive_start_speed_started_ = true;
+      trackdrive_start_speed_time_ = loop_time;
+      RCLCPP_INFO(
+        get_logger(),
+        "Trackdrive launch speed fixed at %.2f m/s for %.2f s after first valid target.",
+        trackdrive_start_speed_, trackdrive_start_speed_duration_);
+    }
+    const double elapsed = (loop_time - trackdrive_start_speed_time_).seconds();
+    if (elapsed < trackdrive_start_speed_duration_) {
+      raw_cmd.velocity = std::max(0.0, trackdrive_start_speed_);
     }
   }
 

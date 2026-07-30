@@ -44,6 +44,7 @@ Skidpad 目标速度为 5 m/s 时，过大的通用前视会接近 9.125 m 圆�
 ### 纵向控制：速度跟踪
 
 - 转向目标取前视 waypoint。Trackdrive 的目标速度也取该前视点，保证每次在线局部中心线刷新后仍能采用即将进入弯道的曲率限速；Skidpad 与 Acceleration 保持取当前单调路径进度 waypoint 的速度，避免在停车出口提前一个前视距离减速
+- Trackdrive 从首个有效前向目标开始，在 `trackdrive_start_speed_duration` 内将速度目标固定为 `trackdrive_start_speed`（默认 3 m/s、4 s）；该阶段让初始锥筒地图和在线中心线稳定，结束后自动恢复前视点的曲率速度剖面
 - Skidpad/Acceleration 的零速终点只有在车辆进入 `finish_position_tolerance` 后才允许成为单调进度点；此前保持倒数正速度点，避免定位噪声让车辆在终点前数米停车
 - 由 path_generator 在各模式下写入（trackdrive=7m/s, skidpad=5m/s, acceleration=15m/s）
 - TwistFilter 做平滑处理，避免急加速/急减速
@@ -103,6 +104,8 @@ Skidpad 目标速度为 5 m/s 时，过大的通用前视会接近 9.125 m 圆�
 | `trackdrive_lookahead_rate_limit` | 3.0m/s | 前视距离的最大变化率，避免路径刷新导致突变 |
 | `trackdrive_target_loss_hold_time` | 0.5s | Trackdrive 短暂没有前向目标时，保留上一有效命令的最长时间 |
 | `trackdrive_target_loss_hold_speed` | 2.0m/s | 保留命令期间的速度上限；超时后控制器停车 |
+| `trackdrive_start_speed` | 3.0m/s | 仅 Trackdrive 起步稳定阶段的固定速度目标 |
+| `trackdrive_start_speed_duration` | 4.0s | 从第一个有效前向目标起算的固定速度时长；设为 `0` 可关闭 |
 | `max_progress_advance` | 4 | 单次控制循环允许推进的最大路径点数；防止 Skidpad 跳至出口 |
 | 前向目标保护 | 内置 | Pure Pursuit 只选择车体前方的目标点；Trackdrive 局部中心线瞬时反向时不会掉头追车后点 |
 | `skidpad_lookahead` | 3.0m | 仅 `MISSION_SKIDPAD` 使用的固定前视距离；5 m/s 下替代通用 10 m 前视，避免跨越交叉点的曲率切换 |
