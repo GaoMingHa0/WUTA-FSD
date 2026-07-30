@@ -52,6 +52,10 @@ ndt_node ──→ /ndt/pose ─────────────────
 - `odom0`：KISS-ICP（高频里程计，xy + yaw；KISS 不发布 Twist 估计）
 - `odom1`：CG-410 INS（绝对位置，xyz + rpy，修正漂移）
 
+两路 pose 更新分别使用 `odom0_pose_rejection_threshold=3.0` 与
+`odom1_pose_rejection_threshold=5.0` 的 Mahalanobis 创新门限。尤其是 KISS 的门限必须显式
+设置：robot_localization 的默认值为无限大，在重复锥桶赛段可能接受错误重定位造成的整段位置跳变。
+
 仿真默认由 `WUTA-SIM/wuta-ins-simulator` 发布 `/cg410/odometry`。真实车辆接入时可保持
 该接口，或在 bringup 中重映射实际 CG-410 驱动话题。
 

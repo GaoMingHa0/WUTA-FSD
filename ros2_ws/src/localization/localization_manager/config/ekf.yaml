@@ -28,6 +28,10 @@ ekf_node:
     odom0_differential: false
     odom0_relative: false
     odom0_queue_size: 10
+    # KISS may relocalize to a visually similar cone section in Trackdrive.
+    # robot_localization otherwise defaults this to infinity and accepts every
+    # pose update, including a catastrophic wrong-segment match.
+    odom0_pose_rejection_threshold: 3.0
 
     # --- Input 1: CG-410 INS fused pose (nav_msgs/Odometry) ---
     # Provides: absolute position (from GNSS RTK) + orientation (from IMU fusion)
@@ -48,6 +52,10 @@ ekf_node:
     odom1_differential: false
     odom1_relative: false
     odom1_queue_size: 10
+    # INS is the absolute reference in simulation/RTK operation. Keep a looser
+    # gate so normal GNSS/IMU noise is not rejected while still blocking an
+    # invalid packet.
+    odom1_pose_rejection_threshold: 5.0
 
     # Process noise covariance (Q matrix)
     # Order: x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az

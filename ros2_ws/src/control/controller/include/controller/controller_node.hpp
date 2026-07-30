@@ -28,6 +28,7 @@ private:
   void onMissionState(const wuta_msgs::msg::MissionState::SharedPtr msg);
   void controlLoop();
   bool isSamePath(const std::vector<autoware_msgs::msg::Waypoint> & candidate) const;
+  double trackdriveLookahead(const rclcpp::Time & loop_time);
   void publishMissionComplete();
 
   void publishVisualization(double target_x, double target_y);
@@ -39,9 +40,17 @@ private:
   // A figure-eight has tangent-continuous but curvature-discontinuous joins at
   // the timing-line crossing.  It needs a shorter preview than open tracks.
   double skidpad_lookahead_{3.0};
-  // Trackdrive uses a fixed preview so its steering behaviour is independent
-  // of the target velocity assigned by the planner.
+  // Trackdrive derives a bounded preview from upcoming centerline curvature,
+  // independent of path_generator's race-speed target.
+  bool trackdrive_dynamic_lookahead_{true};
   double trackdrive_lookahead_{5.0};
+  double trackdrive_min_lookahead_{3.0};
+  double trackdrive_curvature_preview_distance_{12.0};
+  double trackdrive_straight_curvature_{0.03};
+  double trackdrive_corner_curvature_{0.16};
+  double trackdrive_lookahead_rate_limit_{3.0};
+  double filtered_trackdrive_lookahead_{5.0};
+  rclcpp::Time last_trackdrive_lookahead_time_;
   double trackdrive_target_loss_hold_time_{0.5};
   double trackdrive_target_loss_hold_speed_{2.0};
 

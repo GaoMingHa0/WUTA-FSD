@@ -31,5 +31,11 @@ cone_map_builder:
     pending_detection_timeout_sec: 0.5
     max_pending_detections: 20
 
+    # A valid sensor-time TF cannot make a catastrophically wrong EKF pose
+    # correct. Reject that interval rather than adding a second copy of the
+    # same physical cones at the jumped map location.
+    localization_jump_threshold: 1.0  # m between consecutive pose callbacks
+    localization_jump_cooldown_sec: 2.0
+
     # Path to save cone map YAML when loop is closed
     map_save_path: "/tmp/wuta_cone_map.yaml"

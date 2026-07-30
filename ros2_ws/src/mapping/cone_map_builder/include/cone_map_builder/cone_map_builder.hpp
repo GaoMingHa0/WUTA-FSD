@@ -12,15 +12,19 @@
 #include "wuta_msgs/msg/cone_map.hpp"
 
 #include <vector>
+#include <atomic>
+#include <cstdint>
 #include <string>
 #include <deque>
 #include <limits>
+#include <unordered_set>
 
 namespace cone_map_builder
 {
 
 struct TrackedCone
 {
+  uint64_t id{0};
   double x, y, z;
   uint8_t color;
   int hit_count{1};       // Number of times detected (confidence proxy)
@@ -31,6 +35,9 @@ struct TrackedCone
   bool has_semantic_color{false};
   double closest_fallback_distance{std::numeric_limits<double>::infinity()};
   uint8_t closest_fallback_color{wuta_msgs::msg::Cone::COLOR_UNKNOWN};
+  // IDs of close tracks detected in the same ConeArray.  Such a pair is a
+  // real pair of cones, not two map hypotheses for one physical cone.
+  std::unordered_set<uint64_t> coobserved_track_ids;
 };
 
 struct PendingDetection
@@ -59,6 +66,7 @@ private:
   void addColorVote(TrackedCone & tracked, uint8_t color) const;
   uint8_t majorityColor(const TrackedCone & tracked) const;
   bool hasMinimumConesForClosure() const;
+  bool mappingPaused() const;
   bool checkLoopClosure();
   void closeMap(const char * reason);
   size_t consolidateMap();
@@ -75,9 +83,14 @@ private:
   bool loop_closed_{false};
   bool start_pose_set_{false};
   bool travel_pose_ready_{false};
+  bool mapping_pose_ready_{false};
   bool formal_mapping_lap_completed_{false};
   double traveled_distance_{0.0};
+  geometry_msgs::msg::PoseStamped last_mapping_pose_;
+  std::atomic<int64_t> mapping_pause_until_ns_{0};
+  std::atomic_bool discard_pending_detections_{false};
   size_t online_consolidated_count_{0};
+  uint64_t next_track_id_{1};
 
   // Parameters
   double merge_distance_{0.5};         // m — cones closer than this are merged
@@ -91,6 +104,8 @@ private:
   bool use_latest_tf_fallback_{false};  // Unsafe compatibility fallback; disabled by default
   double pending_detection_timeout_sec_{0.5};  // Keep a scan while its exact TF arrives
   int max_pending_detections_{20};
+  double localization_jump_threshold_{1.0};  // m per pose callback
+  double localization_jump_cooldown_sec_{2.0};
   double start_skip_distance_{30.0};   // m — minimum accumulated travel before closure
   double loop_closure_heading_tolerance_deg_{60.0};
   std::string map_save_path_{"/tmp/cone_map.yaml"};

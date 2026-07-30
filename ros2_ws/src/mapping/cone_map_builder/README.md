@@ -12,11 +12,15 @@
   逐帧锥桶 → map 坐标系
         │
         ▼ 去重合并
-  distance < merge_distance(0.5m) → 加权平均更新位置
+  当前帧每个轨迹最多匹配一个检测
+  最近且颜色兼容、distance < merge_distance(0.5m) → 加权平均更新位置
   否则 → 新增锥桶
         │
+        ▼ 同帧共视保护
+  靠近且同一 ConeArray 中同时检测到 → 标记为真实独立锥桶
+        │
         ▼ 在线收敛合并
-  兼容轨迹 distance < consolidation_distance(1.0m)
+  兼容、从未同帧共视的轨迹 distance < consolidation_distance(1.0m)
   → 按 hit_count 加权合并，清除定位修正形成的平行重复轨迹
         │
         ▼ 颜色融合
@@ -40,9 +44,9 @@
 ```
 
 `merge_distance` 只负责把当前检测关联到已有轨迹；更大的
-`consolidation_distance` 专门合并已收敛的重复轨迹，并在每个成功处理的检测帧后执行，
-因此重复锥桶不会一直显示到闭环时。该半径仍低于赛道真实相邻锥桶间距，闭环冻结前再执行
-一次相同的传递式合并。
+`consolidation_distance` 专门合并已收敛的重复轨迹，并在每个成功处理的检测帧后执行。
+为了不误合并密集弯道的真实相邻同色锥桶，两个轨迹只要曾在同一检测帧中作为两个独立目标
+出现，就会被永久排除在该宽半径合并之外。闭环冻结前再执行一次同样受共视保护的传递式合并。
 
 ## Topics
 
@@ -59,8 +63,10 @@
 | 参数 | 默认值 | 说明 |
 |------|--------|------|
 | `merge_distance` | 0.5m | 同一锥桶合并距离；用于吸收检测与定位小噪声，同时避免 Trackdrive 密集弯道把相邻锥桶融合掉 |
-| `consolidation_distance` | 1.0m | 已有轨迹收敛后的在线重复清理半径 |
+| `consolidation_distance` | 1.0m | 已有轨迹收敛后的在线重复清理半径；只作用于从未同帧共视的轨迹 |
 | `min_hit_count` | 3 | 发布前的最低检测次数，过滤短寿命定位/检测轨迹 |
+| `localization_jump_threshold` | 1.0m | 相邻定位回调超过该距离时暂停建图，防止错误位姿写入地图 |
+| `localization_jump_cooldown_sec` | 2.0s | 定位跳变后的建图冷却时间 |
 | `loop_closure_distance` | 3.0m | 判定回到起点的距离阈值 |
 | `mapping_laps` | 1 | 正式圈次达到该值时冻结地图；几何闭环仍作为兜底 |
 | `assign_colors` | true | true 时按 LiDAR/body 坐标系左右分色；false 时保留上游 detection/fusion 给出的颜色 |
@@ -84,6 +90,11 @@ majority voting so that distant visible sections do not dominate the side label.
 `pending_detection_timeout_sec`（默认 0.5 s），随后丢弃并记录警告。默认关闭
 `use_latest_tf_fallback`，避免车辆运动时用最新 TF 转换旧点云造成地图偏移；该参数仅
 用于兼容旧配置，不建议在建图时开启。
+
+若相邻两条 `/localization/pose` 相距超过 `localization_jump_threshold`（默认 1 m），
+builder 会清空待处理检测，并在 `localization_jump_cooldown_sec`（默认 2 s）内拒绝新的
+锥筒帧。该保护针对 KISS-ICP 在重复赛段错误重定位：精确时间戳 TF 仍会存在，但其对应的
+地图位姿已经错误，继续融合只会生成整段平移的重复锥桶。
 
 避免锥桶处理耗时时阻塞 pose 更新。
 
