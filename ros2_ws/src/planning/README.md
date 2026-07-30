@@ -54,6 +54,11 @@ planning/
 8. 兜底路径会按当前车辆航向过滤明显位于车后的中点，并在必要时翻转局部路径顺序，降低中心线反向导致掉头的概率
 9. 输出为 `autoware_msgs/Lane`
 
+> **后续演进：相机颜色融合。** 紧凑赛道中相邻赛段的几何距离可能小于 LiDAR-only
+> Delaunay 兜底的可判别尺度，因而仍可能选择错误分支。实车应接入相机锥桶分类，将稳定的
+> 蓝/黄语义颜色融合到现有 `ConeArray`/`ConeMap` 数据链路；规划即可优先进行显式左右边界配对。
+> 该相机检测与融合节点尚未实现，Delaunay 继续仅作为颜色不足时的保守兜底。
+
 **只在 TRACKDRIVE 模式下运行**，SKIDPAD 和 ACCELERATION 直接在 path_generator 内生成。
 
 算法库来源：`thirdparty/pathplanning/`（复制自 HRT-D/Planning，纯 C++，无 ROS 依赖）
