@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstddef>
 #include <fstream>
+#include <iterator>
 
 namespace cone_map_builder
 {
@@ -29,8 +30,18 @@ ConeMapBuilder::ConeMapBuilder(const rclcpp::NodeOptions & options)
   max_pending_detections_ = declare_parameter("max_pending_detections", max_pending_detections_);
   localization_jump_threshold_ = declare_parameter(
     "localization_jump_threshold", localization_jump_threshold_);
+  localization_jump_max_speed_ = declare_parameter(
+    "localization_jump_max_speed", localization_jump_max_speed_);
   localization_jump_cooldown_sec_ = declare_parameter(
     "localization_jump_cooldown_sec", localization_jump_cooldown_sec_);
+  closure_low_support_ratio_ = declare_parameter(
+    "closure_low_support_ratio", closure_low_support_ratio_);
+  closure_low_support_separation_ratio_ = declare_parameter(
+    "closure_low_support_separation_ratio", closure_low_support_separation_ratio_);
+  closure_low_support_max_fraction_ = declare_parameter(
+    "closure_low_support_max_fraction", closure_low_support_max_fraction_);
+  closure_low_support_min_tracks_ = declare_parameter(
+    "closure_low_support_min_tracks", closure_low_support_min_tracks_);
   start_skip_distance_    = declare_parameter("start_skip_distance",    start_skip_distance_);
   loop_closure_heading_tolerance_deg_ = declare_parameter(
     "loop_closure_heading_tolerance_deg", loop_closure_heading_tolerance_deg_);
@@ -89,11 +100,18 @@ ConeMapBuilder::ConeMapBuilder(const rclcpp::NodeOptions & options)
 
 void ConeMapBuilder::onPose(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
 {
-  if (mapping_pose_ready_) {
+  // The map is immutable after closure. Race-speed pose spacing and the
+  // simulator's terminal reset must not trigger mapping recovery alarms.
+  if (!loop_closed_ && mapping_pose_ready_) {
     const double mapping_step = std::hypot(
       msg->pose.position.x - last_mapping_pose_.pose.position.x,
       msg->pose.position.y - last_mapping_pose_.pose.position.y);
-    if (mapping_step > localization_jump_threshold_) {
+    const rclcpp::Time pose_stamp(msg->header.stamp);
+    const rclcpp::Time previous_stamp(last_mapping_pose_.header.stamp);
+    const double pose_dt = std::max(0.0, (pose_stamp - previous_stamp).seconds());
+    const double allowed_step = localization_jump_threshold_ +
+      std::max(0.0, localization_jump_max_speed_) * pose_dt;
+    if (mapping_step > allowed_step) {
       mapping_pause_until_ns_.store((now() + rclcpp::Duration::from_seconds(
         std::max(0.0, localization_jump_cooldown_sec_))).nanoseconds());
       // Cone processing runs in another callback group. Let that group clear
@@ -101,9 +119,9 @@ void ConeMapBuilder::onPose(const geometry_msgs::msg::PoseStamped::SharedPtr msg
       discard_pending_detections_.store(true);
       RCLCPP_ERROR(
         get_logger(),
-        "Localization jump %.2f m exceeds mapping threshold %.2f m; "
+        "Localization jump %.2f m exceeds %.2f m allowance over %.3f s; "
         "discarding pending detections and pausing map integration for %.2f s.",
-        mapping_step, localization_jump_threshold_, localization_jump_cooldown_sec_);
+        mapping_step, allowed_step, pose_dt, localization_jump_cooldown_sec_);
     }
   }
   last_mapping_pose_ = *msg;
@@ -466,6 +484,7 @@ void ConeMapBuilder::closeMap(const char * reason)
   if (loop_closed_) return;
 
   const size_t consolidated_count = consolidateMap();
+  const size_t pruned_count = pruneWeakTrackCluster();
   loop_closed_ = true;
   pending_detections_.clear();
 
@@ -478,6 +497,11 @@ void ConeMapBuilder::closeMap(const char * reason)
     RCLCPP_INFO(
       get_logger(), "Consolidated %zu duplicate cone tracks while freezing the map.",
       consolidated_count);
+  }
+  if (pruned_count > 0) {
+    RCLCPP_INFO(
+      get_logger(), "Pruned %zu statistically isolated low-support cone tracks.",
+      pruned_count);
   }
   const auto confirmed_count = static_cast<std::size_t>(std::count_if(
       cone_map_.begin(), cone_map_.end(),
@@ -557,6 +581,58 @@ size_t ConeMapBuilder::consolidateMap()
   }
 
   return consolidated_count;
+}
+
+size_t ConeMapBuilder::pruneWeakTrackCluster()
+{
+  std::vector<int> confirmed_support;
+  confirmed_support.reserve(cone_map_.size());
+  for (const auto & cone : cone_map_) {
+    if (cone.hit_count >= min_hit_count_) confirmed_support.push_back(cone.hit_count);
+  }
+  if (confirmed_support.size() < static_cast<size_t>(
+      std::max(2, closure_low_support_min_tracks_ * 2)))
+  {
+    return 0;
+  }
+
+  std::sort(confirmed_support.begin(), confirmed_support.end());
+  const int median_support = confirmed_support[confirmed_support.size() / 2];
+  const int candidate_cutoff = std::min(
+    min_hit_count_ * 2,
+    static_cast<int>(std::floor(
+      median_support * std::max(0.0, closure_low_support_ratio_))));
+  if (candidate_cutoff < min_hit_count_) return 0;
+
+  const auto first_strong = std::upper_bound(
+    confirmed_support.begin(), confirmed_support.end(), candidate_cutoff);
+  const size_t weak_count = static_cast<size_t>(
+    std::distance(confirmed_support.begin(), first_strong));
+  const size_t minimum_weak = static_cast<size_t>(
+    std::max(1, closure_low_support_min_tracks_));
+  const double weak_fraction = static_cast<double>(weak_count) /
+    static_cast<double>(confirmed_support.size());
+  if (weak_count < minimum_weak || first_strong == confirmed_support.end() ||
+    weak_fraction > std::clamp(closure_low_support_max_fraction_, 0.0, 1.0))
+  {
+    return 0;
+  }
+
+  const int weak_max = *(first_strong - 1);
+  const int strong_min = *first_strong;
+  if (static_cast<double>(strong_min) < static_cast<double>(weak_max) *
+    std::max(1.0, closure_low_support_separation_ratio_))
+  {
+    return 0;
+  }
+
+  const size_t original_size = cone_map_.size();
+  cone_map_.erase(
+    std::remove_if(
+      cone_map_.begin(), cone_map_.end(),
+      [weak_max](const TrackedCone & cone) { return cone.hit_count <= weak_max; }),
+    cone_map_.end());
+  return original_size - cone_map_.size();
 }
 
 void ConeMapBuilder::publishMap()

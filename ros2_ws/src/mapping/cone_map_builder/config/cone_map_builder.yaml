@@ -34,8 +34,19 @@ cone_map_builder:
     # A valid sensor-time TF cannot make a catastrophically wrong EKF pose
     # correct. Reject that interval rather than adding a second copy of the
     # same physical cones at the jumped map location.
-    localization_jump_threshold: 1.0  # m between consecutive pose callbacks
+    # Base allowance plus stamped elapsed time * max speed distinguishes an
+    # actual discontinuity from a delayed callback at racing speed.
+    localization_jump_threshold: 1.0  # m base allowance
+    localization_jump_max_speed: 15.0 # m/s plausible motion allowance
     localization_jump_cooldown_sec: 2.0
+
+    # At closure, remove only a small, clearly separated cluster of weak
+    # tracks. This rejects short localization-transient ghosts without using
+    # track truth or raising min_hit_count for normally visible cones.
+    closure_low_support_ratio: 0.15
+    closure_low_support_separation_ratio: 2.0
+    closure_low_support_max_fraction: 0.10
+    closure_low_support_min_tracks: 3
 
     # Path to save cone map YAML when loop is closed
     map_save_path: "/tmp/wuta_cone_map.yaml"

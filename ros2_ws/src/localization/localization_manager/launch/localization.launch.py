@@ -33,21 +33,6 @@ def generate_launch_description():
         output='screen',
     )
 
-    # KISS is useful as relative-motion redundancy, but repeated cone geometry
-    # makes scan registration unreliable in tight continuous turns. The gate
-    # forwards KISS only while INS reports a stable, low-yaw-rate motion.
-    kiss_odom_gate_node = Node(
-        package='kiss_icp_wrapper',
-        executable='kiss_odom_gate_node',
-        name='kiss_odom_gate_node',
-        parameters=[{
-            'max_abs_yaw_rate': 0.20,
-            'ins_timeout_sec': 0.20,
-            'recovery_hold_time_sec': 1.0,
-        }],
-        output='screen',
-    )
-
     # robot_localization EKF node
     ekf_node = Node(
         package='robot_localization',
@@ -68,7 +53,6 @@ def generate_launch_description():
     return LaunchDescription([
         pointcloud_topic_arg,
         kiss_icp_node,
-        kiss_odom_gate_node,
         ekf_node,
         localization_manager_node,
     ])

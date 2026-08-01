@@ -70,6 +70,7 @@ private:
   bool checkLoopClosure();
   void closeMap(const char * reason);
   size_t consolidateMap();
+  size_t pruneWeakTrackCluster();
   void publishMap();
   void publishVisualization();
   void saveMapToYaml() const;
@@ -105,7 +106,12 @@ private:
   double pending_detection_timeout_sec_{0.5};  // Keep a scan while its exact TF arrives
   int max_pending_detections_{20};
   double localization_jump_threshold_{1.0};  // m per pose callback
+  double localization_jump_max_speed_{15.0};  // m/s allowed between stamped poses
   double localization_jump_cooldown_sec_{2.0};
+  double closure_low_support_ratio_{0.15};
+  double closure_low_support_separation_ratio_{2.0};
+  double closure_low_support_max_fraction_{0.10};
+  int closure_low_support_min_tracks_{3};
   double start_skip_distance_{30.0};   // m — minimum accumulated travel before closure
   double loop_closure_heading_tolerance_deg_{60.0};
   std::string map_save_path_{"/tmp/cone_map.yaml"};

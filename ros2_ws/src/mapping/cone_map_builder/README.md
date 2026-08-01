@@ -65,8 +65,13 @@
 | `merge_distance` | 0.5m | 同一锥桶合并距离；用于吸收检测与定位小噪声，同时避免 Trackdrive 密集弯道把相邻锥桶融合掉 |
 | `consolidation_distance` | 1.0m | 已有轨迹收敛后的在线重复清理半径；只作用于从未同帧共视的轨迹 |
 | `min_hit_count` | 3 | 发布前的最低检测次数，过滤短寿命定位/检测轨迹 |
-| `localization_jump_threshold` | 1.0m | 相邻定位回调超过该距离时暂停建图，防止错误位姿写入地图 |
+| `localization_jump_threshold` | 1.0m | 定位连续性检查的基础距离裕量 |
+| `localization_jump_max_speed` | 15.0m/s | 按 Pose 时间戳间隔附加的合理行驶距离，避免高速回调延迟误报 |
 | `localization_jump_cooldown_sec` | 2.0s | 定位跳变后的建图冷却时间 |
+| `closure_low_support_ratio` | 0.15 | 冻结时低支持候选相对命中中位数的上限 |
+| `closure_low_support_separation_ratio` | 2.0 | 弱/强命中簇必须达到的分离倍数 |
+| `closure_low_support_max_fraction` | 0.10 | 最多允许作为离群弱簇删除的确认轨迹比例 |
+| `closure_low_support_min_tracks` | 3 | 启用弱簇清理所需的最少确认轨迹数 |
 | `loop_closure_distance` | 3.0m | 判定回到起点的距离阈值 |
 | `mapping_laps` | 1 | 正式圈次达到该值时冻结地图；几何闭环仍作为兜底 |
 | `assign_colors` | true | true 时按 LiDAR/body 坐标系左右分色；false 时保留上游 detection/fusion 给出的颜色 |
@@ -91,8 +96,9 @@ majority voting so that distant visible sections do not dominate the side label.
 `use_latest_tf_fallback`，避免车辆运动时用最新 TF 转换旧点云造成地图偏移；该参数仅
 用于兼容旧配置，不建议在建图时开启。
 
-若相邻两条 `/localization/pose` 相距超过 `localization_jump_threshold`（默认 1 m），
-builder 会清空待处理检测，并在 `localization_jump_cooldown_sec`（默认 2 s）内拒绝新的
+建图尚未闭合时，若相邻两条 `/localization/pose` 的距离超过基础裕量加上“时间戳间隔 ×
+`localization_jump_max_speed`”，builder 会清空待处理检测，并在
+`localization_jump_cooldown_sec`（默认 2 s）内拒绝新的
 锥筒帧。该保护针对 KISS-ICP 在重复赛段错误重定位：精确时间戳 TF 仍会存在，但其对应的
 地图位姿已经错误，继续融合只会生成整段平移的重复锥桶。
 
