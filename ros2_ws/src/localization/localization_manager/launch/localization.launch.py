@@ -1,5 +1,6 @@
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
+from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
@@ -11,6 +12,15 @@ def generate_launch_description():
         'pointcloud_topic',
         default_value='/hesai/pandar',
         description='Raw point cloud topic from Hesai 128-line LiDAR'
+    )
+    fuse_kiss_odometry_arg = DeclareLaunchArgument(
+        'fuse_kiss_odometry',
+        default_value='false',
+        choices=['true', 'false'],
+        description=(
+            'Fuse sanitized KISS-derived velocity into EKF. Keep false when the '
+            'absolute INS is available and cone-only ICP is ambiguous.'
+        ),
     )
 
     kiss_icp_config = PathJoinSubstitution([
@@ -33,6 +43,16 @@ def generate_launch_description():
         output='screen',
     )
 
+    # Keep KISS available through all turns, reject isolated scan-matching
+    # jumps, and derive velocity without exposing its drifting global pose.
+    kiss_odom_sanitizer_node = Node(
+        package='kiss_icp_wrapper',
+        executable='kiss_odom_sanitizer_node',
+        name='kiss_odom_sanitizer_node',
+        output='screen',
+        condition=IfCondition(LaunchConfiguration('fuse_kiss_odometry')),
+    )
+
     # robot_localization EKF node
     ekf_node = Node(
         package='robot_localization',
@@ -52,7 +72,9 @@ def generate_launch_description():
 
     return LaunchDescription([
         pointcloud_topic_arg,
+        fuse_kiss_odometry_arg,
         kiss_icp_node,
+        kiss_odom_sanitizer_node,
         ekf_node,
         localization_manager_node,
     ])

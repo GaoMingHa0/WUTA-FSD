@@ -21,13 +21,13 @@ localization/
 
 | 模式 | 触发条件 | 数据源 | 特点 |
 |------|----------|--------|------|
-| `LOC_KISS_ICP` | EXPLORE 阶段 | KISS-ICP + EKF（融合 CG-410） | 无需先验地图，纯里程计，长时有漂移 |
+| `LOC_KISS_ICP` | EXPLORE 阶段 | CG-410 + EKF（可选 KISS 速度） | 无需先验地图；绝对位姿由 INS 约束 |
 | `LOC_NDT` | RACE 阶段 | NDT 地图匹配 | 需要先验地图，精度高，适合高速循迹 |
 
 ### 数据流
 
 ```
-禾赛128线 ──→ kiss_icp_node ──→ /kiss/odometry ──→ ekf_node ──→ /odometry/filtered ──┐
+禾赛128线 ──→ kiss_icp_node ──→ sanitizer ──→ 可选平面速度 ──→ ekf_node ───────────┐
                                                                                        ▼
 CG-410 ────→ /cg410/odometry ──────────────────────────────────────────────────────→ localization_manager
                                                                                        │
@@ -48,13 +48,13 @@ ndt_node ──→ /ndt/pose ─────────────────
 
 ### EKF 配置（ekf.yaml）
 
-融合两路输入：
-- `odom0`：KISS-ICP（高频里程计，xy + yaw；KISS 不发布 Twist 估计）
-- `odom1`：CG-410 INS（绝对位置，xyz + rpy，修正漂移）
+融合输入：
+- `odom0`：可选的 KISS-ICP 平面速度与偏航角速度。净化器先拒绝非有限、超速或与 INS
+  明显不一致的单帧增量；KISS 的全局 pose 不进入 EKF。
+- `odom1`：CG-410 INS 的绝对位置、姿态、纵向速度与偏航角速度。
 
-两路 pose 更新分别使用 `odom0_pose_rejection_threshold=3.0` 与
-`odom1_pose_rejection_threshold=5.0` 的 Mahalanobis 创新门限。尤其是 KISS 的门限必须显式
-设置：robot_localization 的默认值为无限大，在重复锥桶赛段可能接受错误重定位造成的整段位置跳变。
+`fuse_kiss_odometry=false` 时净化器不启动，EKF 仅融合 INS。模拟器默认采用该模式，因为只有
+锥桶特征的 ICP 可能匹配到相似赛段；需要在真实环境验证 KISS 冗余速度时才显式开启。
 
 仿真默认由 `WUTA-SIM/wuta-ins-simulator` 发布 `/cg410/odometry`。真实车辆接入时可保持
 该接口，或在 bringup 中重映射实际 CG-410 驱动话题。
@@ -63,7 +63,8 @@ ndt_node ──→ /ndt/pose ─────────────────
 
 ## kiss_icp_wrapper
 
-仅包含为禾赛128线调优的参数文件，不含代码。
+包含禾赛128线参数文件和 `kiss_odom_sanitizer_node`。后者只派生并发布经过检查的局部速度，
+不把 KISS 的漂移全局位姿交给 EKF。
 
 关键参数（kiss_icp_hesai128.yaml）：
 

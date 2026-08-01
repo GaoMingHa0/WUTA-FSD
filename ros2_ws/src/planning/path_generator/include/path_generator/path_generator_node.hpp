@@ -147,6 +147,7 @@ private:
   // as a jagged vehicle path in RViz.
   double driven_trajectory_smoothing_alpha_{0.20};
   double driven_trajectory_min_distance_{0.10};
+  double driven_trajectory_max_step_{2.0};
 
   // Acceleration reference in map.  These values match acceleration.yaml:
   // start at -0.30 m, timing starts at 0 m, finish is 75 m later, and the

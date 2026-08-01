@@ -36,6 +36,7 @@ private:
   void publishLocalizationStatus(bool ready, double confidence);
 
   uint8_t active_mode_{wuta_msgs::msg::MissionState::LOC_KISS_ICP};
+  uint8_t system_state_{wuta_msgs::msg::MissionState::IDLE};
 
   // Subscriptions
   rclcpp::Subscription<wuta_msgs::msg::MissionState>::SharedPtr mission_sub_;

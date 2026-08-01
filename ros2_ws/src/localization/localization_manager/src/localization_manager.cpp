@@ -8,6 +8,22 @@ namespace localization_manager
 
 using MissionState = wuta_msgs::msg::MissionState;
 
+namespace
+{
+
+bool poseIsFinite(const geometry_msgs::msg::Pose & pose)
+{
+  return std::isfinite(pose.position.x) &&
+         std::isfinite(pose.position.y) &&
+         std::isfinite(pose.position.z) &&
+         std::isfinite(pose.orientation.x) &&
+         std::isfinite(pose.orientation.y) &&
+         std::isfinite(pose.orientation.z) &&
+         std::isfinite(pose.orientation.w);
+}
+
+}  // namespace
+
 LocalizationManager::LocalizationManager(const rclcpp::NodeOptions & options)
 : Node("localization_manager", options)
 {
@@ -37,6 +53,13 @@ LocalizationManager::LocalizationManager(const rclcpp::NodeOptions & options)
 
 void LocalizationManager::onMissionState(const MissionState::SharedPtr msg)
 {
+  system_state_ = msg->state;
+  if (system_state_ == MissionState::FINISH ||
+      system_state_ == MissionState::EMERGENCY)
+  {
+    publishLocalizationStatus(false, 0.0);
+  }
+
   if (msg->localization_mode == active_mode_) return;
 
   active_mode_ = msg->localization_mode;
@@ -51,6 +74,23 @@ void LocalizationManager::onMissionState(const MissionState::SharedPtr msg)
 void LocalizationManager::onEkfOdom(const nav_msgs::msg::Odometry::SharedPtr msg)
 {
   if (active_mode_ != MissionState::LOC_KISS_ICP) return;
+  if (system_state_ == MissionState::FINISH ||
+      system_state_ == MissionState::EMERGENCY)
+  {
+    return;
+  }
+
+  const bool covariance_is_finite =
+    std::isfinite(msg->pose.covariance[0]) &&
+    std::isfinite(msg->pose.covariance[7]) &&
+    std::isfinite(msg->pose.covariance[35]);
+  if (!poseIsFinite(msg->pose.pose) || !covariance_is_finite) {
+    RCLCPP_ERROR_THROTTLE(
+      get_logger(), *get_clock(), 2000,
+      "Rejecting non-finite EKF output; localization marked unavailable.");
+    publishLocalizationStatus(false, 0.0);
+    return;
+  }
 
   geometry_msgs::msg::PoseStamped pose;
   pose.header = msg->header;
@@ -69,6 +109,18 @@ void LocalizationManager::onEkfOdom(const nav_msgs::msg::Odometry::SharedPtr msg
 void LocalizationManager::onNdtPose(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
 {
   if (active_mode_ != MissionState::LOC_NDT) return;
+  if (system_state_ == MissionState::FINISH ||
+      system_state_ == MissionState::EMERGENCY)
+  {
+    return;
+  }
+  if (!poseIsFinite(msg->pose)) {
+    RCLCPP_ERROR_THROTTLE(
+      get_logger(), *get_clock(), 2000,
+      "Rejecting non-finite NDT pose; localization marked unavailable.");
+    publishLocalizationStatus(false, 0.0);
+    return;
+  }
 
   pose_pub_->publish(*msg);
   // PoseStamped carries no covariance. NDT convergence gating remains inside

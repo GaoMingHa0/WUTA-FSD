@@ -90,6 +90,8 @@ PathGeneratorNode::PathGeneratorNode(const rclcpp::NodeOptions & options)
     "driven_trajectory_smoothing_alpha", driven_trajectory_smoothing_alpha_);
   driven_trajectory_min_distance_ = declare_parameter(
     "driven_trajectory_min_distance", driven_trajectory_min_distance_);
+  driven_trajectory_max_step_ = declare_parameter(
+    "driven_trajectory_max_step", driven_trajectory_max_step_);
   acceleration_start_x_ = declare_parameter("acceleration_start_x", acceleration_start_x_);
   acceleration_start_y_ = declare_parameter("acceleration_start_y", acceleration_start_y_);
   acceleration_start_yaw_ = declare_parameter(
@@ -149,6 +151,23 @@ PathGeneratorNode::PathGeneratorNode(const rclcpp::NodeOptions & options)
 
 void PathGeneratorNode::onPose(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
 {
+  const auto & position = msg->pose.position;
+  const auto & orientation = msg->pose.orientation;
+  if (!std::isfinite(position.x) || !std::isfinite(position.y) ||
+      !std::isfinite(position.z) || !std::isfinite(orientation.x) ||
+      !std::isfinite(orientation.y) || !std::isfinite(orientation.z) ||
+      !std::isfinite(orientation.w))
+  {
+    RCLCPP_ERROR_THROTTLE(
+      get_logger(), *get_clock(), 2000,
+      "Ignoring non-finite localization pose.");
+    return;
+  }
+
+  const bool terminal_state =
+    system_state_ == State::FINISH || system_state_ == State::EMERGENCY;
+  if (terminal_state) return;
+
   current_pose_ = *msg;
   pose_ready_ = true;
   last_pose_received_at_ = now();
@@ -161,31 +180,44 @@ void PathGeneratorNode::onPose(const geometry_msgs::msg::PoseStamped::SharedPtr 
   pt.y = msg->pose.position.y;
   pt.z = msg->pose.position.z;
 
-  const double alpha = std::clamp(driven_trajectory_smoothing_alpha_, 0.0, 1.0);
-  if (!trajectory_filter_ready_)
+  const bool trajectory_jump = trajectory_filter_ready_ &&
+      std::hypot(pt.x - filtered_trajectory_point_.x,
+        pt.y - filtered_trajectory_point_.y) >
+        std::max(0.1, driven_trajectory_max_step_);
+  if (trajectory_jump)
   {
-    filtered_trajectory_point_ = pt;
-    trajectory_filter_ready_ = true;
-  }
-  else
-  {
-    filtered_trajectory_point_.x += alpha * (pt.x - filtered_trajectory_point_.x);
-    filtered_trajectory_point_.y += alpha * (pt.y - filtered_trajectory_point_.y);
-    filtered_trajectory_point_.z += alpha * (pt.z - filtered_trajectory_point_.z);
+    RCLCPP_WARN_THROTTLE(
+      get_logger(), *get_clock(), 2000,
+      "Ignoring localization jump in driven-trajectory visualization.");
   }
 
-  const double min_distance = std::max(0.0, driven_trajectory_min_distance_);
-  if (trajectory_.empty() || std::hypot(
-        filtered_trajectory_point_.x - last_trajectory_point_.x,
-        filtered_trajectory_point_.y - last_trajectory_point_.y) >= min_distance)
-  {
-    trajectory_.push_back(filtered_trajectory_point_);
-    last_trajectory_point_ = filtered_trajectory_point_;
-
-    // Publish every few points so RViz can discover the topic before subscribing
-    if (trajectory_.size() % 3 == 0)
+  if (!trajectory_jump) {
+    const double alpha = std::clamp(driven_trajectory_smoothing_alpha_, 0.0, 1.0);
+    if (!trajectory_filter_ready_)
     {
-      publishTrajectory();
+      filtered_trajectory_point_ = pt;
+      trajectory_filter_ready_ = true;
+    }
+    else
+    {
+      filtered_trajectory_point_.x += alpha * (pt.x - filtered_trajectory_point_.x);
+      filtered_trajectory_point_.y += alpha * (pt.y - filtered_trajectory_point_.y);
+      filtered_trajectory_point_.z += alpha * (pt.z - filtered_trajectory_point_.z);
+    }
+
+    const double min_distance = std::max(0.0, driven_trajectory_min_distance_);
+    if (trajectory_.empty() || std::hypot(
+          filtered_trajectory_point_.x - last_trajectory_point_.x,
+          filtered_trajectory_point_.y - last_trajectory_point_.y) >= min_distance)
+    {
+      trajectory_.push_back(filtered_trajectory_point_);
+      last_trajectory_point_ = filtered_trajectory_point_;
+
+      // Publish every few points so RViz can discover the topic before subscribing
+      if (trajectory_.size() % 3 == 0)
+      {
+        publishTrajectory();
+      }
     }
   }
 

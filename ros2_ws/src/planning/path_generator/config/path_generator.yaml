@@ -46,6 +46,7 @@ path_generator_node:
     # history; controller and mapping continue to use raw /localization/pose.
     driven_trajectory_smoothing_alpha: 0.20
     driven_trajectory_min_distance: 0.10  # m
+    driven_trajectory_max_step: 2.0       # m per pose update, RViz only
 
     # ACCELERATION — matches perception_simulation/tracks/acceleration.yaml.
     # The 75 m timed run begins at x=0.0; brake only after its finish line and
