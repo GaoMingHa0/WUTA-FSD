@@ -9,22 +9,27 @@ WS_DIR="${SCRIPT_DIR}"
 
 usage() {
   cat <<'EOF'
-Usage: ./build_ws.sh [--clean]
+Usage: ./build_ws.sh [--clean] [--lightweight]
 
 Build the WUTA-FSD ROS 2 workspace reproducibly.
 The script resolves the workspace from its own location and automatically
 cleans stale CMake/colcon output when the repository has been moved.
 
 Options:
-  --clean   Remove build/, install/, and log/ before building.
+  --clean       Remove build/, install/, and log/ before building.
+  --lightweight Limit parallel jobs to 1 (for systems with <=8GB RAM).
 EOF
 }
 
 CLEAN=0
+LIGHTWEIGHT=0
 for arg in "$@"; do
   case "$arg" in
     --clean)
       CLEAN=1
+      ;;
+    --lightweight)
+      LIGHTWEIGHT=1
       ;;
     -h|--help)
       usage
@@ -140,8 +145,15 @@ if [[ "${CLEAN}" -eq 1 ]]; then
   rm -rf build install log
 fi
 
-colcon build --symlink-install \
-  --cmake-args "-DCMAKE_MODULE_PATH=${WS_DIR}/cmake"
+# 构建命令
+BUILD_ARGS="--symlink-install --cmake-args \"-DCMAKE_MODULE_PATH=${WS_DIR}/cmake\""
+
+if [[ "${LIGHTWEIGHT}" -eq 1 ]]; then
+  BUILD_ARGS="${BUILD_ARGS} --parallel-workers 1"
+  echo "[LIGHTWEIGHT] 使用单线程构建以节省内存..."
+fi
+
+eval colcon build ${BUILD_ARGS}
 
 set +u
 source install/setup.bash
