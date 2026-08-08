@@ -35,45 +35,50 @@ using State = wuta_msgs::msg::MissionState;
 PathGeneratorNode::PathGeneratorNode(const rclcpp::NodeOptions & options)
 : Node("path_generator_node", options)
 {
-  trackdrive_velocity_    = declare_parameter("trackdrive_velocity",    trackdrive_velocity_);
-  trackdrive_resample_spacing_ = declare_parameter(
-    "trackdrive_resample_spacing", trackdrive_resample_spacing_);
-  trackdrive_min_velocity_ = declare_parameter(
-    "trackdrive_min_velocity", trackdrive_min_velocity_);
-  trackdrive_lateral_accel_limit_ = declare_parameter(
-    "trackdrive_lateral_accel_limit", trackdrive_lateral_accel_limit_);
-  trackdrive_race_lap2_velocity_ = declare_parameter(
-    "trackdrive_race_lap2_velocity", trackdrive_race_lap2_velocity_);
-  trackdrive_race_velocity_ = declare_parameter(
-    "trackdrive_race_velocity", trackdrive_race_velocity_);
+  // EXPLORE（第1圈，建图/探索圈）速度配置
+  trackdrive_explore_max_velocity_ = declare_parameter(
+    "trackdrive.explore.max_velocity", trackdrive_explore_max_velocity_);
+  trackdrive_explore_min_velocity_ = declare_parameter(
+    "trackdrive.explore.min_velocity", trackdrive_explore_min_velocity_);
+  trackdrive_explore_lateral_accel_limit_ = declare_parameter(
+    "trackdrive.explore.lateral_accel_limit", trackdrive_explore_lateral_accel_limit_);
+  // RACE（比赛圈）速度配置
+  trackdrive_race_lap2_max_velocity_ = declare_parameter(
+    "trackdrive.race.lap2_max_velocity", trackdrive_race_lap2_max_velocity_);
+  trackdrive_race_lap3_max_velocity_ = declare_parameter(
+    "trackdrive.race.lap3_max_velocity", trackdrive_race_lap3_max_velocity_);
   trackdrive_race_min_velocity_ = declare_parameter(
-    "trackdrive_race_min_velocity", trackdrive_race_min_velocity_);
+    "trackdrive.race.min_velocity", trackdrive_race_min_velocity_);
   trackdrive_race_lateral_accel_limit_ = declare_parameter(
-    "trackdrive_race_lateral_accel_limit", trackdrive_race_lateral_accel_limit_);
+    "trackdrive.race.lateral_accel_limit", trackdrive_race_lateral_accel_limit_);
+  // 通用处理（所有状态共用）
+  trackdrive_resample_spacing_ = declare_parameter(
+    "trackdrive.resample_spacing", trackdrive_resample_spacing_);
   trackdrive_min_forward_target_ = declare_parameter(
-    "trackdrive_min_forward_target", trackdrive_min_forward_target_);
-  trackdrive_short_centerline_velocity_ = declare_parameter(
-    "trackdrive_short_centerline_velocity", trackdrive_short_centerline_velocity_);
-  trackdrive_short_centerline_points_ = declare_parameter(
-    "trackdrive_short_centerline_points", trackdrive_short_centerline_points_);
-  trackdrive_global_horizon_distance_ = declare_parameter(
-    "trackdrive_global_horizon_distance", trackdrive_global_horizon_distance_);
-  trackdrive_global_search_points_ = declare_parameter(
-    "trackdrive_global_search_points", trackdrive_global_search_points_);
-  trackdrive_global_min_points_ = declare_parameter(
-    "trackdrive_global_min_points", trackdrive_global_min_points_);
-  trackdrive_global_publish_period_sec_ = declare_parameter(
-    "trackdrive_global_publish_period_sec", trackdrive_global_publish_period_sec_);
+    "trackdrive.min_forward_target", trackdrive_min_forward_target_);
   trackdrive_full_speed_forward_distance_ = declare_parameter(
-    "trackdrive_full_speed_forward_distance", trackdrive_full_speed_forward_distance_);
-  trackdrive_low_confidence_velocity_ = declare_parameter(
-    "trackdrive_low_confidence_velocity", trackdrive_low_confidence_velocity_);
+    "trackdrive.full_speed_forward_distance", trackdrive_full_speed_forward_distance_);
+  // 降级限速（短中心线 / 低置信度共用）
+  trackdrive_degraded_velocity_ = declare_parameter(
+    "trackdrive.degraded_velocity", trackdrive_degraded_velocity_);
+  trackdrive_short_centerline_points_ = declare_parameter(
+    "trackdrive.short_centerline_points", trackdrive_short_centerline_points_);
+  // 置信度 → 速度映射
   trackdrive_confidence_slow_threshold_ = declare_parameter(
-    "trackdrive_confidence_slow_threshold", trackdrive_confidence_slow_threshold_);
+    "trackdrive.confidence.slow_threshold", trackdrive_confidence_slow_threshold_);
   trackdrive_confidence_full_threshold_ = declare_parameter(
-    "trackdrive_confidence_full_threshold", trackdrive_confidence_full_threshold_);
-  localization_timeout_sec_ = declare_parameter(
-    "localization_timeout_sec", localization_timeout_sec_);
+    "trackdrive.confidence.full_threshold", trackdrive_confidence_full_threshold_);
+  trackdrive_confidence_timeout_sec_ = declare_parameter(
+    "trackdrive.confidence.timeout_sec", trackdrive_confidence_timeout_sec_);
+  // 全局冻结中心线
+  trackdrive_global_horizon_distance_ = declare_parameter(
+    "trackdrive.global.horizon_distance", trackdrive_global_horizon_distance_);
+  trackdrive_global_search_points_ = declare_parameter(
+    "trackdrive.global.search_points", trackdrive_global_search_points_);
+  trackdrive_global_min_points_ = declare_parameter(
+    "trackdrive.global.min_points", trackdrive_global_min_points_);
+  trackdrive_global_publish_period_sec_ = declare_parameter(
+    "trackdrive.global.publish_period_sec", trackdrive_global_publish_period_sec_);
   skidpad_radius_         = declare_parameter("skidpad_radius",         skidpad_radius_);
   skidpad_velocity_       = declare_parameter("skidpad_velocity",       skidpad_velocity_);
   skidpad_points_         = declare_parameter("skidpad_points",         skidpad_points_);
@@ -346,7 +351,7 @@ void PathGeneratorNode::publishTrackdriveLane(
   const double max_velocity = activeTrackdriveMaxVelocity();
   if (short_source) {
     const double velocity_cap = std::clamp(
-      trackdrive_short_centerline_velocity_, 0.0, std::max(0.0, max_velocity));
+      trackdrive_degraded_velocity_, 0.0, std::max(0.0, max_velocity));
     for (auto & waypoint : lane.waypoints) {
       waypoint.twist.twist.linear.x = std::min(waypoint.twist.twist.linear.x, velocity_cap);
     }
@@ -376,10 +381,10 @@ void PathGeneratorNode::publishTrackdriveLane(
   const double confidence_scale = std::clamp(
     (confidence - slow_threshold) / (full_threshold - slow_threshold), 0.0, 1.0);
   const double confidence_cap =
-    std::clamp(trackdrive_low_confidence_velocity_, 0.0, max_velocity) +
+    std::clamp(trackdrive_degraded_velocity_, 0.0, max_velocity) +
     confidence_scale * (
       max_velocity - std::clamp(
-        trackdrive_low_confidence_velocity_, 0.0, max_velocity));
+        trackdrive_degraded_velocity_, 0.0, max_velocity));
   const double safety_cap = std::min(distance_cap, confidence_cap);
   for (auto & waypoint : lane.waypoints) {
     waypoint.twist.twist.linear.x =
@@ -507,11 +512,11 @@ bool PathGeneratorNode::trackdriveStateActive() const
 double PathGeneratorNode::activeTrackdriveMaxVelocity() const
 {
   if (system_state_ != State::RACE) {
-    return std::max(0.0, trackdrive_velocity_);
+    return std::max(0.0, trackdrive_explore_max_velocity_);
   }
   return std::max(
     0.0,
-    lap_count_ <= 1 ? trackdrive_race_lap2_velocity_ : trackdrive_race_velocity_);
+    lap_count_ <= 1 ? trackdrive_race_lap2_max_velocity_ : trackdrive_race_lap3_max_velocity_);
 }
 
 double PathGeneratorNode::activeTrackdriveMinVelocity() const
@@ -519,7 +524,7 @@ double PathGeneratorNode::activeTrackdriveMinVelocity() const
   const double max_velocity = activeTrackdriveMaxVelocity();
   const double requested = system_state_ == State::RACE
     ? trackdrive_race_min_velocity_
-    : trackdrive_min_velocity_;
+    : trackdrive_explore_min_velocity_;
   return std::clamp(requested, 0.0, max_velocity);
 }
 
@@ -527,7 +532,7 @@ double PathGeneratorNode::activeTrackdriveLateralAccelLimit() const
 {
   return system_state_ == State::RACE
     ? std::max(0.1, trackdrive_race_lateral_accel_limit_)
-    : std::max(0.1, trackdrive_lateral_accel_limit_);
+    : std::max(0.1, trackdrive_explore_lateral_accel_limit_);
 }
 
 double PathGeneratorNode::currentTrackdriveConfidence() const
@@ -538,7 +543,7 @@ double PathGeneratorNode::currentTrackdriveConfidence() const
     return 0.0;
   }
   const double pose_age = (now() - last_pose_received_at_).seconds();
-  if (pose_age > std::max(0.05, localization_timeout_sec_)) {
+  if (pose_age > std::max(0.05, trackdrive_confidence_timeout_sec_)) {
     return 0.0;
   }
   return std::min(
@@ -568,7 +573,7 @@ autoware_msgs::msg::Lane PathGeneratorNode::resampleTrackdriveLane(
     wp.pose.pose.orientation.y = 0.0;
     wp.pose.pose.orientation.z = std::sin(yaw * 0.5);
     wp.pose.pose.orientation.w = std::cos(yaw * 0.5);
-    wp.twist.twist.linear.x = trackdrive_velocity_;
+    wp.twist.twist.linear.x = trackdrive_explore_max_velocity_;
     output.waypoints.push_back(wp);
   };
 

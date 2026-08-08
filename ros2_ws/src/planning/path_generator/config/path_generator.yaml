@@ -1,28 +1,32 @@
 path_generator_node:
   ros__parameters:
-    # TRACKDRIVE
-    trackdrive_velocity: 7.0       # m/s
-    trackdrive_resample_spacing: 1.0 # m
-    trackdrive_min_velocity: 3.0   # m/s, lower bound for tight corners
-    trackdrive_lateral_accel_limit: 4.0 # m/s^2, curvature speed cap
+    # ============ TRACKDRIVE / EXPLORE（第1圈，建图/探索圈速度配置） ============
+    trackdrive.explore.max_velocity: 7.0        # m/s，探索圈目标速度，也是重采样默认速度
+    trackdrive.explore.min_velocity: 3.0        # m/s，曲率限速下限
+    trackdrive.explore.lateral_accel_limit: 4.0 # m/s^2，曲率限速
+    # ============ TRACKDRIVE / RACE（比赛圈速度配置，覆盖 explore） ============
     # Lap 1 retains the validated 7 m/s profile. Laps 2 and 3 progressively
     # raise the cap only after the frozen global centerline is accepted.
-    trackdrive_race_lap2_velocity: 9.0 # m/s
-    trackdrive_race_velocity: 10.0 # m/s
-    trackdrive_race_min_velocity: 4.0 # m/s
-    trackdrive_race_lateral_accel_limit: 6.0 # m/s^2
-    trackdrive_min_forward_target: 0.5 # m, reject locally reversed centerlines
-    trackdrive_short_centerline_velocity: 3.0 # m/s, cap unstable 2-3 point fallback paths
-    trackdrive_short_centerline_points: 3 # source centerline points at or below this are speed-capped
-    trackdrive_global_horizon_distance: 40.0 # m, local slice of frozen loop
-    trackdrive_global_search_points: 24 # bounded progress search avoids nearby-branch jumps
-    trackdrive_global_min_points: 20 # distinguish a frozen loop from local EXPLORE paths
-    trackdrive_global_publish_period_sec: 0.10
-    trackdrive_full_speed_forward_distance: 15.0 # m
-    trackdrive_low_confidence_velocity: 3.0 # m/s
-    trackdrive_confidence_slow_threshold: 0.45
-    trackdrive_confidence_full_threshold: 0.75
-    localization_timeout_sec: 0.50
+    trackdrive.race.lap2_max_velocity: 9.0      # m/s，第2圈（lap_count≤1）
+    trackdrive.race.lap3_max_velocity: 10.0     # m/s，第3圈起（lap_count>1）
+    trackdrive.race.min_velocity: 4.0           # m/s，第2/3圈共用下限
+    trackdrive.race.lateral_accel_limit: 6.0    # m/s^2，第2/3圈共用曲率限速
+    # ============ TRACKDRIVE 通用处理（所有状态共用） ============
+    trackdrive.resample_spacing: 1.0            # m
+    trackdrive.min_forward_target: 0.5          # m，拒绝局部反向中心线
+    trackdrive.full_speed_forward_distance: 15.0 # m，随路径长度 min→max 渐增
+    # ============ TRACKDRIVE 降级限速（短中心线 / 低置信度共用） ============
+    trackdrive.degraded_velocity: 3.0           # m/s，短中心线或低置信度时的速度帽
+    trackdrive.short_centerline_points: 3       # 源中心线点数低于此值视为短路径
+    # ============ TRACKDRIVE 置信度 → 速度映射 ============
+    trackdrive.confidence.slow_threshold: 0.45
+    trackdrive.confidence.full_threshold: 0.75
+    trackdrive.confidence.timeout_sec: 0.50     # 位姿超时 → 置信度为 0
+    # ============ TRACKDRIVE 全局冻结中心线 ============
+    trackdrive.global.horizon_distance: 40.0    # m，冻结环局部地平线长度
+    trackdrive.global.search_points: 24         # 进度点有界搜索窗口
+    trackdrive.global.min_points: 20            # 区分冻结闭环与局部 EXPLORE 路径
+    trackdrive.global.publish_period_sec: 0.10
 
     # SKIDPAD (FSG standard geometry)
     skidpad_radius: 9.125          # m

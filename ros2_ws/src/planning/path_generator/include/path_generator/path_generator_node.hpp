@@ -106,27 +106,31 @@ private:
   bool trajectory_filter_ready_{false};
 
   // Parameters
-  // Trackdrive
-  double trackdrive_velocity_{7.0};    // m/s
-  double trackdrive_resample_spacing_{1.0};  // m
-  double trackdrive_min_velocity_{3.0}; // m/s
-  double trackdrive_lateral_accel_limit_{4.0}; // m/s^2
-  double trackdrive_race_lap2_velocity_{9.0}; // m/s
-  double trackdrive_race_velocity_{10.0}; // m/s
-  double trackdrive_race_min_velocity_{4.0}; // m/s
-  double trackdrive_race_lateral_accel_limit_{6.0}; // m/s^2
-  double trackdrive_min_forward_target_{0.5}; // m
-  double trackdrive_short_centerline_velocity_{3.0}; // m/s
-  int trackdrive_short_centerline_points_{3}; // source centerline points
-  double trackdrive_global_horizon_distance_{40.0}; // m
+  // Trackdrive — EXPLORE（第1圈，建图/探索圈）速度配置
+  double trackdrive_explore_max_velocity_{7.0};        // m/s
+  double trackdrive_explore_min_velocity_{3.0};        // m/s
+  double trackdrive_explore_lateral_accel_limit_{4.0}; // m/s^2
+  // Trackdrive — RACE（比赛圈）速度配置
+  double trackdrive_race_lap2_max_velocity_{9.0};      // m/s 第2圈
+  double trackdrive_race_lap3_max_velocity_{10.0};     // m/s 第3圈起
+  double trackdrive_race_min_velocity_{4.0};           // m/s
+  double trackdrive_race_lateral_accel_limit_{6.0};    // m/s^2
+  // Trackdrive — 通用处理（所有状态共用）
+  double trackdrive_resample_spacing_{1.0};            // m
+  double trackdrive_min_forward_target_{0.5};          // m
+  double trackdrive_full_speed_forward_distance_{15.0}; // m
+  // Trackdrive — 降级限速（短中心线 / 低置信度共用）
+  double trackdrive_degraded_velocity_{3.0};           // m/s
+  int trackdrive_short_centerline_points_{3};          // source centerline points
+  // Trackdrive — 置信度 → 速度映射
+  double trackdrive_confidence_slow_threshold_{0.45};
+  double trackdrive_confidence_full_threshold_{0.75};
+  double trackdrive_confidence_timeout_sec_{0.50};     // s
+  // Trackdrive — 全局冻结中心线
+  double trackdrive_global_horizon_distance_{40.0};    // m
   int trackdrive_global_search_points_{24};
   int trackdrive_global_min_points_{20};
   double trackdrive_global_publish_period_sec_{0.10};
-  double trackdrive_full_speed_forward_distance_{15.0}; // m
-  double trackdrive_low_confidence_velocity_{3.0}; // m/s
-  double trackdrive_confidence_slow_threshold_{0.45};
-  double trackdrive_confidence_full_threshold_{0.75};
-  double localization_timeout_sec_{0.50};
 
   // Skidpad reference in map.  This matches tracks/skidpad.yaml by default.
   double skidpad_radius_{9.125};       // m
