@@ -39,7 +39,7 @@ private:
 
   // A figure-eight has tangent-continuous but curvature-discontinuous joins at
   // the timing-line crossing.  It needs a shorter preview than open tracks.
-  double skidpad_lookahead_{3.0};
+  double skidpad_lookahead_{2.5};
   // Trackdrive derives a bounded preview from upcoming centerline curvature,
   // independent of path_generator's race-speed target.
   bool trackdrive_dynamic_lookahead_{true};

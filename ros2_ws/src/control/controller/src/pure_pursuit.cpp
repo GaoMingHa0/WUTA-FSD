@@ -23,6 +23,15 @@ ControlCommand PurePursuit::compute(
   ControlCommand cmd;
   if (waypoints.empty()) return cmd;
 
+  // 速度航向角 = 车头朝向 + 侧偏角 β = yaw + atan2(vy, vx)。
+  // 低速时侧偏角噪声大，|v|<0.5 视为直线行驶。用速度方向做 pure pursuit
+  // 几何，消除侧偏导致的实际路径持续内偏。
+  double course = state.yaw;
+  const double speed = std::hypot(state.vx, state.vy);
+  if (speed > 0.5) {
+    course = state.yaw + std::atan2(state.vy, state.vx);
+  }
+
   // 1. Compute lookahead distance — velocity-proportional, clamped
   lookahead_dist_ = lookahead_override > 0.0
     ? lookahead_override
@@ -36,8 +45,8 @@ ControlCommand PurePursuit::compute(
   // selecting the last geometrically-close waypoint would jump to a later lap.
   // Trackdrive local paths may also be re-ordered, so targets behind the car are rejected.
   progress_idx_ = std::max(
-    progress_idx_, findNearestForwardIndex(state, waypoints));
-  target_idx_ = findTargetIndex(state, waypoints, lookahead_dist_);
+    progress_idx_, findNearestForwardIndex(state, waypoints, course));
+  target_idx_ = findTargetIndex(state, waypoints, lookahead_dist_, course);
   if (target_idx_ < 0) {
     target_idx_ = static_cast<int>(waypoints.size()) - 1;
   }
@@ -45,7 +54,7 @@ ControlCommand PurePursuit::compute(
   const auto & target = waypoints[target_idx_];
   if (longitudinalOffset(
       target.pose.pose.position.x, target.pose.pose.position.y,
-      state.x, state.y, state.yaw) <= 0.0) {
+      state.x, state.y, course) <= 0.0) {
     return cmd;
   }
   const double tx = target.pose.pose.position.x;
@@ -56,7 +65,7 @@ ControlCommand PurePursuit::compute(
   if (dist < 1e-6) return cmd;
 
   // 4. Lateral offset in vehicle body frame (x_body = how far left/right target is)
-  const double x_body = lateralOffset(tx, ty, state.x, state.y, state.yaw);
+  const double x_body = lateralOffset(tx, ty, state.x, state.y, course);
 
   // 5. Curvature: kappa = 2·x_body / dist²
   // Keep the pure-pursuit relationship continuous around x_body = 0.  The
@@ -79,7 +88,7 @@ ControlCommand PurePursuit::compute(
 int PurePursuit::findTargetIndex(
   const VehicleState & state,
   const std::vector<autoware_msgs::msg::Waypoint> & waypoints,
-  double ld) const
+  double ld, double course) const
 {
   // First point at or beyond the lookahead distance after current progress,
   // but only if it is in front of the vehicle.  A locally re-planned
@@ -91,7 +100,7 @@ int PurePursuit::findTargetIndex(
     const double forward = longitudinalOffset(
       waypoints[i].pose.pose.position.x,
       waypoints[i].pose.pose.position.y,
-      state.x, state.y, state.yaw);
+      state.x, state.y, course);
     if (forward <= 0.0) continue;
     if (forward > furthest_forward) {
       furthest_forward = forward;
@@ -108,7 +117,8 @@ int PurePursuit::findTargetIndex(
 
 int PurePursuit::findNearestForwardIndex(
   const VehicleState & state,
-  const std::vector<autoware_msgs::msg::Waypoint> & waypoints) const
+  const std::vector<autoware_msgs::msg::Waypoint> & waypoints,
+  double course) const
 {
   int nearest = std::min(progress_idx_, static_cast<int>(waypoints.size()) - 1);
   double nearest_distance = std::numeric_limits<double>::max();
@@ -142,7 +152,7 @@ int PurePursuit::findNearestForwardIndex(
     const double forward = longitudinalOffset(
       waypoints[i].pose.pose.position.x,
       waypoints[i].pose.pose.position.y,
-      state.x, state.y, state.yaw);
+      state.x, state.y, course);
     if (forward < -0.5) continue;
     // Keep the first index for ties: repeated crossing points must resolve to
     // the current lap, not an identical point in a future lap.
@@ -156,23 +166,23 @@ int PurePursuit::findNearestForwardIndex(
 
 double PurePursuit::lateralOffset(
   double target_x, double target_y,
-  double car_x,    double car_y, double car_yaw)
+  double car_x,    double car_y, double course_angle)
 {
   const double dx = target_x - car_x;
   const double dy = target_y - car_y;
   // Body frame x = lateral (left positive), y = longitudinal (forward positive)
-  // x_body = -dx·sin(yaw) + dy·cos(yaw)
-  return -dx * std::sin(car_yaw) + dy * std::cos(car_yaw);
+  // x_body = -dx·sin(course) + dy·cos(course)
+  return -dx * std::sin(course_angle) + dy * std::cos(course_angle);
 }
 
 double PurePursuit::longitudinalOffset(
   double target_x, double target_y,
-  double car_x,    double car_y, double car_yaw)
+  double car_x,    double car_y, double course_angle)
 {
   const double dx = target_x - car_x;
   const double dy = target_y - car_y;
   // Body frame y = longitudinal, positive in front of the vehicle.
-  return dx * std::cos(car_yaw) + dy * std::sin(car_yaw);
+  return dx * std::cos(course_angle) + dy * std::sin(course_angle);
 }
 
 double PurePursuit::planeDist(double ax, double ay, double bx, double by)

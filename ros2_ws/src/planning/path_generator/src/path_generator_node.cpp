@@ -169,9 +169,8 @@ void PathGeneratorNode::onPose(const geometry_msgs::msg::PoseStamped::SharedPtr 
     return;
   }
 
-  const bool terminal_state =
-    system_state_ == State::FINISH || system_state_ == State::EMERGENCY;
-  if (terminal_state) return;
+  // 急停后车辆仍在制动滑行，继续记录轨迹；FINISH 为任务终态则停止追加
+  if (system_state_ == State::FINISH) return;
 
   current_pose_ = *msg;
   pose_ready_ = true;
@@ -191,6 +190,9 @@ void PathGeneratorNode::onPose(const geometry_msgs::msg::PoseStamped::SharedPtr 
         std::max(0.1, driven_trajectory_max_step_);
   if (trajectory_jump)
   {
+    // 重新同步滤波器，避免高速下永久自锁
+    filtered_trajectory_point_ = pt;
+    last_trajectory_point_ = pt;
     RCLCPP_WARN_THROTTLE(
       get_logger(), *get_clock(), 2000,
       "Ignoring localization jump in driven-trajectory visualization.");

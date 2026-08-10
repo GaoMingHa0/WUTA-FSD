@@ -60,19 +60,20 @@ public:
 private:
   int findTargetIndex(const VehicleState & state,
                       const std::vector<autoware_msgs::msg::Waypoint> & waypoints,
-                      double ld) const;
+                      double ld, double course) const;
 
   int findNearestForwardIndex(
     const VehicleState & state,
-    const std::vector<autoware_msgs::msg::Waypoint> & waypoints) const;
+    const std::vector<autoware_msgs::msg::Waypoint> & waypoints,
+    double course) const;
 
   // Transform global point to vehicle body frame, return lateral offset x
   static double lateralOffset(double target_x, double target_y,
-                               double car_x, double car_y, double car_yaw);
+                               double car_x, double car_y, double course_angle);
 
   // Transform global point to vehicle body frame, return forward offset y
   static double longitudinalOffset(double target_x, double target_y,
-                                   double car_x, double car_y, double car_yaw);
+                                   double car_x, double car_y, double course_angle);
 
   static double planeDist(double ax, double ay, double bx, double by);
 

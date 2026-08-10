@@ -127,6 +127,8 @@ void ControllerNode::onVelocity(const geometry_msgs::msg::TwistStamped::SharedPt
   // Magnitude of velocity vector
   const double vx = msg->twist.linear.x;
   const double vy = msg->twist.linear.y;
+  vehicle_state_.vx = vx;
+  vehicle_state_.vy = vy;
   vehicle_state_.velocity = std::sqrt(vx * vx + vy * vy);
 }
 
@@ -321,13 +323,18 @@ double ControllerNode::trackdriveLookahead(const rclcpp::Time & loop_time)
   // detects the onset of a genuinely sharp upcoming turn.
   std::vector<double> curvatures;
   double inspected_distance = 0.0;
+  // 曲率预览用速度航向角，与 pure pursuit 横向几何保持一致（低速退化为 yaw）
+  const double speed = std::hypot(vehicle_state_.vx, vehicle_state_.vy);
+  const double course = speed > 0.5
+    ? vehicle_state_.yaw + std::atan2(vehicle_state_.vy, vehicle_state_.vx)
+    : vehicle_state_.yaw;
   for (size_t i = 0; i + 2 < waypoints_.size(); ++i) {
     const auto & p0 = waypoints_[i].pose.pose.position;
     const auto & p1 = waypoints_[i + 1].pose.pose.position;
     const auto & p2 = waypoints_[i + 2].pose.pose.position;
     const double forward =
-      (p1.x - vehicle_state_.x) * std::cos(vehicle_state_.yaw) +
-      (p1.y - vehicle_state_.y) * std::sin(vehicle_state_.yaw);
+      (p1.x - vehicle_state_.x) * std::cos(course) +
+      (p1.y - vehicle_state_.y) * std::sin(course);
     if (forward < -0.5) continue;
 
     const double ds0 = std::hypot(p1.x - p0.x, p1.y - p0.y);

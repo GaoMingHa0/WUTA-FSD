@@ -41,17 +41,184 @@
 
 ## 接口约定
 
+所有消息均使用 **rclcpp 默认 QoS**（可靠 / 易失）或与发布方一致的 QoS，收发双方须保持一致，否则数据无法到达。CAN 周期（报文 ID / 信号位 / 字节序 / 周期）须严格按照 VCU 协议文档（dbc 文件）配置。
+
 ### 订阅 Topic（ROS → VCU，转发到 CAN 总线）
-- `/control/command` (autoware_msgs/msg/Command) - 控制指令（目标速度 + 转向角），周期下发驱动/转向执行器
-- `/system/mission_state` (wuta_msgs/msg/MissionState) - 任务状态，周期发送
-- `/system/inspection_result` (std_msgs/msg/String) - 车检结果（通过/失败），车检完成后发送
+
+#### `/control/command` — 控制指令
+
+- **类型**：`autoware_msgs/msg/Command`
+- **发布方**：`controller` 节点（周期 10 Hz）
+- **方向**：ROS → VCU，编码为 CAN 报文下发驱动电机 / 转向执行器
+
+字段结构：
+
+```text
+std_msgs/Header header    # 时间戳与 frame_id（通常为 "base_link"）
+float64 speed             # 目标速度（m/s，正值前进，负值后退）
+float64 angle             # 目标转向角（rad，正值左转）
+int32 dv_state            # 驱动状态码：4 = 正常，6 = 急停
+```
+
+字段说明：
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `header.stamp` | `builtin_interfaces/Time` | 指令生成时间 |
+| `speed` | `float64` | 目标纵向速度，单位 m/s，需按 VCU 协议换算为 rpm 或档位请求 |
+| `angle` | `float64` | 目标前轮转角，单位 rad，需按 VCU 协议换算为转向执行器指令 |
+| `dv_state` | `int32` | 驱动使能状态：`4`=正常（使能）、`6`=急停（失能，速度必须清零并置无效） |
+
+注意：急停（`dv_state=6`）时本节点必须将速度置零后下发，禁止转发非零速度。
+
+#### `/system/mission_state` — 任务状态
+
+- **类型**：`wuta_msgs/msg/MissionState`
+- **发布方**：`mission_manager` 节点
+- **方向**：ROS → VCU，编码为 CAN 报文上报无人驾驶系统状态（对应规则 AS 状态机）
+
+字段结构：
+
+```text
+std_msgs/Header header    # 时间戳与 frame_id
+uint8 state               # AS 状态（见下表）
+uint8 mission_mode        # 任务模式：0=trackdrive，1=skidpad，2=acceleration
+uint8 localization_mode   # 定位模式：0=KISS-ICP，1=NDT
+string description        # 人类可读的状态描述（调试用，不上 CAN）
+```
+
+`state` 枚举（`MissionState.state` ↔ 规则 AS 状态映射见上方"状态映射"表）：
+
+| 值 | 常量 | 规则状态 | 说明 |
+|----|------|---------|------|
+| 0 | `IDLE` | AS OFF | 系统初始化，等待激活 |
+| 1 | `READY` | AS READY | 传感器就绪，等待 Go 信号 |
+| 2 | `INSPECTION` | AS READY（车检） | 车检流程：慢速转驱动 + 正弦波转转向 |
+| 3 | `EXPLORE` | AS DRIVING | 第一圈建图（KISS-ICP + 锥桶地图） |
+| 4 | `MAPPING_DONE` | AS DRIVING | 建图完成，切换竞速模式 |
+| 5 | `RACE` | AS DRIVING | 高速循迹（NDT 匹配） |
+| 6 | `FINISH` | AS FINISHED | 任务完成 |
+| 7 | `EMERGENCY` | AS EMERGENCY | 急停 / 故障 |
+
+`mission_mode` 枚举：
+
+| 值 | 常量 | 对应赛道 |
+|----|------|---------|
+| 0 | `MISSION_TRACKDRIVE` | 高速循迹 |
+| 1 | `MISSION_SKIDPAD` | 八字环绕 |
+| 2 | `MISSION_ACCELERATION` | 直线加速 |
+
+`localization_mode` 枚举：
+
+| 值 | 常量 | 说明 |
+|----|------|------|
+| 0 | `LOC_KISS_ICP` | KISS-ICP 点云定位（建图阶段） |
+| 1 | `LOC_NDT` | NDT 地图匹配（竞速阶段） |
+
+#### `/system/inspection_result` — 车检结果
+
+- **类型**：`std_msgs/msg/String`
+- **发布方**：`mission_manager` 节点（车检流程完成后发送一次）
+- **方向**：ROS → VCU，编码为 CAN 报文上报车检通过/失败
+
+字段结构：
+
+```text
+string data    # 车检结果文本
+```
+
+`data` 取值约定（假设，目前待定）：
+
+| 取值 | 说明 |
+|------|------|
+| `pass`（或 `"passed"`） | 车检通过，可进入 AS Ready |
+| `fail`（或 `"failed"`） | 车检失败，禁止进入 AS Ready |
+
+> 建议约定固定字符串（如 `pass` / `fail`），并体现在 VCU 协议文档中；本节点按协议映射为 CAN 信号位。
 
 ### 发布 Topic（CAN 总线解析 → ROS）
-- `/system/mission_mode_cmd` (std_msgs/String) - 任务模式（trackdrive/skidpad/acceleration/inspection）
-- `/system/start_command` (std_msgs/Bool) - 出发命令（RES Go 信号）
-- `/system/emergency` (std_msgs/Bool) - 急停命令（安全回路 / RES 急停）
-- `/system/inspection_trigger` (std_msgs/Bool) - 车检触发
-- `/localization/velocity` (geometry_msgs/TwistStamped) - 速度反馈
+
+#### `/system/mission_mode_cmd` — 任务模式
+
+- **类型**：`std_msgs/msg/String`
+- **订阅方**：`mission_manager` 节点
+- **方向**：VCU（AMI 任务指示器）→ ROS，ASR 选择的赛事任务
+
+字段结构：
+
+```text
+string data    # 任务模式标识
+```
+
+`data` 取值约定（假设，目前待定）：
+
+| 取值 | 对应任务 |
+|------|---------|
+| `trackdrive` | 高速循迹 |
+| `skidpad` | 八字环绕 |
+| `acceleration` | 直线加速 |
+| `inspection` | 车检测试 |
+
+#### `/system/start_command` — 出发命令
+
+- **类型**：`std_msgs/msg/Bool`
+- **订阅方**：`mission_manager` 节点
+- **方向**：VCU（RES 遥控急停系统）→ ROS，Go 信号
+- **触发条件**：仅在 AS Ready 状态下有效（规则第五章 11.2.2）
+
+字段结构：
+
+```text
+bool data    # true = 收到 "Go" 出发信号；false = 无出发信号
+```
+
+#### `/system/emergency` — 急停命令
+
+- **类型**：`std_msgs/msg/Bool`
+- **订阅方**：`mission_manager` 节点
+- **方向**：VCU（安全回路断开 / RES 急停）→ ROS
+- **优先级**：最高，收到 `true` 必须立即发布，不得被其他信号延迟
+
+字段结构：
+
+```text
+bool data    # true = 急停触发（安全回路断开 / RES 急停）；false = 正常
+```
+
+#### `/system/inspection_trigger` — 车检触发
+
+- **类型**：`std_msgs/msg/Bool`
+- **订阅方**：`mission_manager` 节点
+- **方向**：VCU → ROS，进入车检流程的触发信号
+
+字段结构：
+
+```text
+bool data    # true = 触发进入车检流程；false = 未触发
+```
+
+#### `/localization/velocity` — 速度反馈
+
+- **类型**：`geometry_msgs/msg/TwistStamped`
+- **订阅方**：`localization_manager` / `controller` 节点
+- **方向**：VCU（整车车速反馈）→ ROS，发布到定位/控制链路
+
+字段结构：
+
+```text
+std_msgs/Header header          # 时间戳与 frame_id（通常为 "base_link"）
+geometry_msgs/Twist twist       # 线速度 + 角速度
+  geometry_msgs/Vector3 linear  # linear.x = 纵向车速（m/s）；y / z = 0
+  geometry_msgs/Vector3 angular # 角速度（rad/s），横摆角速度写入 angular.z
+```
+
+字段说明：
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `header.stamp` | `builtin_interfaces/Time` | CAN 报文接收时刻 |
+| `twist.linear.x` | `float64` | 整车纵向速度（m/s），由车速信号换算 |
+| `twist.angular.z` | `float64` | 横摆角速度（rad/s），如协议提供则填充，否则为 0 |
 
 ## 注意事项
 

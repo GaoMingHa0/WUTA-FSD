@@ -74,11 +74,10 @@ void LocalizationManager::onMissionState(const MissionState::SharedPtr msg)
 void LocalizationManager::onEkfOdom(const nav_msgs::msg::Odometry::SharedPtr msg)
 {
   if (active_mode_ != MissionState::LOC_KISS_ICP) return;
-  if (system_state_ == MissionState::FINISH ||
-      system_state_ == MissionState::EMERGENCY)
-  {
-    return;
-  }
+  if (system_state_ == MissionState::FINISH) return;
+  // 急停后车辆仍在制动滑行：继续转发位姿供 driven trajectory 绘制，
+  // 但定位不重新标记为可用（进入 EMERGENCY 时已置为不可用）。
+  const bool emergency = system_state_ == MissionState::EMERGENCY;
 
   const bool covariance_is_finite =
     std::isfinite(msg->pose.covariance[0]) &&
@@ -98,6 +97,8 @@ void LocalizationManager::onEkfOdom(const nav_msgs::msg::Odometry::SharedPtr msg
   pose.pose = msg->pose.pose;
   pose_pub_->publish(pose);
 
+  if (emergency) return;  // 急停期间保持定位不可用
+
   const double position_variance = std::max(
     0.0, msg->pose.covariance[0] + msg->pose.covariance[7]);
   const double yaw_variance = std::max(0.0, msg->pose.covariance[35]);
@@ -109,11 +110,9 @@ void LocalizationManager::onEkfOdom(const nav_msgs::msg::Odometry::SharedPtr msg
 void LocalizationManager::onNdtPose(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
 {
   if (active_mode_ != MissionState::LOC_NDT) return;
-  if (system_state_ == MissionState::FINISH ||
-      system_state_ == MissionState::EMERGENCY)
-  {
-    return;
-  }
+  if (system_state_ == MissionState::FINISH) return;
+  // 急停后仍转发位姿供 driven trajectory 绘制，定位保持不可用
+  const bool emergency = system_state_ == MissionState::EMERGENCY;
   if (!poseIsFinite(msg->pose)) {
     RCLCPP_ERROR_THROTTLE(
       get_logger(), *get_clock(), 2000,
@@ -123,6 +122,7 @@ void LocalizationManager::onNdtPose(const geometry_msgs::msg::PoseStamped::Share
   }
 
   pose_pub_->publish(*msg);
+  if (emergency) return;  // 急停期间保持定位不可用
   // PoseStamped carries no covariance. NDT convergence gating remains inside
   // ndt_localization; a published pose is treated as accepted here.
   publishLocalizationStatus(true, 1.0);

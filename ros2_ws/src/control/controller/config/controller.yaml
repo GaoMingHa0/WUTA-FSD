@@ -12,7 +12,9 @@ controller_node:
     max_progress_advance: 4 # waypoints per 50 Hz control update; keeps skidpad progress continuous
     # Fixed local preview for the 9.125 m skidpad circles.  This avoids the
     # generic 10 m preview shortcutting the curvature changes at the crossing.
-    skidpad_lookahead: 3.0  # m
+    # Closed-loop dynamic sim: smaller preview cuts less inside at circle
+    # entry/switch (2.5 m gives ~0.39 m cone clearance vs 0.24 m at 4.5 m).
+    skidpad_lookahead: 2.5  # m
     # Trackdrive uses upcoming path curvature rather than target velocity.
     # It keeps a long preview on straights and smoothly shortens it before
     # sharp turns; `trackdrive_lookahead` remains the upper bound.

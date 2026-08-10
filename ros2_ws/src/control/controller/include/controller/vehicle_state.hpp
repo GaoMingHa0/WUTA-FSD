@@ -17,6 +17,8 @@ struct VehicleState
   double y{0.0};
   double yaw{0.0};          // rad
   double velocity{0.0};     // m/s, current measured speed
+  double vx{0.0};           // m/s, body-frame longitudinal speed
+  double vy{0.0};           // m/s, body-frame lateral speed
 };
 
 }  // namespace controller
