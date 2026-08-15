@@ -26,10 +26,12 @@ private:
   void onVelocity(const geometry_msgs::msg::TwistStamped::SharedPtr msg);
   void onWaypoints(const autoware_msgs::msg::Lane::SharedPtr msg);
   void onMissionState(const wuta_msgs::msg::MissionState::SharedPtr msg);
+  void onEmergency(const std_msgs::msg::Bool::SharedPtr msg);
   void controlLoop();
   bool isSamePath(const std::vector<autoware_msgs::msg::Waypoint> & candidate) const;
   double trackdriveLookahead(const rclcpp::Time & loop_time);
   void publishMissionComplete();
+  void publishZeroCommand();
 
   void publishVisualization(double target_x, double target_y);
 
@@ -66,6 +68,7 @@ private:
   bool pose_ready_{false};
   bool waypoints_ready_{false};
   bool enabled_{false};  // Run while Trackdrive can still make forward progress
+  bool emergency_{false};  // 急停命令，置位时持续输出全零命令
   uint8_t mission_mode_{wuta_msgs::msg::MissionState::MISSION_TRACKDRIVE};
   bool mission_complete_{false};
   double finish_position_tolerance_{0.75};
@@ -79,6 +82,7 @@ private:
   rclcpp::Subscription<geometry_msgs::msg::TwistStamped>::SharedPtr vel_sub_;
   rclcpp::Subscription<autoware_msgs::msg::Lane>::SharedPtr waypoints_sub_;
   rclcpp::Subscription<wuta_msgs::msg::MissionState>::SharedPtr mission_sub_;
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr emergency_sub_;
 
   // Publishers
   rclcpp::Publisher<autoware_msgs::msg::Command>::SharedPtr cmd_pub_;

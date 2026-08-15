@@ -2,13 +2,17 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include <nav_msgs/msg/odometry.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <std_msgs/msg/u_int32.hpp>
 
-#include "wuta_msgs/msg/mission_state.hpp"
 #include "wuta_msgs/msg/cone_map.hpp"
+#include "wuta_msgs/msg/devices_inspection.hpp"
+#include "wuta_msgs/msg/mission_state.hpp"
 
 namespace mission_manager
 {
@@ -54,6 +58,16 @@ private:
   void runInspection();   // TODO: 实现传感器检查逻辑
   void sendInspectionCAN(); // TODO: 实现 VCU CAN 报文发送
 
+  // ---------------------------------------------------------------------------
+  // 开机传感器自检（心跳监控）
+  // 各设备话题按参数开关启用，超时/未上线 → EMERGENCY + 发布 devices_inspection
+  // ---------------------------------------------------------------------------
+  void onLidarData(const sensor_msgs::msg::PointCloud2::SharedPtr msg);
+  void onImuData(const nav_msgs::msg::Odometry::SharedPtr msg);
+  void onCameraData(const sensor_msgs::msg::Image::SharedPtr msg);  // 预留
+  void selfCheckTick();
+  void publishDevicesInspection(bool ok, const std::vector<std::string> & failures);
+
   // System readiness flags
   bool lidar_ready_{false};
   bool localization_ready_{false};
@@ -90,10 +104,23 @@ private:
   double lap_heading_tolerance_deg_{75.0};
   bool use_ndt_race_localization_{false};
 
+  // 开机传感器自检（心跳监控）参数与状态
+  bool check_lidar_{false};   // 预留，型号/话题未定
+  bool check_imu_{true};      // CGI-410
+  bool check_camera_{false};  // 预留
+  double sensor_timeout_sec_{2.0};
+  double selfcheck_interval_sec_{1.0};
+  double selfcheck_grace_sec_{4.0};   // 开机上线宽限期
+  rclcpp::Time lidar_last_seen_;
+  rclcpp::Time imu_last_seen_;
+  rclcpp::Time camera_last_seen_;
+  bool sensor_fault_{false};          // 故障锁，置位后保持 EMERGENCY
+  rclcpp::Time startup_time_;
+
   // Publishers
   rclcpp::Publisher<wuta_msgs::msg::MissionState>::SharedPtr state_pub_;
   rclcpp::Publisher<std_msgs::msg::UInt32>::SharedPtr lap_count_pub_;
-  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr inspection_result_pub_;  // 预留
+  rclcpp::Publisher<wuta_msgs::msg::DevicesInspection>::SharedPtr devices_inspection_pub_;
 
   // Subscribers
   rclcpp::Subscription<wuta_msgs::msg::ConeMap>::SharedPtr cone_map_sub_;
@@ -108,9 +135,14 @@ private:
   rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr localization_confidence_sub_;
   rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr inspection_trigger_sub_; // 预留
+  // 传感器数据订阅（心跳监控）
+  rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr lidar_data_sub_;
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr imu_data_sub_;
+  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr camera_data_sub_;
 
   // Timer for periodic state broadcast
   rclcpp::TimerBase::SharedPtr state_timer_;
+  rclcpp::TimerBase::SharedPtr selfcheck_timer_;
 };
 
 }  // namespace mission_manager

@@ -93,6 +93,10 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
     "/system/mission_state", 10,
     std::bind(&ControllerNode::onMissionState, this, std::placeholders::_1));
 
+  emergency_sub_ = create_subscription<std_msgs::msg::Bool>(
+    "/system/emergency", 10,
+    std::bind(&ControllerNode::onEmergency, this, std::placeholders::_1));
+
   // --- Publishers ---
   cmd_pub_ = create_publisher<autoware_msgs::msg::Command>("/control/command", 10);
   mission_complete_pub_ = create_publisher<std_msgs::msg::Bool>(
@@ -156,18 +160,25 @@ void ControllerNode::onMissionState(const MissionState::SharedPtr msg)
     last_valid_trackdrive_cmd_ready_ = false;
     trackdrive_start_speed_started_ = false;
     // Publish stop command
-    autoware_msgs::msg::Command stop;
-    stop.header.stamp = now();
-    stop.header.frame_id = "base_link";
-    stop.speed = 0.0;
-    stop.angle = 0.0;
-    stop.dv_state = 4;
-    cmd_pub_->publish(stop);
+    publishZeroCommand();
   }
+}
+
+void ControllerNode::onEmergency(const std_msgs::msg::Bool::SharedPtr msg)
+{
+  emergency_ = msg->data;
 }
 
 void ControllerNode::controlLoop()
 {
+  // 急停：停止一切控制输出，持续发布全零命令直至解除
+  if (emergency_) {
+    twist_filter_->reset();
+    last_valid_trackdrive_cmd_ready_ = false;
+    publishZeroCommand();
+    return;
+  }
+
   if (!enabled_ || !pose_ready_ || !waypoints_ready_) return;
 
   if (mission_complete_) return;
@@ -234,13 +245,7 @@ void ControllerNode::controlLoop()
     } else {
       last_valid_trackdrive_cmd_ready_ = false;
       twist_filter_->reset();
-      autoware_msgs::msg::Command stop;
-      stop.header.stamp = loop_time;
-      stop.header.frame_id = "base_link";
-      stop.speed = 0.0;
-      stop.angle = 0.0;
-      stop.dv_state = 4;
-      cmd_pub_->publish(stop);
+      publishZeroCommand();
       RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
         "No forward waypoint target available; publishing stop command.");
       return;
@@ -276,7 +281,6 @@ void ControllerNode::controlLoop()
   cmd.header.frame_id = "base_link";
   cmd.speed    = filtered.velocity;
   cmd.angle    = filtered.steering_angle;
-  cmd.dv_state = filtered.emergency ? 6 : 4;  // 4=normal, 6=emergency
   cmd_pub_->publish(cmd);
 
   // DEBUG: throttled to 2 Hz
@@ -399,13 +403,7 @@ void ControllerNode::publishMissionComplete()
   twist_filter_->reset();
   last_valid_trackdrive_cmd_ready_ = false;
 
-  autoware_msgs::msg::Command stop;
-  stop.header.stamp = now();
-  stop.header.frame_id = "base_link";
-  stop.speed = 0.0;
-  stop.angle = 0.0;
-  stop.dv_state = 4;
-  cmd_pub_->publish(stop);
+  publishZeroCommand();
 
   std_msgs::msg::Bool complete;
   complete.data = true;
@@ -453,6 +451,16 @@ void ControllerNode::publishVisualization(double target_x, double target_y)
   arr.markers.push_back(circle);
 
   target_viz_pub_->publish(arr);
+}
+
+void ControllerNode::publishZeroCommand()
+{
+  autoware_msgs::msg::Command cmd;
+  cmd.header.stamp = now();
+  cmd.header.frame_id = "base_link";
+  cmd.speed = 0.0;
+  cmd.angle = 0.0;
+  cmd_pub_->publish(cmd);
 }
 
 }  // namespace controller

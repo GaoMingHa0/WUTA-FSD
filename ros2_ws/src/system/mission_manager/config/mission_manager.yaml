@@ -19,3 +19,14 @@ mission_manager_node:
     # Keep the validated EKF localization through race laps by default.
     # Enable only when map_saver and NDT initialization are both integrated.
     use_ndt_race_localization: false
+
+    # 开机传感器自检（心跳监控；雷达/相机预留）
+    check_lidar: false
+    check_imu: true
+    check_camera: false
+    lidar_topic: /rslidar_points   # 型号未定，随时可改
+    imu_topic: /cg410/odometry
+    camera_topic: /zed2i/zed_node/left/image_rect_color
+    sensor_timeout_sec: 2.0
+    selfcheck_interval_sec: 1.0
+    selfcheck_grace_sec: 4.0

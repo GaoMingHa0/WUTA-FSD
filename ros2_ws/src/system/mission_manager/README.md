@@ -45,7 +45,7 @@ IDLE ──(传感器就绪)──→ READY ──(/system/inspection_trigger)�
 | 订阅 | `/planning/global_centerline_ready` | `std_msgs/Bool` | 冻结全局中心线已通过验收 |
 | 订阅 | `/system/localization_confidence` | `std_msgs/Float32` | 定位质量门槛 |
 | 订阅 | `/localization/pose` | `geometry_msgs/PoseStamped` | 定位新鲜度和正式过线计圈 |
-| 订阅 | `/system/emergency` | `std_msgs/Bool` | 急停信号 |
+| 订阅 | `/system/emergency` | `std_msgs/Bool` | 急停信号（仅切状态到 EMERGENCY；控制输出归零由 controller 负责） |
 | 订阅 | `/system/lidar_ready` | `std_msgs/Bool` | LiDAR 就绪 |
 | 订阅 | `/system/localization_ready` | `std_msgs/Bool` | 定位就绪 |
 | 订阅 | `/system/mission_mode_cmd` | `std_msgs/String` | 设置任务模式（trackdrive/skidpad/acceleration） |
@@ -53,7 +53,7 @@ IDLE ──(传感器就绪)──→ READY ──(/system/inspection_trigger)�
 | 订阅 | `/system/mission_complete` | `std_msgs/Bool` | 控制器完成停车后进入 FINISH |
 | 订阅 | `/ndt/map_ready` | `std_msgs/Bool` | 仅在 `use_ndt_race_localization=true` 时作为 RACE 门槛 |
 | 订阅 | `/system/inspection_trigger` | `std_msgs/Bool` | **[预留]** 触发车检流程 |
-| 发布 | `/system/inspection_result` | `std_msgs/String` | **[预留]** 车检结果输出 |
+| 发布 | `/system/devices_inspection` | `DevicesInspection` | 开机传感器自检结果（失败时发布，通知 can_interface） |
 
 ## 线程模型
 

@@ -3,3 +3,4 @@ can_interface:
     can_device: "can0"
     can_baud_rate: 500000
     can_loopback: false
+    poll_interval_sec: 0.02  # 接收轮询周期，默认 50Hz

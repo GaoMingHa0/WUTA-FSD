@@ -288,7 +288,7 @@ Gazebo 自带的 `DiffDrive` 或 `SkidSteer` 不适用于 Ackermann 转向。使
 </plugin>
 ```
 
-需要适配：FSD 的 `/control/command` 是自定义的 `autoware_msgs::Command`（speed/angle/dv_state），而 ackermann_drive 插件期望的是 `AckermannDrive` 消息。需要写一个薄转换节点：
+需要适配：FSD 的 `/control/command` 是自定义的 `autoware_msgs::Command`（speed/angle），而 ackermann_drive 插件期望的是 `AckermannDrive` 消息。需要写一个薄转换节点：
 
 ```python
 # 转换节点：/control/command (Command) → /gazebo/cmd (AckermannDrive)

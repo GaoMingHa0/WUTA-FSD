@@ -2,6 +2,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <string>
+#include <vector>
 
 namespace mission_manager
 {
@@ -40,13 +42,25 @@ MissionManager::MissionManager(const rclcpp::NodeOptions & options)
   use_ndt_race_localization_ = declare_parameter(
     "use_ndt_race_localization", use_ndt_race_localization_);
 
+  // 开机传感器自检（心跳监控）
+  check_lidar_ = declare_parameter("check_lidar", check_lidar_);
+  check_imu_ = declare_parameter("check_imu", check_imu_);
+  check_camera_ = declare_parameter("check_camera", check_camera_);
+  sensor_timeout_sec_ = declare_parameter(
+    "sensor_timeout_sec", sensor_timeout_sec_);
+  selfcheck_interval_sec_ = declare_parameter(
+    "selfcheck_interval_sec", selfcheck_interval_sec_);
+  selfcheck_grace_sec_ = declare_parameter(
+    "selfcheck_grace_sec", selfcheck_grace_sec_);
+  startup_time_ = now();
+
   // Publishers
   state_pub_ = create_publisher<State>("/system/mission_state", 10);
   const auto latched_qos = rclcpp::QoS(1).reliable().transient_local();
   lap_count_pub_ = create_publisher<std_msgs::msg::UInt32>(
     "/system/lap_count", latched_qos);
-  inspection_result_pub_ = create_publisher<std_msgs::msg::String>(
-    "/system/inspection_result", 10);  // 预留，车检结果输出
+  devices_inspection_pub_ = create_publisher<wuta_msgs::msg::DevicesInspection>(
+    "/system/devices_inspection", 10);
 
   // Subscribers — normal mission
   cone_map_sub_ = create_subscription<wuta_msgs::msg::ConeMap>(
@@ -110,10 +124,38 @@ MissionManager::MissionManager(const rclcpp::NodeOptions & options)
     "/system/inspection_trigger", 10,
     std::bind(&MissionManager::onInspectionTrigger, this, std::placeholders::_1));
 
+  // ---------------------------------------------------------------------------
+  // 开机传感器自检：订阅设备数据流，心跳超时即判故障
+  // ---------------------------------------------------------------------------
+  lidar_data_sub_ = create_subscription<sensor_msgs::msg::PointCloud2>(
+    declare_parameter("lidar_topic", "/rslidar_points"), 10,
+    [this](const sensor_msgs::msg::PointCloud2::SharedPtr msg) {
+      (void)msg;
+      lidar_last_seen_ = now();
+    });
+  imu_data_sub_ = create_subscription<nav_msgs::msg::Odometry>(
+    declare_parameter("imu_topic", "/cg410/odometry"), 10,
+    [this](const nav_msgs::msg::Odometry::SharedPtr msg) {
+      (void)msg;
+      imu_last_seen_ = now();
+    });
+  camera_data_sub_ = create_subscription<sensor_msgs::msg::Image>(
+    declare_parameter("camera_topic", "/zed2i/zed_node/left/image_rect_color"), 10,
+    [this](const sensor_msgs::msg::Image::SharedPtr msg) {
+      (void)msg;
+      camera_last_seen_ = now();
+    });
+
   // Periodic state broadcast at 10 Hz
   state_timer_ = create_wall_timer(
     std::chrono::milliseconds(100),
     std::bind(&MissionManager::publishState, this));
+
+  // 开机自检定时器
+  selfcheck_timer_ = create_wall_timer(
+    std::chrono::milliseconds(
+      static_cast<int64_t>(std::max(0.1, selfcheck_interval_sec_) * 1000.0)),
+    std::bind(&MissionManager::selfCheckTick, this));
 
   RCLCPP_INFO(get_logger(), "Mission Manager initialized. mode=%s state=IDLE",
     mode_str.c_str());
@@ -424,6 +466,7 @@ void MissionManager::publishLapCount()
 
 void MissionManager::onEmergency(const std_msgs::msg::Bool::SharedPtr msg)
 {
+  // 仅负责 mission_state 状态切换；刹车动作（控制输出归零）由 controller_node 负责
   if (msg->data) {
     RCLCPP_ERROR(get_logger(), "EMERGENCY triggered!");
     transitionTo(State::EMERGENCY);
@@ -481,14 +524,47 @@ void MissionManager::onInspectionTrigger(const std_msgs::msg::Bool::SharedPtr ms
   RCLCPP_INFO(get_logger(), "Inspection triggered.");
   transitionTo(State::INSPECTION);
 
-  // TODO: 检查各传感器 topic 是否在线（LiDAR、相机、CG-410）
-  // TODO: 检查 TF tree 是否完整
-
-  std_msgs::msg::String result;
-  result.data = "INSPECTION_NOT_IMPLEMENTED";
-  inspection_result_pub_->publish(result);
+  // TODO: 车检动作演示（慢速转驱动 + 正弦波转转向），后话实现
 
   transitionTo(State::READY);
+}
+
+void MissionManager::selfCheckTick()
+{
+  if (sensor_fault_) return;  // 已故障，保持 EMERGENCY
+  const double up = (now() - startup_time_).seconds();
+
+  // 宽限期内允许陆续上线；过期后：从未上线 或 中途断开 均判故障
+  const auto offline = [&](const rclcpp::Time & last, bool enabled) {
+    if (!enabled) return false;
+    if (last.nanoseconds() == 0) return up > selfcheck_grace_sec_;
+    return (now() - last).seconds() > sensor_timeout_sec_;
+  };
+  const bool lidar_off = offline(lidar_last_seen_, check_lidar_);
+  const bool imu_off   = offline(imu_last_seen_,   check_imu_);
+  const bool cam_off   = offline(camera_last_seen_, check_camera_);
+
+  if (lidar_off || imu_off || cam_off) {
+    sensor_fault_ = true;
+    RCLCPP_ERROR(get_logger(), "Sensor self-check FAILED. EMERGENCY.");
+    transitionTo(State::EMERGENCY);
+    std::vector<std::string> failures;
+    if (lidar_off) failures.push_back("lidar");
+    if (imu_off)   failures.push_back("imu");
+    if (cam_off)   failures.push_back("camera");
+    publishDevicesInspection(false, failures);  // 通知 can_interface
+  }
+  // 通过：不干预现有流程，IDLE→READY 仍由 advanceWhenReady() 决定
+}
+
+void MissionManager::publishDevicesInspection(
+  bool ok, const std::vector<std::string> & failures)
+{
+  wuta_msgs::msg::DevicesInspection msg;
+  msg.ok = ok;
+  msg.failures = failures;
+  devices_inspection_pub_->publish(msg);
+  RCLCPP_INFO(get_logger(), "Devices inspection published: ok=%d", ok);
 }
 
 }  // namespace mission_manager

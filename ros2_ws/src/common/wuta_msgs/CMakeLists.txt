@@ -10,6 +10,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Cone.msg"
   "msg/ConeArray.msg"
   "msg/ConeMap.msg"
+  "msg/DevicesInspection.msg"
   "msg/MissionState.msg"
   DEPENDENCIES std_msgs geometry_msgs
 )
