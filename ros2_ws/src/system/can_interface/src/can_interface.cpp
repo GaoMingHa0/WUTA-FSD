@@ -42,10 +42,9 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
     "/system/start_command", 10);
   emergency_pub_ = create_publisher<std_msgs::msg::Bool>(
     "/system/emergency", 10);
-  inspection_trigger_pub_ = create_publisher<std_msgs::msg::Bool>(
-    "/system/inspection_trigger", 10);
-  velocity_pub_ = create_publisher<geometry_msgs::msg::TwistStamped>(
-    "/localization/velocity", 50);
+  // 确认不从 VCU 读取车速，/localization/velocity 由惯导/EKF 提供（暂不发布）
+  // velocity_pub_ = create_publisher<geometry_msgs::msg::TwistStamped>(
+  //   "/localization/velocity", 50);
 
   RCLCPP_INFO(get_logger(), "CAN Interface initialized (tx/rx separated).");
   RCLCPP_INFO(get_logger(), "Note: CAN frame byte layout not defined yet, encode/parse TODO.");

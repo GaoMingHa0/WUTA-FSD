@@ -28,6 +28,8 @@ private:
   void onMissionState(const wuta_msgs::msg::MissionState::SharedPtr msg);
   void onEmergency(const std_msgs::msg::Bool::SharedPtr msg);
   void controlLoop();
+  void runInspection();
+  void finishInspection();
   bool isSamePath(const std::vector<autoware_msgs::msg::Waypoint> & candidate) const;
   double trackdriveLookahead(const rclcpp::Time & loop_time);
   void publishMissionComplete();
@@ -70,12 +72,21 @@ private:
   bool enabled_{false};  // Run while Trackdrive can still make forward progress
   bool emergency_{false};  // 急停命令，置位时持续输出全零命令
   uint8_t mission_mode_{wuta_msgs::msg::MissionState::MISSION_TRACKDRIVE};
+  uint8_t state_{wuta_msgs::msg::MissionState::IDLE};  // 最近一次任务状态
   bool mission_complete_{false};
   double finish_position_tolerance_{0.75};
   double finish_speed_threshold_{0.2};
   ControlCommand last_valid_trackdrive_cmd_;
   rclcpp::Time last_valid_trackdrive_cmd_time_;
   bool last_valid_trackdrive_cmd_ready_{false};
+
+  // 车检模式（INSPECTION）参数与状态
+  double inspection_speed_{1.0};      // 慢速驱动速度 m/s
+  double inspection_steer_amp_{15.0}; // 正弦波转向幅值 deg
+  double inspection_steer_freq_{0.4}; // 正弦波频率 Hz
+  double inspection_duration_{10.0};  // 演示时长 s
+  rclcpp::Time inspection_start_time_;
+  bool inspection_done_published_{false};
 
   // Subscribers
   rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_sub_;

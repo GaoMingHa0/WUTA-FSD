@@ -50,15 +50,6 @@ private:
   void publishLapCount();
 
   // ---------------------------------------------------------------------------
-  // INSPECTION interface (预留，暂不接其他模块)
-  // 触发：向 /system/inspection_trigger 发布 true
-  // 功能：传感器自检 + 向 VCU 发送 CAN 测试报文
-  // ---------------------------------------------------------------------------
-  void onInspectionTrigger(const std_msgs::msg::Bool::SharedPtr msg);
-  void runInspection();   // TODO: 实现传感器检查逻辑
-  void sendInspectionCAN(); // TODO: 实现 VCU CAN 报文发送
-
-  // ---------------------------------------------------------------------------
   // 开机传感器自检（心跳监控）
   // 各设备话题按参数开关启用，超时/未上线 → EMERGENCY + 发布 devices_inspection
   // ---------------------------------------------------------------------------
@@ -134,7 +125,6 @@ private:
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr global_centerline_ready_sub_;
   rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr localization_confidence_sub_;
   rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_sub_;
-  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr inspection_trigger_sub_; // 预留
   // 传感器数据订阅（心跳监控）
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr lidar_data_sub_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr imu_data_sub_;

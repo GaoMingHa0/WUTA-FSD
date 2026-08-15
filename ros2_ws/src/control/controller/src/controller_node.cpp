@@ -72,6 +72,12 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
     "finish_speed_threshold", finish_speed_threshold_);
   pp_cfg.terminal_progress_distance = finish_position_tolerance_;
 
+  // --- 车检模式（INSPECTION）参数 ---
+  inspection_speed_ = declare_parameter("inspection_speed", inspection_speed_);
+  inspection_steer_amp_ = declare_parameter("inspection_steer_amp", inspection_steer_amp_);
+  inspection_steer_freq_ = declare_parameter("inspection_steer_freq", inspection_steer_freq_);
+  inspection_duration_ = declare_parameter("inspection_duration", inspection_duration_);
+
   pure_pursuit_ = std::make_unique<PurePursuit>(vp, pp_cfg);
   twist_filter_ = std::make_unique<TwistFilter>(
     vp, rate_hz, max_steering_rate_deg_s);
@@ -149,6 +155,8 @@ void ControllerNode::onWaypoints(const autoware_msgs::msg::Lane::SharedPtr msg)
 
 void ControllerNode::onMissionState(const MissionState::SharedPtr msg)
 {
+  const uint8_t prev_state = state_;
+  state_ = msg->state;
   mission_mode_ = msg->mission_mode;
   enabled_ = (
     msg->state == MissionState::EXPLORE ||
@@ -161,6 +169,21 @@ void ControllerNode::onMissionState(const MissionState::SharedPtr msg)
     trackdrive_start_speed_started_ = false;
     // Publish stop command
     publishZeroCommand();
+  }
+
+  // 车检模式：进入 INSPECTION 启动演示，离开时复位
+  if (state_ == MissionState::INSPECTION &&
+      prev_state != MissionState::INSPECTION) {
+    inspection_start_time_ = now();
+    inspection_done_published_ = false;
+    RCLCPP_INFO(
+      get_logger(),
+      "Inspection started: speed=%.2f m/s steer=%.1f deg @%.2f Hz for %.1f s",
+      inspection_speed_, inspection_steer_amp_,
+      inspection_steer_freq_, inspection_duration_);
+  } else if (state_ != MissionState::INSPECTION &&
+             prev_state == MissionState::INSPECTION) {
+    inspection_done_published_ = false;
   }
 }
 
@@ -176,6 +199,12 @@ void ControllerNode::controlLoop()
     twist_filter_->reset();
     last_valid_trackdrive_cmd_ready_ = false;
     publishZeroCommand();
+    return;
+  }
+
+  // 车检模式：慢速转驱动 + 正弦波转转向
+  if (state_ == MissionState::INSPECTION) {
+    runInspection();
     return;
   }
 
@@ -216,7 +245,8 @@ void ControllerNode::controlLoop()
 
   const bool stopping_mission =
     mission_mode_ == MissionState::MISSION_SKIDPAD ||
-    mission_mode_ == MissionState::MISSION_ACCELERATION;
+    mission_mode_ == MissionState::MISSION_ACCELERATION ||
+    mission_mode_ == MissionState::MISSION_EBS_TEST;  // EBS 复用同一终点完成判定
   if (stopping_mission &&
       pure_pursuit_->progressIndex() == static_cast<int>(waypoints_.size()) - 1 &&
       std::hypot(
@@ -394,6 +424,41 @@ bool ControllerNode::isSamePath(
     }
   }
   return true;
+}
+
+void ControllerNode::runInspection()
+{
+  if (inspection_done_published_) return;
+  const double t = (now() - inspection_start_time_).seconds();
+
+  // 演示时长到达：停零并回报完成（mission_manager 切 FINISH）
+  if (t >= inspection_duration_) {
+    finishInspection();
+    return;
+  }
+
+  // 慢速转驱动 + 正弦波转转向，经安全滤波后输出
+  const double steer_deg = inspection_steer_amp_ *
+    std::sin(2.0 * M_PI * inspection_steer_freq_ * t);
+  const auto filtered = twist_filter_->filter(steer_deg, inspection_speed_);
+
+  autoware_msgs::msg::Command cmd;
+  cmd.header.stamp = now();
+  cmd.header.frame_id = "base_link";
+  cmd.speed = filtered.velocity;
+  cmd.angle = filtered.steering_angle;
+  cmd_pub_->publish(cmd);
+}
+
+void ControllerNode::finishInspection()
+{
+  inspection_done_published_ = true;
+  publishZeroCommand();
+
+  std_msgs::msg::Bool complete;
+  complete.data = true;
+  mission_complete_pub_->publish(complete);
+  RCLCPP_INFO(get_logger(), "Inspection complete.");
 }
 
 void ControllerNode::publishMissionComplete()

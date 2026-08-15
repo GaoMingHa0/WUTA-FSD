@@ -41,6 +41,12 @@ controller_node:
     # while retaining enough response for the skidpad entry.
     max_steering_rate_deg_s: 180.0
 
+    # 车检模式（INSPECTION）：慢速转驱动 + 正弦波转转向
+    inspection_speed: 1.0      # m/s 慢速驱动速度
+    inspection_steer_amp: 15.0 # deg 正弦波转向幅值
+    inspection_steer_freq: 0.4 # Hz 正弦波频率
+    inspection_duration: 10.0  # s 演示时长，完成后发布 mission_complete
+
     # Skidpad completion: the vehicle must stop at the 25 m exit endpoint.
     finish_position_tolerance: 0.75  # m
     finish_speed_threshold: 0.2      # m/s

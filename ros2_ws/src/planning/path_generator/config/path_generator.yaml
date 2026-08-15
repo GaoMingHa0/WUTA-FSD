@@ -62,3 +62,13 @@ path_generator_node:
     acceleration_length: 75.0        # m, timed distance
     acceleration_stopping_distance: 100.0 # m, post-finish exit lane
     acceleration_velocity: 15.0      # m/s
+
+    # EBS TEST — 满足赛规 7.5：起点后 0.3m，25m 测速点 ≥40km/h(11.11)，
+    # RES 急停后 ≤10m 内停车。结构复用 acceleration（generateStraightRun）。
+    ebs_start_x: 0.3            # m，起点线后 0.3m
+    ebs_start_y: 0.0            # m
+    ebs_start_yaw: 0.0          # rad
+    ebs_timing_start_x: 25.0    # m，25m 测速/急停标记
+    ebs_length: 0.0             # m，无计时段，到测速点直接进入制动
+    ebs_stopping_distance: 10.0 # m，制动段 ≤10m
+    ebs_velocity: 12.0          # m/s，≥40km/h(11.11)，留余量

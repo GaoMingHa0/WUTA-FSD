@@ -237,23 +237,12 @@ bool data    # true = 急停触发（安全回路断开 / RES 急停）；false 
 
 
 
-#### **`/system/inspection_trigger`**** — 车检触发**
+#### **`/system/inspection_trigger` — 车检触发（已合并至 mission_mode_cmd）**
 
-
-
-\- **类型**：\`std\_msgs/msg/Bool\`
-
-\- **订阅方**：\`mission\_manager\` 节点
-
-\- **方向**：VCU → ROS，进入车检流程的触发信号
-
-
-
-字段结构：
-
-```Plain Text
-bool data    # true = 触发进入车检流程；false = 未触发
-```
+> 车检不再使用独立触发信号，改为通过任务模式选择进入：VCU 发
+> `mission_mode_cmd = "inspection"`，`mission_manager` 在 IDLE/READY 下直接切
+> `INSPECTION` 状态，由 controller 执行车检动作演示（慢速转驱动 + 正弦波转转向），
+> 完成后发布 `mission_complete` → `FINISH`。旧 `/system/inspection_trigger` 话题已废弃。
 
 
 

@@ -48,8 +48,6 @@ private:
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr mission_mode_cmd_pub_;
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr start_command_pub_;
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr emergency_pub_;
-  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr inspection_trigger_pub_;
-  rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr velocity_pub_;
   rclcpp::TimerBase::SharedPtr receive_timer_;
 };
 

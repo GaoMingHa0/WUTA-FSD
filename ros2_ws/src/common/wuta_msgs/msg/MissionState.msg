@@ -13,6 +13,8 @@ uint8 EMERGENCY    = 7   # E-stop / fault
 uint8 MISSION_TRACKDRIVE    = 0
 uint8 MISSION_SKIDPAD       = 1
 uint8 MISSION_ACCELERATION  = 2
+uint8 MISSION_INSPECTION    = 3   # 车检测试（台架：慢速转驱动 + 正弦波转转向）
+uint8 MISSION_EBS_TEST      = 4   # EBS 测试（直线加速至 25m ≥40km/h，RES 急停 ≤10m）
 
 # Localization mode constants
 uint8 LOC_KISS_ICP = 0

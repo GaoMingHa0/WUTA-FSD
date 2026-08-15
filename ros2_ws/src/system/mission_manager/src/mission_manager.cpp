@@ -117,14 +117,6 @@ MissionManager::MissionManager(const rclcpp::NodeOptions & options)
     });
 
   // ---------------------------------------------------------------------------
-  // INSPECTION interface — 预留，暂不接其他模块
-  // 发布 true 到此 topic 触发车检流程
-  // ---------------------------------------------------------------------------
-  inspection_trigger_sub_ = create_subscription<std_msgs::msg::Bool>(
-    "/system/inspection_trigger", 10,
-    std::bind(&MissionManager::onInspectionTrigger, this, std::placeholders::_1));
-
-  // ---------------------------------------------------------------------------
   // 开机传感器自检：订阅设备数据流，心跳超时即判故障
   // ---------------------------------------------------------------------------
   lidar_data_sub_ = create_subscription<sensor_msgs::msg::PointCloud2>(
@@ -482,12 +474,21 @@ void MissionManager::onMissionModeCmd(const std_msgs::msg::String::SharedPtr msg
   if (msg->data == "trackdrive")    mission_mode_ = State::MISSION_TRACKDRIVE;
   else if (msg->data == "skidpad")  mission_mode_ = State::MISSION_SKIDPAD;
   else if (msg->data == "acceleration") mission_mode_ = State::MISSION_ACCELERATION;
+  else if (msg->data == "inspection")   mission_mode_ = State::MISSION_INSPECTION;
+  else if (msg->data == "ebs_test")     mission_mode_ = State::MISSION_EBS_TEST;
   else {
     RCLCPP_WARN(get_logger(), "Unknown mission mode: %s", msg->data.c_str());
     return;
   }
   RCLCPP_INFO(get_logger(), "Mission mode set to: %s", msg->data.c_str());
   publishState();
+
+  // 车检：选择 inspection 任务即进入车检演示（台架测试）
+  if (mission_mode_ == State::MISSION_INSPECTION &&
+      (current_state_ == State::IDLE || current_state_ == State::READY)) {
+    RCLCPP_INFO(get_logger(), "Inspection triggered by mission mode.");
+    transitionTo(State::INSPECTION);
+  }
 }
 
 void MissionManager::onStartCommand(const std_msgs::msg::Bool::SharedPtr msg)
@@ -500,6 +501,12 @@ void MissionManager::onStartCommand(const std_msgs::msg::Bool::SharedPtr msg)
 void MissionManager::onMissionComplete(const std_msgs::msg::Bool::SharedPtr msg)
 {
   if (!msg->data) return;
+  // 车检动作演示完成 → FINISH（与正常项目一致，由 controller 回报）
+  if (current_state_ == State::INSPECTION) {
+    RCLCPP_INFO(get_logger(), "Inspection complete, FINISH.");
+    transitionTo(State::FINISH);
+    return;
+  }
   if (mission_mode_ == State::MISSION_TRACKDRIVE) {
     RCLCPP_WARN_THROTTLE(
       get_logger(), *get_clock(), 2000,
@@ -510,23 +517,6 @@ void MissionManager::onMissionComplete(const std_msgs::msg::Bool::SharedPtr msg)
       current_state_ == State::RACE) {
     transitionTo(State::FINISH);
   }
-}
-
-void MissionManager::onInspectionTrigger(const std_msgs::msg::Bool::SharedPtr msg)
-{
-  if (!msg->data) return;
-
-  if (current_state_ != State::IDLE && current_state_ != State::READY) {
-    RCLCPP_WARN(get_logger(), "Inspection only available in IDLE/READY state.");
-    return;
-  }
-
-  RCLCPP_INFO(get_logger(), "Inspection triggered.");
-  transitionTo(State::INSPECTION);
-
-  // TODO: 车检动作演示（慢速转驱动 + 正弦波转转向），后话实现
-
-  transitionTo(State::READY);
 }
 
 void MissionManager::selfCheckTick()

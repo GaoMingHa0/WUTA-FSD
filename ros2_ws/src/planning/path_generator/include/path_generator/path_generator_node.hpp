@@ -46,7 +46,12 @@ private:
 
   // Mode-specific path generators
   autoware_msgs::msg::Lane generateSkidpadPath() const;
+  autoware_msgs::msg::Lane generateStraightRun(
+    double start_x, double start_y, double start_yaw,
+    double timing_start_x, double length, double stopping_distance,
+    double velocity) const;
   autoware_msgs::msg::Lane generateAccelerationPath() const;
+  autoware_msgs::msg::Lane generateEbsTestPath() const;
   autoware_msgs::msg::Lane resampleTrackdriveLane(const autoware_msgs::msg::Lane & lane) const;
   autoware_msgs::msg::Lane extractGlobalTrackdriveHorizon();
   void applyTrackdriveSpeedProfile(autoware_msgs::msg::Lane & lane) const;
@@ -85,6 +90,8 @@ private:
   bool skidpad_path_ready_{false};
   autoware_msgs::msg::Lane acceleration_path_;
   bool acceleration_path_ready_{false};
+  autoware_msgs::msg::Lane ebs_path_;
+  bool ebs_path_ready_{false};
   autoware_msgs::msg::Lane last_trackdrive_lane_;
   bool last_trackdrive_lane_ready_{false};
   autoware_msgs::msg::Lane global_trackdrive_lane_;
@@ -163,6 +170,16 @@ private:
   double acceleration_length_{75.0};        // timed distance, m
   double acceleration_stopping_distance_{100.0};  // after finish, m
   double acceleration_velocity_{15.0};      // m/s
+
+  // EBS test reference — 满足赛规 7.5：起点后 0.3m，25m 测速点 ≥40km/h(11.11)，
+  // RES 急停后 ≤10m 内停车。结构复用 generateStraightRun（同 acceleration）。
+  double ebs_start_x_{0.3};         // m, start-position line
+  double ebs_start_y_{0.0};         // m
+  double ebs_start_yaw_{0.0};       // rad
+  double ebs_timing_start_x_{25.0}; // m, 25m 测速/急停标记
+  double ebs_length_{0.0};          // m, 无计时段
+  double ebs_stopping_distance_{10.0}; // m, 制动段 ≤10m
+  double ebs_velocity_{12.0};       // m/s, ≥40km/h(11.11)，留余量
 
   // Subscribers
   rclcpp::Subscription<wuta_msgs::msg::MissionState>::SharedPtr mission_sub_;
