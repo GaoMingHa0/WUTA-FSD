@@ -126,7 +126,7 @@ MissionManager::MissionManager(const rclcpp::NodeOptions & options)
       lidar_last_seen_ = now();
     });
   imu_data_sub_ = create_subscription<nav_msgs::msg::Odometry>(
-    declare_parameter("imu_topic", "/cg410/odometry"), 10,
+    declare_parameter("imu_topic", "/chcnav/odometry"), 10,
     [this](const nav_msgs::msg::Odometry::SharedPtr msg) {
       (void)msg;
       imu_last_seen_ = now();

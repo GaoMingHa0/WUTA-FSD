@@ -24,6 +24,7 @@
 传感器层
   禾赛128线 ──→ lidar_detection  ──→ ConeArray
   相机(预留) ──→ camera_detection ──→ ConeArray  ──→ detection_fusion
+  华测CG-410 ──→ /chcnav/odometry, /chcnav/velocity ──→ 定位 / 控制
 
 定位层（双模式）
   EXPLORE: KISS-ICP + EKF(CG-410) ──┐
@@ -62,7 +63,7 @@ WUTA-FSD/
 │       ├── localization/
 │       │   ├── kiss-icp/            # [submodule] KISS-ICP
 │       │   ├── robot_localization/  # [submodule] EKF/UKF融合
-│       │   ├── kiss_icp_wrapper/    # 禾赛128线参数配置
+│       │   ├── kiss_icp_wrapper/    # 禾赛128线参数 + KISS里程计净化器（INS交叉校验）
 │       │   ├── localization_manager/# 双模式切换，统一输出/localization/pose
 │       │   └── ndt_localization/    # NDT地图匹配 + 地图保存
 │       ├── mapping/
@@ -122,6 +123,10 @@ ros2 run path_generator path_generator_node
 ros2 run controller controller_node \
   --ros-args --params-file src/control/controller/config/controller.yaml
 ```
+
+> INS 绝对位姿与车速由华测驱动（外部包 `humble-chcnav-cgi_ros2pkg`）发布到
+> `/chcnav/odometry`（EKF/sanitizer/mission_manager）与 `/chcnav/velocity`（controller）；
+> 仿真时由 `WUTA-SIM/wuta-ins-simulator` 发布同名话题。
 
 ### 仿真闭环说明
 

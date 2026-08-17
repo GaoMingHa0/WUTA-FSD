@@ -79,7 +79,6 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
   inspection_duration_ = declare_parameter("inspection_duration", inspection_duration_);
 
   // --- 速度 PID（纵向开度）---
-  speed_feedback_topic_ = declare_parameter("speed_feedback_topic", speed_feedback_topic_);
   pid_speed_kp_ = declare_parameter("pid_speed_kp", pid_speed_kp_);
   pid_speed_ki_ = declare_parameter("pid_speed_ki", pid_speed_ki_);
   pid_speed_kd_ = declare_parameter("pid_speed_kd", pid_speed_kd_);
@@ -93,14 +92,10 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
     "/localization/pose", 10,
     std::bind(&ControllerNode::onPose, this, std::placeholders::_1));
 
+  // 车速（华测 INS）：同时供 Pure Pursuit 前视与纵向 PID 反馈
   vel_sub_ = create_subscription<geometry_msgs::msg::TwistStamped>(
-    "/localization/velocity", 10,
+    "/chcnav/velocity", 10,
     std::bind(&ControllerNode::onVelocity, this, std::placeholders::_1));
-
-  // 速度反馈（话题预留：/odometry/filtered，实车/仿真接入后 PID 生效）
-  odom_sub_ = create_subscription<nav_msgs::msg::Odometry>(
-    speed_feedback_topic_, 10,
-    std::bind(&ControllerNode::onOdom, this, std::placeholders::_1));
 
   waypoints_sub_ = create_subscription<autoware_msgs::msg::Lane>(
     "/planning/final_waypoints", 10,
@@ -151,16 +146,7 @@ void ControllerNode::onVelocity(const geometry_msgs::msg::TwistStamped::SharedPt
   vehicle_state_.vx = vx;
   vehicle_state_.vy = vy;
   vehicle_state_.velocity = std::sqrt(vx * vx + vy * vy);
-}
-
-void ControllerNode::onOdom(const nav_msgs::msg::Odometry::SharedPtr msg)
-{
-  // 速度反馈（话题预留，实车/仿真接入后 PID 生效）
-  vehicle_state_.vx = msg->twist.twist.linear.x;
-  vehicle_state_.vy = msg->twist.twist.linear.y;
-  vehicle_state_.velocity = std::hypot(
-    msg->twist.twist.linear.x, msg->twist.twist.linear.y);
-  speed_feedback_available_ = true;
+  speed_feedback_available_ = true;  // 华测速度到达，PID 反馈就绪
 }
 
 double ControllerNode::computeSpeedPid(double target_speed)

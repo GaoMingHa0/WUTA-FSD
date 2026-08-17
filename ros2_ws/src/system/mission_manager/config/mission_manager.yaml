@@ -25,7 +25,7 @@ mission_manager_node:
     check_imu: true
     check_camera: false
     lidar_topic: /rslidar_points   # 型号未定，随时可改
-    imu_topic: /cg410/odometry
+    imu_topic: /chcnav/odometry
     camera_topic: /zed2i/zed_node/left/image_rect_color
     sensor_timeout_sec: 2.0
     selfcheck_interval_sec: 1.0

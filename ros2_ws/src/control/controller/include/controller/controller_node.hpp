@@ -25,7 +25,6 @@ public:
 private:
   void onPose(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
   void onVelocity(const geometry_msgs::msg::TwistStamped::SharedPtr msg);
-  void onOdom(const nav_msgs::msg::Odometry::SharedPtr msg);  // 速度反馈（话题预留）
   void onWaypoints(const autoware_msgs::msg::Lane::SharedPtr msg);
   void onMissionState(const wuta_msgs::msg::MissionState::SharedPtr msg);
   void onEmergency(const std_msgs::msg::Bool::SharedPtr msg);
@@ -95,7 +94,6 @@ private:
   bool inspection_done_published_{false};
 
   // 速度 PID（纵向开度 → /control/command.throttle_brake）
-  std::string speed_feedback_topic_{"/odometry/filtered"};  // 预留，实车接入
   bool speed_feedback_available_{false};
   double pid_speed_kp_{1.0};
   double pid_speed_ki_{0.05};
@@ -107,7 +105,6 @@ private:
   // Subscribers
   rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_sub_;
   rclcpp::Subscription<geometry_msgs::msg::TwistStamped>::SharedPtr vel_sub_;
-  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
   rclcpp::Subscription<autoware_msgs::msg::Lane>::SharedPtr waypoints_sub_;
   rclcpp::Subscription<wuta_msgs::msg::MissionState>::SharedPtr mission_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr emergency_sub_;

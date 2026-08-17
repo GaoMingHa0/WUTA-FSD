@@ -33,8 +33,8 @@ ekf_node:
     # --- Input 1: CG-410 INS fused pose (nav_msgs/Odometry) ---
     # Provides: absolute position (from GNSS RTK) + orientation (from IMU fusion)
     # Lower frequency, absolute reference, corrects KISS-ICP drift
-    # Note: CG-410 driver should publish to /cg410/odometry
-    odom1: /cg410/odometry
+    # CHC driver publishes to /chcnav/odometry (converted from /chcnav/devpvt)
+    odom1: /chcnav/odometry
     odom1_config:
       #    x      y      z
       - [true,  true,  true,

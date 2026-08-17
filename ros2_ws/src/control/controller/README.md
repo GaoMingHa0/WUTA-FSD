@@ -62,7 +62,7 @@ Skidpad 目标速度为 5 m/s 时，过大的通用前视会接近 9.125 m 圆�
 
 ```
 /localization/pose  ──→ 更新 (x, y, yaw)
-/localization/velocity ──→ 更新 velocity
+/chcnav/velocity ──→ 更新 velocity（华测 INS 车速）
 /planning/final_waypoints ──→ 更新路径
 /system/mission_state ──→ enabled 标志（EXPLORE/RACE 时才运行）
 
@@ -79,7 +79,7 @@ Skidpad 目标速度为 5 m/s 时，过大的通用前视会接近 9.125 m 圆�
 | 方向 | Topic | 类型 | 说明 |
 |------|-------|------|------|
 | 订阅 | `/localization/pose` | `PoseStamped` | 当前位姿 |
-| 订阅 | `/localization/velocity` | `TwistStamped` | 当前速度 |
+| 订阅 | `/chcnav/velocity` | `TwistStamped` | 当前速度（华测 INS，前视 + PID 反馈） |
 | 订阅 | `/planning/final_waypoints` | `autoware_msgs/Lane` | 参考路径 |
 | 订阅 | `/system/mission_state` | `MissionState` | 使能控制 |
 | 发布 | `/control/command` | `autoware_msgs/Command` | 转向角 + 速度；发布前写入 `header.stamp`，供仿真统计 LiDAR→控制命令延迟 |

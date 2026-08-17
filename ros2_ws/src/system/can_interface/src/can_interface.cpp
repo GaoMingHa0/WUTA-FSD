@@ -69,7 +69,7 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
     "/system/emergency", 10);
   // 预留
   // velocity_pub_ = create_publisher<geometry_msgs::msg::TwistStamped>(
-  //   "/localization/velocity", 50);
+  //   "/chcnav/velocity", 50);
 
   RCLCPP_INFO(get_logger(), "CAN Interface initialized (tx/rx separated).");
   RCLCPP_INFO(get_logger(), "Tx frame 0x210 active; Rx 0x501 parse TODO.");
