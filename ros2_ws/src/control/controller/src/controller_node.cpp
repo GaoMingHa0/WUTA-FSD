@@ -78,6 +78,12 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
   inspection_steer_freq_ = declare_parameter("inspection_steer_freq", inspection_steer_freq_);
   inspection_duration_ = declare_parameter("inspection_duration", inspection_duration_);
 
+  // --- 速度 PID（纵向开度）---
+  speed_feedback_topic_ = declare_parameter("speed_feedback_topic", speed_feedback_topic_);
+  pid_speed_kp_ = declare_parameter("pid_speed_kp", pid_speed_kp_);
+  pid_speed_ki_ = declare_parameter("pid_speed_ki", pid_speed_ki_);
+  pid_speed_kd_ = declare_parameter("pid_speed_kd", pid_speed_kd_);
+
   pure_pursuit_ = std::make_unique<PurePursuit>(vp, pp_cfg);
   twist_filter_ = std::make_unique<TwistFilter>(
     vp, rate_hz, max_steering_rate_deg_s);
@@ -90,6 +96,11 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
   vel_sub_ = create_subscription<geometry_msgs::msg::TwistStamped>(
     "/localization/velocity", 10,
     std::bind(&ControllerNode::onVelocity, this, std::placeholders::_1));
+
+  // 速度反馈（话题预留：/odometry/filtered，实车/仿真接入后 PID 生效）
+  odom_sub_ = create_subscription<nav_msgs::msg::Odometry>(
+    speed_feedback_topic_, 10,
+    std::bind(&ControllerNode::onOdom, this, std::placeholders::_1));
 
   waypoints_sub_ = create_subscription<autoware_msgs::msg::Lane>(
     "/planning/final_waypoints", 10,
@@ -140,6 +151,51 @@ void ControllerNode::onVelocity(const geometry_msgs::msg::TwistStamped::SharedPt
   vehicle_state_.vx = vx;
   vehicle_state_.vy = vy;
   vehicle_state_.velocity = std::sqrt(vx * vx + vy * vy);
+}
+
+void ControllerNode::onOdom(const nav_msgs::msg::Odometry::SharedPtr msg)
+{
+  // 速度反馈（话题预留，实车/仿真接入后 PID 生效）
+  vehicle_state_.vx = msg->twist.twist.linear.x;
+  vehicle_state_.vy = msg->twist.twist.linear.y;
+  vehicle_state_.velocity = std::hypot(
+    msg->twist.twist.linear.x, msg->twist.twist.linear.y);
+  speed_feedback_available_ = true;
+}
+
+double ControllerNode::computeSpeedPid(double target_speed)
+{
+  const rclcpp::Time t = now();
+  if (pid_last_time_.nanoseconds() == 0) {
+    pid_last_time_ = t;
+    pid_prev_err_ = 0.0;
+    return 0.0;  // 首拍只初始化，不输出
+  }
+  const double dt = std::max(0.001, (t - pid_last_time_).seconds());
+  const double err = target_speed - vehicle_state_.velocity;
+
+  // 防积分饱和：积分项与输出同量纲，钳位到 [-1,1]
+  pid_integral_ = std::clamp(
+    pid_integral_ + pid_speed_ki_ * err * dt, -1.0, 1.0);
+  const double deriv = (err - pid_prev_err_) / dt;
+  const double x = std::clamp(
+    pid_speed_kp_ * err + pid_integral_ + pid_speed_kd_ * deriv, -1.0, 1.0);
+
+  pid_prev_err_ = err;
+  pid_last_time_ = t;
+  return x;
+}
+
+double ControllerNode::computeThrottleBrake(double target_speed)
+{
+  if (emergency_ || !speed_feedback_available_) {
+    // 急停或速度反馈未就绪：纵向开度输出 0（保守，不驱动）
+    pid_integral_ = 0.0;
+    pid_prev_err_ = 0.0;
+    pid_last_time_ = rclcpp::Time();
+    return 0.0;
+  }
+  return computeSpeedPid(target_speed);
 }
 
 void ControllerNode::onWaypoints(const autoware_msgs::msg::Lane::SharedPtr msg)
@@ -311,6 +367,7 @@ void ControllerNode::controlLoop()
   cmd.header.frame_id = "base_link";
   cmd.speed    = filtered.velocity;
   cmd.angle    = filtered.steering_angle;
+  cmd.throttle_brake = computeThrottleBrake(filtered.velocity);  // 速度 PID → 纵向开度
   cmd_pub_->publish(cmd);
 
   // DEBUG: throttled to 2 Hz
@@ -447,6 +504,7 @@ void ControllerNode::runInspection()
   cmd.header.frame_id = "base_link";
   cmd.speed = filtered.velocity;
   cmd.angle = filtered.steering_angle;
+  cmd.throttle_brake = computeThrottleBrake(filtered.velocity);  // 车检纵向开度（PID 稳速）
   cmd_pub_->publish(cmd);
 }
 
@@ -525,6 +583,7 @@ void ControllerNode::publishZeroCommand()
   cmd.header.frame_id = "base_link";
   cmd.speed = 0.0;
   cmd.angle = 0.0;
+  cmd.throttle_brake = computeThrottleBrake(0.0);
   cmd_pub_->publish(cmd);
 }
 

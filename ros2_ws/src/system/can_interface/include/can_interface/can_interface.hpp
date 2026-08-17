@@ -3,20 +3,21 @@
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <std_msgs/msg/bool.hpp>
+#include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/string.hpp>
+#include <autoware_msgs/msg/command.hpp>
 #include <wuta_msgs/msg/devices_inspection.hpp>
 #include <wuta_msgs/msg/mission_state.hpp>
 
 #include "can_interface/can_frame.hpp"
-#include "can_interface/can_receiver.hpp"
-#include "can_interface/can_sender.hpp"
+#include "can_interface/can_socket.hpp"
 
 namespace can_interface
 {
 
 // 节点层：编排收发、在 ROS 回调里执行发送、定时器轮询接收
-// 发送路径：ROS 话题 → pack 编码（TODO）→ CanSender → CAN 总线
-// 接收路径：CAN 总线 → CanReceiver（非阻塞轮询）→ parse 解析（TODO）→ ROS 话题
+// 发送路径：ROS 话题 → pack 编码（TODO）→ CanSocket → CAN 总线
+// 接收路径：CAN 总线 → CanSocket（非阻塞轮询）→ parse 解析（TODO）→ ROS 话题
 class CANInterfaceNode : public rclcpp::Node
 {
 public:
@@ -26,29 +27,42 @@ private:
   // 发送路径入口（ROS 订阅回调）
   void onMissionState(const wuta_msgs::msg::MissionState::SharedPtr msg);
   void onDevicesInspection(const wuta_msgs::msg::DevicesInspection::SharedPtr msg);
+  void onControlCommand(const autoware_msgs::msg::Command::SharedPtr msg);
   // 接收路径入口（定时器轮询）
   void pollReceiver();
 
-  // ---- 报文编码/解析（各字节格式未确定，先预留） ----
-  CanFrame packMissionState(const wuta_msgs::msg::MissionState & msg);          // TODO
-  CanFrame packDevicesInspection(const wuta_msgs::msg::DevicesInspection & msg);  // TODO
-  void parseVcuFrame(const CanFrame & frame);  // TODO
+  // 发送 0x210（工控机→VCU 单帧）：Signal1 纵向(Byte1-2)、Signal2 横向(Byte3-4)、
+  // Signal3 上线(Byte5)、Signal4 完成(Byte6)、Signal5 空(Byte7-8)
+  void sendControlFrame();
+  CanFrame packControlFrame(double throttle_brake, double steer_deg,
+    bool online, bool finished) const;
+
+  // ---- 报文解析（VCU→工控机单帧，格式已定：0x501 Byte1=任务模式） ----
+  void parseVcuFrame(const CanFrame & frame);  // TODO: 按 0x501 解析后发布话题
 
   // 配置
   std::string can_device_;
   double poll_interval_sec_{0.02};  // 接收轮询周期，默认 50Hz
+  double max_steer_deg_{25.0};      // Signal2 满量程转向角（deg），与 controller 一致
+
+  // 0x210 帧缓存（Signal3/4 由状态回调更新，随下帧一起发出）
+  double throttle_brake_{0.0};   // 纵向开度 [-1,1]（controller 速度 PID 输出）
+  double cmd_angle_{0.0};        // 横向转向角（deg）
+  bool can_online_{false};       // Signal3：设备自检通过
+  bool can_finished_{false};     // Signal4：任务 FINISH
 
   // 设备层
-  CanSender sender_;
-  CanReceiver receiver_;
+  CanSocket can_;
 
   // 订阅 / 发布
   rclcpp::Subscription<wuta_msgs::msg::MissionState>::SharedPtr mission_state_sub_;
   rclcpp::Subscription<wuta_msgs::msg::DevicesInspection>::SharedPtr devices_inspection_sub_;
+  rclcpp::Subscription<autoware_msgs::msg::Command>::SharedPtr control_command_sub_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr mission_mode_cmd_pub_;
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr start_command_pub_;
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr emergency_pub_;
   rclcpp::TimerBase::SharedPtr receive_timer_;
+  rclcpp::TimerBase::SharedPtr keepalive_timer_;  // 无控制指令时的保活帧
 };
 
 }  // namespace can_interface

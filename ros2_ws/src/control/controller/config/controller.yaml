@@ -47,6 +47,12 @@ controller_node:
     inspection_steer_freq: 0.4 # Hz 正弦波频率
     inspection_duration: 10.0  # s 演示时长，完成后发布 mission_complete
 
+    # 速度 PID：目标速度 → 油门/刹车开度（随 /control/command 发布，[-1,1]）
+    speed_feedback_topic: /odometry/filtered  # 速度反馈话题（预留，实车接入后生效）
+    pid_speed_kp: 1.0     # 比例
+    pid_speed_ki: 0.05    # 积分
+    pid_speed_kd: 0.1     # 微分
+
     # Skidpad completion: the vehicle must stop at the 25 m exit endpoint.
     finish_position_tolerance: 0.75  # m
     finish_speed_threshold: 0.2      # m/s

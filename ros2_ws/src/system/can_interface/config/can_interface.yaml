@@ -4,3 +4,4 @@ can_interface:
     can_baud_rate: 500000
     can_loopback: false
     poll_interval_sec: 0.02  # 接收轮询周期，默认 50Hz
+    max_steer_deg: 25.0      # Signal2 满量程转向角（deg），与 controller max_steer_angle 一致

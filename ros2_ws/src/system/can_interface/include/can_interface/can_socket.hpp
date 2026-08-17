@@ -7,17 +7,20 @@
 namespace can_interface
 {
 
-// 接收设备层：封装 SocketCAN 接收套接字（非阻塞）
-// 非阻塞保证轮询节拍稳定，无数据时立即返回
-class CanReceiver
+// 设备层：单个 SocketCAN 套接字，双向收发
+// 非阻塞读保证轮询节拍稳定；发送失败由上层兜底
+class CanSocket
 {
 public:
-  CanReceiver() = default;
-  ~CanReceiver();
+  CanSocket() = default;
+  ~CanSocket();
 
   // 打开指定 CAN 设备（如 can0），失败返回 false
   bool open(const std::string & device);
   void close();
+
+  // 发送一帧；套接字未打开或写入失败返回 false
+  bool send(const CanFrame & frame);
 
   // 非阻塞读一帧；无数据或错误返回 false
   bool receive(CanFrame & frame);

@@ -3,6 +3,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
+#include <nav_msgs/msg/odometry.hpp>
 #include <std_msgs/msg/bool.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 #include <autoware_msgs/msg/lane.hpp>
@@ -24,6 +25,7 @@ public:
 private:
   void onPose(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
   void onVelocity(const geometry_msgs::msg::TwistStamped::SharedPtr msg);
+  void onOdom(const nav_msgs::msg::Odometry::SharedPtr msg);  // 速度反馈（话题预留）
   void onWaypoints(const autoware_msgs::msg::Lane::SharedPtr msg);
   void onMissionState(const wuta_msgs::msg::MissionState::SharedPtr msg);
   void onEmergency(const std_msgs::msg::Bool::SharedPtr msg);
@@ -34,6 +36,10 @@ private:
   double trackdriveLookahead(const rclcpp::Time & loop_time);
   void publishMissionComplete();
   void publishZeroCommand();
+
+  // 速度 PID（目标速度 → 油门/刹车开度）
+  double computeSpeedPid(double target_speed);
+  double computeThrottleBrake(double target_speed);
 
   void publishVisualization(double target_x, double target_y);
 
@@ -88,9 +94,20 @@ private:
   rclcpp::Time inspection_start_time_;
   bool inspection_done_published_{false};
 
+  // 速度 PID（纵向开度 → /control/command.throttle_brake）
+  std::string speed_feedback_topic_{"/odometry/filtered"};  // 预留，实车接入
+  bool speed_feedback_available_{false};
+  double pid_speed_kp_{1.0};
+  double pid_speed_ki_{0.05};
+  double pid_speed_kd_{0.1};
+  double pid_integral_{0.0};
+  double pid_prev_err_{0.0};
+  rclcpp::Time pid_last_time_;
+
   // Subscribers
   rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_sub_;
   rclcpp::Subscription<geometry_msgs::msg::TwistStamped>::SharedPtr vel_sub_;
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
   rclcpp::Subscription<autoware_msgs::msg::Lane>::SharedPtr waypoints_sub_;
   rclcpp::Subscription<wuta_msgs::msg::MissionState>::SharedPtr mission_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr emergency_sub_;

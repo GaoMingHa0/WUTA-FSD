@@ -1,4 +1,4 @@
-#include "can_interface/can_receiver.hpp"
+#include "can_interface/can_socket.hpp"
 
 #include <fcntl.h>
 #include <linux/can.h>
@@ -13,12 +13,12 @@
 namespace can_interface
 {
 
-CanReceiver::~CanReceiver()
+CanSocket::~CanSocket()
 {
   close();
 }
 
-bool CanReceiver::open(const std::string & device)
+bool CanSocket::open(const std::string & device)
 {
   close();
 
@@ -52,7 +52,7 @@ bool CanReceiver::open(const std::string & device)
   return true;
 }
 
-void CanReceiver::close()
+void CanSocket::close()
 {
   if (sock_ >= 0) {
     ::close(sock_);
@@ -60,7 +60,22 @@ void CanReceiver::close()
   }
 }
 
-bool CanReceiver::receive(CanFrame & frame)
+bool CanSocket::send(const CanFrame & frame)
+{
+  if (sock_ < 0) {
+    return false;
+  }
+
+  struct can_frame cf {};
+  cf.can_id = frame.can_id;
+  cf.can_dlc = frame.dlc;
+  std::memcpy(cf.data, frame.data.data(), frame.dlc);
+
+  const ssize_t n = ::write(sock_, &cf, sizeof(cf));
+  return n == static_cast<ssize_t>(sizeof(cf));
+}
+
+bool CanSocket::receive(CanFrame & frame)
 {
   if (sock_ < 0) {
     return false;
