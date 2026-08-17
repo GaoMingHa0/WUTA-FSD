@@ -174,6 +174,12 @@ double ControllerNode::computeSpeedPid(double target_speed)
   const double dt = std::max(0.001, (t - pid_last_time_).seconds());
   const double err = target_speed - vehicle_state_.velocity;
 
+  // 停车消积分：目标 0 且车速已接近停稳时清零积分，防止巡航期残留
+  // 的正积分在停车后输出驱动开度导致溜车
+  if (target_speed <= 0.0 && vehicle_state_.velocity < 0.5) {
+    pid_integral_ = 0.0;
+  }
+
   // 防积分饱和：积分项与输出同量纲，钳位到 [-1,1]
   pid_integral_ = std::clamp(
     pid_integral_ + pid_speed_ki_ * err * dt, -1.0, 1.0);
