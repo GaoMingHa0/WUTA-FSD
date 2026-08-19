@@ -16,8 +16,8 @@ namespace can_interface
 {
 
 // 节点层：编排收发、在 ROS 回调里执行发送、定时器轮询接收
-// 发送路径：ROS 话题 → pack 编码（TODO）→ CanSocket → CAN 总线
-// 接收路径：CAN 总线 → CanSocket（非阻塞轮询）→ parse 解析（TODO）→ ROS 话题
+// 发送路径：ROS 话题 → pack 编码 → CanSocket → CAN 总线
+// 接收路径：CAN 总线 → CanSocket（非阻塞轮询）→ parse 解析 → ROS 话题
 class CANInterfaceNode : public rclcpp::Node
 {
 public:
@@ -37,8 +37,10 @@ private:
   CanFrame packControlFrame(double throttle_brake, double steer_deg,
     bool online, bool finished) const;
 
-  // ---- 报文解析（VCU→工控机单帧，格式已定：0x501 Byte1=任务模式） ----
-  void parseVcuFrame(const CanFrame & frame);  // TODO: 按 0x501 解析后发布话题
+  // ---- 报文解析（VCU→工控机单帧 0x501：Byte1=VCU状态、Byte2=测试模式） ----
+  void parseVcuFrame(const CanFrame & frame);  // 状态→start/emergency，模式→mission_mode_cmd
+  // 保活：VCU 处于驾驶态/EMERGENCY 期间周期性重复发布，防启动乱序丢信号
+  void repeatVcuSignals();
 
   // 配置
   std::string can_device_;
@@ -50,6 +52,10 @@ private:
   double cmd_angle_{0.0};        // 横向转向角（deg）
   bool can_online_{false};       // Signal3：设备自检通过
   bool can_finished_{false};     // Signal4：任务 FINISH
+
+  // 0x501 帧缓存（仅状态/模式变化时发布，去重）
+  uint8_t last_vcu_state_{0xFF};   // 最近一次 VCU 状态（Byte1）
+  uint8_t last_test_mode_{0xFF};   // 最近一次测试模式（Byte2）
 
   // 设备层
   CanSocket can_;
@@ -63,6 +69,7 @@ private:
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr emergency_pub_;
   rclcpp::TimerBase::SharedPtr receive_timer_;
   rclcpp::TimerBase::SharedPtr keepalive_timer_;  // 无控制指令时的保活帧
+  rclcpp::TimerBase::SharedPtr go_heartbeat_timer_;  // 1Hz 信号保活（GO/EMERGENCY 防丢）
 };
 
 }  // namespace can_interface

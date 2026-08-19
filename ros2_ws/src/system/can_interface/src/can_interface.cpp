@@ -55,6 +55,12 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
     std::chrono::milliseconds(100),
     std::bind(&CANInterfaceNode::sendControlFrame, this));
 
+  // 信号保活：VCU 处于驾驶态/EMERGENCY 期间以 1Hz 重复发布对应命令，
+  // 防止 mission_manager / controller 晚启动时错过单发 GO 或急停信号
+  go_heartbeat_timer_ = create_wall_timer(
+    std::chrono::seconds(1),
+    std::bind(&CANInterfaceNode::repeatVcuSignals, this));
+
   // 接收路径：定时器轮询（非阻塞）
   receive_timer_ = create_wall_timer(
     std::chrono::milliseconds(static_cast<int64_t>(poll_interval_sec_ * 1000.0)),
@@ -72,7 +78,7 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
   //   "/chcnav/velocity", 50);
 
   RCLCPP_INFO(get_logger(), "CAN Interface initialized (tx/rx separated).");
-  RCLCPP_INFO(get_logger(), "Tx frame 0x210 active; Rx 0x501 parse TODO.");
+  RCLCPP_INFO(get_logger(), "Tx frame 0x210 active; Rx frame 0x501 active.");
 }
 
 void CANInterfaceNode::onMissionState(const wuta_msgs::msg::MissionState::SharedPtr msg)
@@ -103,7 +109,7 @@ void CANInterfaceNode::pollReceiver()
 {
   CanFrame frame;
   while (can_.receive(frame)) {
-    parseVcuFrame(frame);  // TODO: 解析 VCU→工控机单帧（0x501）
+    parseVcuFrame(frame);  // 解析 VCU→工控机单帧（0x501）
   }
 }
 
@@ -138,10 +144,82 @@ CanFrame CANInterfaceNode::packControlFrame(
   return frame;
 }
 
+void CANInterfaceNode::repeatVcuSignals()
+{
+  // VCU 处于无人驾驶态(10)：重复请求出发；离开该状态自动停止
+  if (last_vcu_state_ == 10) {
+    std_msgs::msg::Bool start_cmd;
+    start_cmd.data = true;
+    start_command_pub_->publish(start_cmd);
+    RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 5000,
+      "Repeat start command (VCU state 10).");
+  }
+  // VCU 处于 EMERGENCY(12)：重复急停信号；离开该状态自动停止
+  if (last_vcu_state_ == 12) {
+    std_msgs::msg::Bool emergency;
+    emergency.data = true;
+    emergency_pub_->publish(emergency);
+    RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), 5000,
+      "Repeat EMERGENCY (VCU state 12).");
+  }
+}
+
 void CANInterfaceNode::parseVcuFrame(const CanFrame & frame)
 {
-  (void)frame;
-  RCLCPP_WARN_ONCE(get_logger(), "parseVcuFrame() not implemented (0x501 layout parse TODO).");
+  // 只处理 VCU→工控机 0x501 帧
+  if (frame.can_id != 0x501) return;
+
+  const uint8_t vcu_state = frame.data[0];  // Byte1：VCU 状态
+  const uint8_t test_mode = frame.data[1];  // Byte2：测试模式
+
+  // ---- Byte1 状态 → start_command / emergency（最新值覆盖，仅变化时发布） ----
+  if (vcu_state != last_vcu_state_) {
+    std_msgs::msg::Bool start_cmd;
+    std_msgs::msg::Bool emergency;
+    switch (vcu_state) {
+      case 10:  // 无人驾驶状态 AS_DRIVING → 请求任务出发
+        start_cmd.data = true;
+        RCLCPP_INFO(get_logger(), "VCU state 10 (AS_DRIVING): start command.");
+        break;
+      case 12:  // 无人 EMERGENCY
+        emergency.data = true;
+        RCLCPP_ERROR(get_logger(), "VCU state 12 (EMERGENCY)!");
+        break;
+      default:  // 静默/有人/无人待命等：不启动、不触发急停
+        RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 2000,
+          "VCU state %u.", vcu_state);
+        break;
+    }
+    start_command_pub_->publish(start_cmd);
+    emergency_pub_->publish(emergency);
+    last_vcu_state_ = vcu_state;
+  }
+
+  // ---- Byte2 测试模式 → mission_mode_cmd（仅变化时发布） ----
+  if (test_mode != last_test_mode_) {
+    std::string mode;
+    switch (test_mode) {
+      case 2:  mode = "acceleration"; break;
+      case 3:  mode = "trackdrive";   break;
+      case 4:  mode = "skidpad";      break;
+      case 5:  mode = "ebs_test";     break;
+      case 6:  mode = "inspection";   break;
+      case 1:  // 操控性测试：有人驾驶，与无人算法无关，不做处理
+        RCLCPP_INFO(get_logger(), "Test mode 1 (handling, manned): ignored.");
+        break;
+      default:
+        RCLCPP_WARN(get_logger(), "Unknown test mode %u.", test_mode);
+        break;
+    }
+    if (!mode.empty()) {
+      std_msgs::msg::String msg;
+      msg.data = mode;
+      mission_mode_cmd_pub_->publish(msg);
+      RCLCPP_INFO(get_logger(), "Test mode %u -> mission mode '%s'.",
+        test_mode, mode.c_str());
+    }
+    last_test_mode_ = test_mode;
+  }
 }
 
 }  // namespace can_interface
