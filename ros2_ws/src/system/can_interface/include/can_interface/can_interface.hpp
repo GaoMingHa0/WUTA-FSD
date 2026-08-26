@@ -57,7 +57,7 @@ private:
 
   // 0x501 帧缓存（仅状态/模式变化时发布，去重）
   uint8_t last_vcu_state_{0xFF};   // 最近一次 VCU 状态（Byte1）
-  uint8_t last_test_mode_{0xFF};   // 最近一次测试模式（Byte2）
+  uint8_t last_vcu_mission_mode_{0xFF};   // 最近一次 VCU 任务模式（Byte2）
 
   // 设备层
   CanSocket can_;

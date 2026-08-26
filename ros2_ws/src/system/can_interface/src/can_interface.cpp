@@ -203,7 +203,7 @@ void CANInterfaceNode::parseVcuFrame(const CanFrame & frame)
   }
 
   // ---- Byte2 测试模式 → mission_mode_cmd（仅变化时发布） ----
-  if (vcu_mission_mode != last_test_mode_) {
+  if (vcu_mission_mode != last_vcu_mission_mode_) {
     std::string mode;
     switch (vcu_mission_mode) {
       case 2:  mode = "acceleration"; break;
@@ -215,17 +215,17 @@ void CANInterfaceNode::parseVcuFrame(const CanFrame & frame)
         RCLCPP_INFO(get_logger(), "Driving by human,FSD is ignored.");
         break;
       default:
-        RCLCPP_WARN(get_logger(), "Unknown test mode %u.", vcu_mission_mode);
+        RCLCPP_WARN(get_logger(), "Unknown VCU mission mode %u.", vcu_mission_mode);
         break;
     }
     if (!mode.empty()) {
       std_msgs::msg::String msg;
       msg.data = mode;
       mission_mode_cmd_pub_->publish(msg);
-      RCLCPP_INFO(get_logger(), "Test mode %u -> mission mode '%s'.",
+      RCLCPP_INFO(get_logger(), "VCU mission mode %u -> mission mode '%s'.",
         vcu_mission_mode, mode.c_str());
     }
-    last_test_mode_ = vcu_mission_mode;
+    last_vcu_mission_mode_ = vcu_mission_mode;
   }
 }
 
