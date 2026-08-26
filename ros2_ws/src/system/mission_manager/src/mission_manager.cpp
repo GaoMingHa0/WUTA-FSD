@@ -13,12 +13,7 @@ using State = wuta_msgs::msg::MissionState;
 MissionManager::MissionManager(const rclcpp::NodeOptions & options)
 : Node("mission_manager", options)
 {
-  // Default mission mode from parameter
-  const std::string mode_str = declare_parameter<std::string>("mission_mode", "trackdrive");
-  if (mode_str == "skidpad")       mission_mode_ = State::MISSION_SKIDPAD;
-  else if (mode_str == "acceleration") mission_mode_ = State::MISSION_ACCELERATION;
-  else                             mission_mode_ = State::MISSION_TRACKDRIVE;
-
+  // 任务模式由上游 /system/mission_mode_cmd 派发（见 onMissionModeCmd），此处无参数默认值
   min_blue_cones_ = declare_parameter("min_blue_cones", min_blue_cones_);
   min_yellow_cones_ = declare_parameter("min_yellow_cones", min_yellow_cones_);
   min_map_average_confidence_ = declare_parameter(
@@ -521,7 +516,9 @@ void MissionManager::onMissionComplete(const std_msgs::msg::Bool::SharedPtr msg)
 
 void MissionManager::selfCheckTick()
 {
-  if (sensor_fault_) return;  // 已故障，保持 EMERGENCY
+  if (sensor_fault_) return;  // 故障已锁存，保持 EMERGENCY
+  const bool any_checked = check_lidar_ || check_imu_ || check_camera_;
+  if (!any_checked) return;  
   const double up = (now() - startup_time_).seconds();
 
   // 宽限期内允许陆续上线；过期后：从未上线 或 中途断开 均判故障
@@ -542,9 +539,18 @@ void MissionManager::selfCheckTick()
     if (lidar_off) failures.push_back("lidar");
     if (imu_off)   failures.push_back("imu");
     if (cam_off)   failures.push_back("camera");
-    publishDevicesInspection(false, failures);  // 通知 can_interface
+    publishDevicesInspection(false, failures);  // 通知 can_interface → Signal3=0 → VCU 切 EMERGENCY
+    return;
   }
-  // 通过：不干预现有流程，IDLE→READY 仍由 advanceWhenReady() 决定
+
+  // 全部已上线且在线：持续上报 ok（can_interface → Signal3=1）；宽限期内未全上线则不发布
+  const bool all_seen =
+    (!check_lidar_  || lidar_last_seen_.nanoseconds() != 0) &&
+    (!check_imu_    || imu_last_seen_.nanoseconds() != 0) &&
+    (!check_camera_ || camera_last_seen_.nanoseconds() != 0);
+  if (all_seen) {
+    publishDevicesInspection(true, {});
+  }
 }
 
 void MissionManager::publishDevicesInspection(

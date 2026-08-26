@@ -73,7 +73,7 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
     "/system/start_command", 10);
   emergency_pub_ = create_publisher<std_msgs::msg::Bool>(
     "/system/emergency", 10);
-  // 预留
+  // 预留，目前暂时不由VCU发轮边速度
   // velocity_pub_ = create_publisher<geometry_msgs::msg::TwistStamped>(
   //   "/chcnav/velocity", 50);
 
@@ -83,8 +83,9 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
 
 void CANInterfaceNode::onMissionState(const wuta_msgs::msg::MissionState::SharedPtr msg)
 {
-  // Signal4：任务 FINISH 后上报 VCU
+  // Signal4：任务 FINISH 后上报 VCU；FSD 内部 EMERGENCY 时停发控制（控制量归零）
   can_finished_ = (msg->state == wuta_msgs::msg::MissionState::FINISH);
+  fsd_emergency_ = (msg->state == wuta_msgs::msg::MissionState::EMERGENCY);
   sendControlFrame();
 }
 
@@ -119,7 +120,7 @@ void CANInterfaceNode::sendControlFrame()
     throttle_brake_, cmd_angle_, can_online_, can_finished_);
   if (!can_.send(frame)) {
     RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000,
-      "Failed to send control frame to CAN bus.");
+      "Failed to send control frame to the VCU on CAN bus.");
   }
 }
 
@@ -130,9 +131,13 @@ CanFrame CANInterfaceNode::packControlFrame(
   frame.can_id = 0x210;  // 工控机→VCU 单帧
   frame.dlc = 8;
 
-  const uint16_t s1 = scaleControl(throttle_brake);          // 纵向：驱动/制动
+  // 任一急停（RES/VCU 状态12 或 设备故障/FSD EMERGENCY）→ 停发控制：油门0、转向居中
+  const bool emergency = vcu_emergency_ || fsd_emergency_;
+  const double throttle = emergency ? 0.0 : throttle_brake;
+  const double angle    = emergency ? 0.0 : steer_deg;
+  const uint16_t s1 = scaleControl(throttle);          // 纵向：驱动/制动
   // 横向：angle 正=左（autoware 约定），协议 Signal2 小值=左，故取反映射
-  const uint16_t s2 = scaleControl(-steer_deg / max_steer_deg_);
+  const uint16_t s2 = scaleControl(-angle / max_steer_deg_);
   frame.data[0] = static_cast<uint8_t>(s1 & 0xFF);
   frame.data[1] = static_cast<uint8_t>((s1 >> 8) & 0xFF);
   frame.data[2] = static_cast<uint8_t>(s2 & 0xFF);
@@ -146,7 +151,7 @@ CanFrame CANInterfaceNode::packControlFrame(
 
 void CANInterfaceNode::repeatVcuSignals()
 {
-  // VCU 处于无人驾驶态(10)：重复请求出发；离开该状态自动停止
+  // VCU 处于无人驾驶态(10)：重复请求出发；离开该状态自动停止，防止工控机收不到消息
   if (last_vcu_state_ == 10) {
     std_msgs::msg::Bool start_cmd;
     start_cmd.data = true;
@@ -154,7 +159,7 @@ void CANInterfaceNode::repeatVcuSignals()
     RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 5000,
       "Repeat start command (VCU state 10).");
   }
-  // VCU 处于 EMERGENCY(12)：重复急停信号；离开该状态自动停止
+  // VCU 处于 EMERGENCY(12)：重复急停信号；离开该状态自动停止，防止工控机收不到消息
   if (last_vcu_state_ == 12) {
     std_msgs::msg::Bool emergency;
     emergency.data = true;
@@ -170,10 +175,12 @@ void CANInterfaceNode::parseVcuFrame(const CanFrame & frame)
   if (frame.can_id != 0x501) return;
 
   const uint8_t vcu_state = frame.data[0];  // Byte1：VCU 状态
-  const uint8_t test_mode = frame.data[1];  // Byte2：测试模式
+  const uint8_t vcu_mission_mode = frame.data[1];  // Byte2：VCU派发的任务模式
 
   // ---- Byte1 状态 → start_command / emergency（最新值覆盖，仅变化时发布） ----
   if (vcu_state != last_vcu_state_) {
+    // RES 急停：读到 VCU 状态12 立即停发控制（油门0、转向居中）；离开该状态解除
+    vcu_emergency_ = (vcu_state == 12);
     std_msgs::msg::Bool start_cmd;
     std_msgs::msg::Bool emergency;
     switch (vcu_state) {
@@ -196,19 +203,19 @@ void CANInterfaceNode::parseVcuFrame(const CanFrame & frame)
   }
 
   // ---- Byte2 测试模式 → mission_mode_cmd（仅变化时发布） ----
-  if (test_mode != last_test_mode_) {
+  if (vcu_mission_mode != last_test_mode_) {
     std::string mode;
-    switch (test_mode) {
+    switch (vcu_mission_mode) {
       case 2:  mode = "acceleration"; break;
       case 3:  mode = "trackdrive";   break;
       case 4:  mode = "skidpad";      break;
       case 5:  mode = "ebs_test";     break;
       case 6:  mode = "inspection";   break;
       case 1:  // 操控性测试：有人驾驶，与无人算法无关，不做处理
-        RCLCPP_INFO(get_logger(), "Test mode 1 (handling, manned): ignored.");
+        RCLCPP_INFO(get_logger(), "Driving by human,FSD is ignored.");
         break;
       default:
-        RCLCPP_WARN(get_logger(), "Unknown test mode %u.", test_mode);
+        RCLCPP_WARN(get_logger(), "Unknown test mode %u.", vcu_mission_mode);
         break;
     }
     if (!mode.empty()) {
@@ -216,9 +223,9 @@ void CANInterfaceNode::parseVcuFrame(const CanFrame & frame)
       msg.data = mode;
       mission_mode_cmd_pub_->publish(msg);
       RCLCPP_INFO(get_logger(), "Test mode %u -> mission mode '%s'.",
-        test_mode, mode.c_str());
+        vcu_mission_mode, mode.c_str());
     }
-    last_test_mode_ = test_mode;
+    last_test_mode_ = vcu_mission_mode;
   }
 }
 

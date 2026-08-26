@@ -52,6 +52,8 @@ private:
   double cmd_angle_{0.0};        // 横向转向角（deg）
   bool can_online_{false};       // Signal3：设备自检通过
   bool can_finished_{false};     // Signal4：任务 FINISH
+  bool vcu_emergency_{false};    // RES 急停：VCU 状态12 直接置位
+  bool fsd_emergency_{false};    // 设备故障急停：mission_state EMERGENCY
 
   // 0x501 帧缓存（仅状态/模式变化时发布，去重）
   uint8_t last_vcu_state_{0xFF};   // 最近一次 VCU 状态（Byte1）

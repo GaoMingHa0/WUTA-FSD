@@ -1,4 +1,4 @@
-mission_manager_node:
+mission_manager:
   ros__parameters:
     # MAPPING_DONE -> RACE gates.
     min_blue_cones: 12
@@ -20,11 +20,11 @@ mission_manager_node:
     # Enable only when map_saver and NDT initialization are both integrated.
     use_ndt_race_localization: false
 
-    # 开机传感器自检（心跳监控；雷达/相机预留）
-    check_lidar: false
+    # 传感器持续监控（开机自检 + 比赛中断线均判故障，故障上报 VCU 并切 EMERGENCY）
+    check_lidar: true
     check_imu: true
-    check_camera: false
-    lidar_topic: /rslidar_points   # 型号未定，随时可改
+    check_camera: true
+    lidar_topic: /hesai/pandar
     imu_topic: /chcnav/odometry
     camera_topic: /zed2i/zed_node/left/image_rect_color
     sensor_timeout_sec: 2.0
