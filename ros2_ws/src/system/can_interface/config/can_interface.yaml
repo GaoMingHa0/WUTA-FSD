@@ -1,5 +1,9 @@
 can_interface:
   ros__parameters:
+    # 默认绑定 can0。真实 ZLG USB-CAN（USBCAN-2E-U，厂商私有协议非 SocketCAN）接入时，
+    # 需先运行 zlgcan_bridge 将 ZLG 设备桥接为 SocketCAN can0（vcan 类型），本节点无需改动：
+    #   ./zlgcan_bridge/scripts/start_bridge.sh start
+    #   或经测试入口: ./hil_test/scripts/hil_test.sh -l L1 -i can0 --bridge
     can_device: "can0"
     can_baud_rate: 500000
     can_loopback: false
