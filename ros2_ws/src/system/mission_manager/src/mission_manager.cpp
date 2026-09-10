@@ -144,8 +144,8 @@ MissionManager::MissionManager(const rclcpp::NodeOptions & options)
       static_cast<int64_t>(std::max(0.1, selfcheck_interval_sec_) * 1000.0)),
     std::bind(&MissionManager::selfCheckTick, this));
 
-  RCLCPP_INFO(get_logger(), "Mission Manager initialized. mode=%s state=IDLE",
-    mode_str.c_str());
+  RCLCPP_INFO(get_logger(), "Mission Manager initialized. mode=%u state=IDLE",
+    static_cast<unsigned>(mission_mode_));
   publishLapCount();
 }
 
