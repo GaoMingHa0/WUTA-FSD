@@ -23,6 +23,10 @@ ConeMapBuilder::ConeMapBuilder(const rclcpp::NodeOptions & options)
   min_cones_for_closure_  = declare_parameter("min_cones_for_closure",  min_cones_for_closure_);
   mapping_laps_           = declare_parameter("mapping_laps",           mapping_laps_);
   assign_colors_          = declare_parameter("assign_colors",          assign_colors_);
+  allow_semantic_color_correction_ = declare_parameter(
+    "allow_semantic_color_correction", allow_semantic_color_correction_);
+  semantic_color_confirmation_hits_ = std::max<int64_t>(1, declare_parameter(
+    "semantic_color_confirmation_hits", semantic_color_confirmation_hits_));
   tf_lookup_timeout_sec_  = declare_parameter("tf_lookup_timeout_sec",  tf_lookup_timeout_sec_);
   use_latest_tf_fallback_ = declare_parameter("use_latest_tf_fallback", use_latest_tf_fallback_);
   pending_detection_timeout_sec_ = declare_parameter(
@@ -292,7 +296,8 @@ bool ConeMapBuilder::integrateDetections(const wuta_msgs::msg::ConeArray & cones
     for (size_t index = 0; index < cone_map_.size(); ++index) {
       if (tracks_used_in_scan.count(index) != 0U) continue;
       auto & tracked = cone_map_[index];
-      if (cone.color != wuta_msgs::msg::Cone::COLOR_UNKNOWN &&
+      if (!allow_semantic_color_correction_ &&
+          cone.color != wuta_msgs::msg::Cone::COLOR_UNKNOWN &&
           tracked.has_semantic_color && tracked.color != cone.color) {
         continue;
       }
@@ -421,7 +426,7 @@ uint8_t ConeMapBuilder::majorityColor(const TrackedCone & tracked) const
 {
   const int best_votes = std::max(
     {tracked.blue_votes, tracked.yellow_votes, tracked.orange_votes});
-  if (best_votes <= 0) {
+  if (best_votes < semantic_color_confirmation_hits_) {
     return wuta_msgs::msg::Cone::COLOR_UNKNOWN;
   }
 
@@ -430,6 +435,12 @@ uint8_t ConeMapBuilder::majorityColor(const TrackedCone & tracked) const
   const bool orange_best = tracked.orange_votes == best_votes;
   const int tied_best_count =
     static_cast<int>(blue_best) + static_cast<int>(yellow_best) + static_cast<int>(orange_best);
+  if (allow_semantic_color_correction_) {
+    const int total = tracked.blue_votes + tracked.yellow_votes + tracked.orange_votes;
+    if (tied_best_count > 1 || best_votes < 0.7 * total) {
+      return wuta_msgs::msg::Cone::COLOR_UNKNOWN;
+    }
+  }
   if (tied_best_count > 1 && tracked.color != wuta_msgs::msg::Cone::COLOR_UNKNOWN) {
     return tracked.color;
   }

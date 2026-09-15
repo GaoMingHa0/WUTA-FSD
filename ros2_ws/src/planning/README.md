@@ -57,7 +57,8 @@ planning/
 > **后续演进：相机颜色融合。** 紧凑赛道中相邻赛段的几何距离可能小于 LiDAR-only
 > Delaunay 兜底的可判别尺度，因而仍可能选择错误分支。实车应接入相机锥桶分类，将稳定的
 > 蓝/黄语义颜色融合到现有 `ConeArray`/`ConeMap` 数据链路；规划即可优先进行显式左右边界配对。
-> 该相机检测与融合节点尚未实现，Delaunay 继续仅作为颜色不足时的保守兜底。
+> 检测级后融合 `detection_fusion_node` 和双目深度适配器现已实现；真实相机驱动与
+> YOLOv8 推理仍预留。独立融合入口输出 ConeArray，再由 builder 建图；颜色不足时仍使用既有兜底。
 
 **只在 TRACKDRIVE 模式下运行**，SKIDPAD 和 ACCELERATION 直接在 path_generator 内生成。
 

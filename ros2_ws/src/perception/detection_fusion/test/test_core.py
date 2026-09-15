@@ -1,0 +1,46 @@
+import numpy as np
+import pytest
+from detection_fusion.core import associate, covariance, fuse_position, project, transform_matrix
+
+P = np.array([[700., 0., 640., 0.], [0., 700., 360., 0.], [0., 0., 1., 0.]])
+
+
+def test_unique_color_only_and_behind_camera():
+    boxes = [([630, 350, 650, 370], None, None)]
+    assert associate([[0, 0, 10], [0, 0, -10]], boxes, P) == [(0, 0)]
+
+
+def test_overlapping_boxes_and_multiple_cones_are_rejected():
+    box = ([600, 330, 680, 390], None, None)
+    assert associate([[0, 0, 10]], [box, box], P) == []
+    assert associate([[-0.01, 0, 10], [0.01, 0, 10]], [box], P) == []
+
+
+def test_depth_resolves_same_image_ray_but_rejects_wrong_segment():
+    observation = ([600, 330, 680, 390], np.array([0, 0, 10]), np.eye(3)*0.01)
+    assert associate([[0, 0, 10], [0, 0, 13]], [observation], P) == [(0, 0)]
+    assert associate([[0, 0, 13]], [observation], P) == []
+
+
+def test_invalid_covariance():
+    with pytest.raises(ValueError):
+        covariance(np.zeros(9))
+    with pytest.raises(ValueError):
+        covariance([float('nan')]*9)
+
+
+def test_uncertain_camera_keeps_lidar_position_and_z():
+    result = fuse_position(np.array([10., 0., .1]), np.array([10.5, .1, .3]), np.eye(3)*100)
+    assert abs(result[0]-10) < .001
+    assert result[2] == .1
+
+
+def test_optical_frame_and_translation():
+    matrix = transform_matrix([0, 0, .5], [-.5, .5, -.5, .5])
+    assert np.allclose(matrix@np.array([0, .34, 10, 1]), [10, 0, .16, 1])
+    assert np.allclose(np.linalg.inv(matrix)@np.array([10, 0, .16, 1]), [0, .34, 10, 1])
+
+
+def test_assignment_is_one_to_one():
+    observations = [([630, 350, 650, 370], None, None), ([700, 350, 720, 370], None, None)]
+    assert associate([[0, 0, 10], [1, 0, 10]], observations, P) == [(0, 0), (1, 1)]

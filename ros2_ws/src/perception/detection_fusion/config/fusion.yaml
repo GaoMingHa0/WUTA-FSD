@@ -1,0 +1,20 @@
+detection_fusion_node:
+  ros__parameters:
+    lidar_topic: /perception/lidar/cones_raw
+    camera_topic: /perception/camera/cones
+    camera_info_topic: /perception/camera/camera_info
+    output_topic: /perception/fused/cones
+    fixed_frame: odom
+    sync_slop_sec: 0.06
+    max_wait_sec: 0.10
+    max_queue: 20
+    max_match_distance: 0.8
+    mahalanobis_gate: 11.345
+    pixel_margin: 8.0
+    ambiguity_margin: 0.15
+    min_detection_confidence: 0.5
+    min_color_probability: 0.8
+    lidar_sigma: 0.12
+    reference_sigma: 0.15
+    max_position_shift: 0.25
+    fuse_positions: true
