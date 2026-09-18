@@ -1,4 +1,4 @@
-"""ZED 2i + RoboSense M1 + ONNX perception and mapping, without vehicle control."""
+"""ZED 2i + RoboSense M1 + camera perception and mapping, without vehicle control."""
 from pathlib import Path
 
 from ament_index_python.packages import get_package_share_directory
@@ -18,8 +18,8 @@ def setup(context):
 
     model = Path(value('model_path')).expanduser()
     calibration = Path(value('calibration_path')).expanduser()
-    if not model.is_file() or model.suffix.lower() not in ('.pt', '.onnx'):
-        raise ValueError('model_path must point to an existing PT or ONNX file')
+    if not model.is_file() or model.suffix.lower() not in ('.pt', '.onnx', '.engine'):
+        raise ValueError('model_path must point to an existing PT, ONNX, or TensorRT engine file')
     camera_frame, lidar_frame, translation, quaternion = load_calibration(calibration)
     if lidar_frame != 'rslidar':
         raise ValueError('The supplied M1 config publishes rslidar; update it before using another frame')
@@ -55,6 +55,8 @@ def setup(context):
              parameters=[{'model_path': str(model), 'red_color': red_color,
                 'image_topic': value('image_topic'), 'confidence_threshold': confidence,
                 'inference_threads': threads,
+                'model_input_width': int(value('model_input_width')),
+                'model_input_height': int(value('model_input_height')),
                 'device': value('device'), 'gpu_device_id': int(value('gpu_device_id')),
                 'publish_annotated_image': value('publish_annotated_image') == 'true'}], output='screen'),
         Node(package='camera_detection', executable='stereo_detection_adapter', parameters=[{
@@ -84,7 +86,7 @@ def setup(context):
 
 def generate_launch_description():
     return LaunchDescription([
-        DeclareLaunchArgument('model_path', description='Absolute PT or ONNX weights path'),
+        DeclareLaunchArgument('model_path', description='Absolute PT, ONNX, or TensorRT engine path'),
         DeclareLaunchArgument('calibration_path', description='camera-from-lidar YAML path'),
         DeclareLaunchArgument('red_color', default_value='3', description='0 UNKNOWN, 3 ORANGE'),
         DeclareLaunchArgument('start_drivers', default_value='true', choices=['true', 'false']),
@@ -98,6 +100,10 @@ def generate_launch_description():
         DeclareLaunchArgument('localization_pose_topic', default_value='/zed/zed_node/pose',
             description='Map-frame PoseStamped used by the builder; ZED tracking for this standalone rig'),
         DeclareLaunchArgument('confidence_threshold', default_value='0.25'),
+        DeclareLaunchArgument('model_input_width', default_value='0',
+            description='PT/engine input width before stride padding; zero keeps the model default'),
+        DeclareLaunchArgument('model_input_height', default_value='0',
+            description='PT/engine input height before stride padding; zero keeps the model default'),
         DeclareLaunchArgument('publish_unmatched_lidar', default_value='false', choices=['true', 'false'],
             description='Publish LiDAR clusters without a matched camera box'),
         DeclareLaunchArgument('inference_threads', default_value='4'),

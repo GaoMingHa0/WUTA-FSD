@@ -5,6 +5,7 @@ import threading
 import time
 
 import rclpy
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Image
@@ -20,6 +21,7 @@ class YoloNode(Node):
         defaults = {'model_path': '', 'image_topic': '/zed/zed_node/rgb/image_rect_color',
                     'annotated_topic': '/camera/yolo/image_annotated', 'publish_annotated_image': True,
                     'device': 'cuda', 'gpu_device_id': 0,
+                    'model_input_width': 0, 'model_input_height': 0,
                     'output_topic': '/camera/yolo/cones', 'confidence_threshold': 0.5,
                     'nms_iou_threshold': 0.45, 'red_color': 3, 'inference_threads': 4}
         self.cfg = {k: self.declare_parameter(k, v).value for k, v in defaults.items()}
@@ -28,8 +30,12 @@ class YoloNode(Node):
                 raise ValueError(name + ' must be between zero and one')
         if self.cfg['inference_threads'] < 1:
             raise ValueError('inference_threads must be positive')
+        dimensions = (self.cfg['model_input_height'], self.cfg['model_input_width'])
+        if any(value < 0 for value in dimensions) or ((dimensions[0] == 0) != (dimensions[1] == 0)):
+            raise ValueError('model_input_width and model_input_height must both be zero or positive')
+        input_size = dimensions if dimensions[0] > 0 else None
         self.model = YoloModel(self.cfg['model_path'], self.cfg['red_color'], self.cfg['inference_threads'],
-                               self.cfg['device'], self.cfg['gpu_device_id'])
+                               self.cfg['device'], self.cfg['gpu_device_id'], input_size=input_size)
         self.get_logger().info('Loaded model classes: ' + str(self.model.names))
         self.get_logger().info('YOLO device: ' + self.model.device +
                                '; backend: ' + self.model.backend + '; providers: ' + str(self.model.providers))
@@ -102,7 +108,7 @@ def main(args=None):
     node = YoloNode()
     try:
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
         pass
     finally:
         node.close()

@@ -1,4 +1,4 @@
-"""YOLOv8 PT/ONNX inference in rectified source-image pixels."""
+"""YOLOv8 PT/ONNX/TensorRT inference in rectified source-image pixels."""
 import ast
 import os
 import sys
@@ -26,7 +26,7 @@ def image_bgr(msg):
     return np.ascontiguousarray(pixels)
 
 
-def letterbox(image, size):
+def _letterbox_canvas(image, size):
     height, width = image.shape[:2]
     target_h, target_w = size
     scale = min(target_w / width, target_h / height)
@@ -35,8 +35,32 @@ def letterbox(image, size):
     top = (target_h - resized_h) // 2
     canvas = np.full((target_h, target_w, 3), 114, np.uint8)
     canvas[top:top + resized_h, left:left + resized_w] = cv2.resize(image, (resized_w, resized_h))
+    return canvas, scale, (left, top)
+
+
+def letterbox(image, size):
+    canvas, scale, padding = _letterbox_canvas(image, size)
     tensor = canvas[:, :, ::-1].transpose(2, 0, 1)[None].astype(np.float32) / 255.0
-    return tensor, scale, (left, top)
+    return tensor, scale, padding
+
+
+def checkpoint_input_size(value, stride):
+    """Convert an Ultralytics checkpoint imgsz value to a valid (H, W)."""
+    if isinstance(value, int):
+        size = (value, value)
+    elif isinstance(value, (list, tuple)) and len(value) == 2:
+        size = tuple(value)
+    else:
+        raise ValueError('PT weights must provide imgsz as an integer or [height, width]')
+    if any(not isinstance(number, int) or isinstance(number, bool) or number <= 0
+           for number in size):
+        raise ValueError('PT checkpoint imgsz values must be positive integers')
+    stride = int(stride)
+    if stride <= 0:
+        raise ValueError('PT model stride must be positive')
+    # A rectangular training height such as 760 is not divisible by the YOLO
+    # stride of 32. Pad it to 768 to prevent feature-map shape mismatch.
+    return tuple((number + stride - 1) // stride * stride for number in size)
 
 
 def decode(output, scale, padding, image_shape, color_ids, confidence=0.5, iou=0.45):
@@ -93,8 +117,11 @@ def execution_providers(device, gpu_device_id):
 
 class YoloModel:
     def __new__(cls, path, *args, **kwargs):
-        if Path(path).suffix.lower() == '.pt':
+        suffix = Path(path).suffix.lower()
+        if suffix == '.pt':
             return PtYoloModel(path, *args, **kwargs)
+        if suffix == '.engine':
+            return EngineYoloModel(path, *args, **kwargs)
         return super().__new__(cls)
 
     backend = 'onnxruntime'
@@ -103,7 +130,8 @@ class YoloModel:
     def providers(self):
         return self.session.get_providers()
 
-    def __init__(self, path, red_color=0, threads=4, device='cuda', gpu_device_id=0, profile_prefix=None):
+    def __init__(self, path, red_color=0, threads=4, device='cuda', gpu_device_id=0,
+                 profile_prefix=None, input_size=None):
         providers = execution_providers(device, gpu_device_id)
         if device == 'cuda' and hasattr(ort, 'preload_dlls'):
             # Preload in this process only; do not change the ZED driver's library environment.
@@ -131,6 +159,8 @@ class YoloModel:
         self.size = inputs[0].shape[2:]
         if len(self.size) != 2 or any(not isinstance(n, int) or n <= 0 for n in self.size):
             raise ValueError('Model must have fixed positive input dimensions')
+        if input_size is not None and tuple(input_size) != tuple(self.size):
+            raise ValueError('ONNX model input size is fixed and cannot be overridden')
         self.input_name = inputs[0].name
         names = ast.literal_eval(self.session.get_modelmeta().custom_metadata_map.get('names', '{}'))
         if not isinstance(names, dict) or set(names) != set(range(len(names))) or not names:
@@ -151,7 +181,8 @@ class PtYoloModel:
     """Native PyTorch inference with the same preprocessing and color evidence as ONNX."""
     backend = 'pytorch'
 
-    def __init__(self, path, red_color=0, threads=4, device='cuda', gpu_device_id=0, profile_prefix=None):
+    def __init__(self, path, red_color=0, threads=4, device='cuda', gpu_device_id=0,
+                 profile_prefix=None, input_size=None):
         if device not in ('cuda', 'cpu') or gpu_device_id < 0:
             raise ValueError('device must be cuda/cpu and gpu_device_id must be nonnegative')
         # Scope the compatible Python packages to the inference process, not the ZED driver.
@@ -179,7 +210,17 @@ class PtYoloModel:
                 or any(name not in mapping for name in self.names.values())):
             raise ValueError('Unsupported model class mapping')
         self.color_ids = [mapping[self.names[i]] for i in range(len(self.names))]
-        self.size = (640, 640)
+        checkpoint_size = self.model.args.get('imgsz')
+        # Existing best.pt records the scalar training value 1280, but the
+        # deployed model was validated at 640x640 and performs poorly when that
+        # scalar is applied here. A rectangular value explicitly describes the
+        # camera-shaped input used by the new weights; otherwise retain the
+        # established deployment size.
+        self.size = (checkpoint_input_size(input_size, self.model.stride.max().item())
+                     if input_size is not None else
+                     checkpoint_input_size(checkpoint_size, self.model.stride.max().item())
+                     if isinstance(checkpoint_size, (list, tuple)) and len(checkpoint_size) == 2
+                     else (640, 640))
         self.providers = [f'PyTorch:{self.torch_device}']
 
     def raw_output(self, image):
@@ -189,6 +230,75 @@ class PtYoloModel:
             if isinstance(output, tuple):
                 output = output[0]
             output = output.detach().cpu().numpy()
+        return output, scale, padding
+
+    def predict(self, image, confidence=0.5, iou=0.45):
+        output, scale, padding = self.raw_output(image)
+        return decode(output, scale, padding, image.shape, self.color_ids, confidence, iou)
+
+
+class EngineYoloModel:
+    """Fixed-shape TensorRT FP16 inference with the common WUTA decoder."""
+    backend = 'tensorrt'
+
+    def __init__(self, path, red_color=0, threads=4, device='cuda', gpu_device_id=0,
+                 profile_prefix=None, input_size=None):
+        del profile_prefix
+        if device != 'cuda' or gpu_device_id < 0:
+            raise ValueError('TensorRT engine inference requires device=cuda and a nonnegative gpu_device_id')
+        packages = os.environ.get('YOLO_PYTHON_PACKAGES',
+            '/home/wuta/miniconda3/envs/tensorrt/lib/python3.10/site-packages')
+        if Path(packages).is_dir() and packages not in sys.path:
+            sys.path.insert(0, packages)
+        import torch
+        if not torch.cuda.is_available() or gpu_device_id >= torch.cuda.device_count():
+            raise RuntimeError('TensorRT CUDA unavailable for the requested GPU; CPU fallback is disabled')
+        from ultralytics.nn.autobackend import AutoBackend
+
+        torch.set_num_threads(threads)
+        self.torch = torch
+        self.device = device
+        self.gpu_device_id = gpu_device_id
+        self.torch_device = torch.device(f'cuda:{gpu_device_id}')
+        self.model = AutoBackend(model=str(path), device=self.torch_device,
+                                 fp16=True, verbose=False)
+        binding = self.model.bindings.get('images')
+        shape = tuple(binding.shape) if binding is not None else ()
+        if len(shape) != 4 or shape[:2] != (1, 3) or any(number <= 0 for number in shape):
+            raise ValueError('TensorRT engine must have a fixed image input [1, 3, H, W]')
+        self.size = shape[2:]
+        if input_size is not None:
+            requested = checkpoint_input_size(input_size, int(self.model.stride))
+            if requested != self.size:
+                raise ValueError(
+                    f'TensorRT engine input is {self.size}, but requested input aligns to {requested}')
+        self.names = self.model.names
+        mapping = {'blue': 1, 'yellow': 2, 'orange': 3, 'red': red_color}
+        if (red_color not in (0, 3) or not isinstance(self.names, dict) or not self.names
+                or set(self.names) != set(range(len(self.names)))
+                or any(name not in mapping for name in self.names.values())):
+            raise ValueError('Unsupported model class mapping')
+        self.color_ids = [mapping[self.names[i]] for i in range(len(self.names))]
+        import tensorrt as trt
+        self.providers = [f'TensorRT:{trt.__version__}:cuda:{gpu_device_id}']
+        self.model.warmup((1, 3, *self.size))
+
+    def raw_output(self, image):
+        canvas, scale, padding = _letterbox_canvas(image, self.size)
+        # Transfer compact uint8 pixels and normalize on the GPU. TensorRT
+        # consumes the binding pointer as dense BCHW memory and does not honor
+        # PyTorch strides, so materialize RGB BCHW before the device transfer.
+        tensor = np.ascontiguousarray(canvas[:, :, ::-1].transpose(2, 0, 1)[None])
+        tensor = self.torch.from_numpy(tensor).to(self.torch_device)
+        tensor = tensor.half() if self.model.fp16 else tensor.float()
+        tensor /= 255.0
+        with self.torch.inference_mode():
+            output = self.model(tensor)
+            if isinstance(output, (list, tuple)):
+                if len(output) != 1:
+                    raise ValueError('Expected one TensorRT detection output')
+                output = output[0]
+            output = output.float().cpu().numpy()
         return output, scale, padding
 
     def predict(self, image, confidence=0.5, iou=0.45):

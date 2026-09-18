@@ -1,11 +1,11 @@
 # YOLOv8 / stereo adapter
 
-`yolov8_node` loads `.pt` weights with native PyTorch CUDA by default;
-`.onnx` weights remain supported through ONNX Runtime (the old executable is retained).
+`yolov8_node` loads the fixed-shape FP16 `best-new.engine` with TensorRT by default.
+`.pt` weights remain supported through native PyTorch CUDA and `.onnx` through ONNX Runtime.
 `stereo_detection_adapter` adds registered ZED depth to those detections.
 Driver acquisition is supplied by the standalone hardware fusion launch.
 
-Store weights at `models/best.pt` and shared camera-from-LiDAR calibration at
+Store hardware weights at `models/best-new.engine` and shared camera-from-LiDAR calibration at
 `../calibration/camera_lidar.yaml`. The supplied model classes are red/yellow/blue;
 the user confirmed red means ORANGE. Model IDs are mapped explicitly.
 
@@ -17,18 +17,22 @@ Use Best Effort QoS in RViz/rqt_image_view. No detections produces an unmarked
 image. `/perception/camera/yolo/status` reports count, exposure time and inference ms.
 Parameters: `model_path`, `image_topic`, `output_topic`, `confidence_threshold`,
 `nms_iou_threshold`, `red_color` (default 3), `inference_threads` (default 4),
-`annotated_topic`, `publish_annotated_image` (default true).
+`annotated_topic`, `publish_annotated_image` (default true), `model_input_width`,
+and `model_input_height`. Set both dimensions for rectangular PT/engine input validation;
+1280x760 is stride-aligned to a 1280x768 inference tensor. Leave both zero for
+the legacy/model default.
 `device` defaults to `cuda`, `gpu_device_id` to 0. CUDA provider loading is
 checked, and failure raises an error; CPU execution requires explicit `device:=cpu`.
 The annotated image includes the device, detected-cone count and inference time.
 
-PT inference uses the existing Python 3.10 PyTorch/Ultralytics packages at
+PT and TensorRT inference use the existing Python 3.10 PyTorch/Ultralytics packages at
 `/home/wuta/miniconda3/envs/tensorrt/lib/python3.10/site-packages` (validated:
 PyTorch 2.13.0+cu130, Ultralytics 8.4.104, GTX 1660 SUPER). Override this package
 directory with `YOLO_PYTHON_PACKAGES` when deploying elsewhere; packages must
 match ROS Python 3.10. The path is added only inside the YOLO process.
-PT uses float32 640x640 letterbox and the same raw class-score decoding/NMS as
-ONNX; exposure headers, source-pixel boxes and red-to-ORANGE mapping are retained.
+TensorRT uses the engine's fixed FP16 1280x768 input. PT uses float32 at its
+configured input size. Both use the same raw class-score decoding/NMS as ONNX;
+exposure headers, source-pixel boxes and red-to-ORANGE mapping are retained.
 CUDA availability is checked before loading weights; there is no CPU fallback.
 
 For optional ONNX weights, ONNX Runtime must be installed for ROS system Python.

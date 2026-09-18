@@ -3,7 +3,9 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from camera_detection.yolo import annotate, decode, execution_providers, image_bgr, letterbox
+from camera_detection.yolo import (annotate, checkpoint_input_size, decode,
+                                   EngineYoloModel, execution_providers, image_bgr,
+                                   letterbox, YoloModel)
 
 
 def test_bgra_with_row_padding():
@@ -27,6 +29,13 @@ def test_letterbox_decode_original_pixels_and_duplicate_color_suppression():
     assert np.isclose(sum(probabilities), 1)
     assert probabilities[1] == .95
     assert confidence == .95
+
+
+def test_checkpoint_input_size_preserves_rectangular_training_shape_and_stride():
+    assert checkpoint_input_size([760, 1280], 32) == (768, 1280)
+    assert checkpoint_input_size(1280, 32) == (1280, 1280)
+    with pytest.raises(ValueError):
+        checkpoint_input_size([720], 32)
 
 
 def test_weak_red_stays_unknown_and_empty_output():
@@ -66,3 +75,8 @@ def test_pt_gpu_request_fails_before_loading_weights_when_cuda_unavailable(monke
     monkeypatch.setitem(sys.modules, 'ultralytics', SimpleNamespace(YOLO=lambda *args, **kwargs: pytest.fail('Must not load weights')))
     with pytest.raises(RuntimeError, match='CPU fallback is disabled'):
         YoloModel('best.pt', device='cuda')
+
+
+def test_engine_suffix_selects_tensorrt_backend(monkeypatch):
+    monkeypatch.setattr(EngineYoloModel, '__init__', lambda self, *args, **kwargs: None)
+    assert isinstance(YoloModel('best.engine'), EngineYoloModel)
