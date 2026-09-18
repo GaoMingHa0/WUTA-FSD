@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from detection_fusion.core import associate, covariance, fuse_position, project, transform_matrix
+from detection_fusion.core import associate, covariance, fuse_position, guided_cluster, project, transform_matrix
 
 P = np.array([[700., 0., 640., 0.], [0., 700., 360., 0.], [0., 0., 1., 0.]])
 
@@ -44,3 +44,19 @@ def test_optical_frame_and_translation():
 def test_assignment_is_one_to_one():
     observations = [([630, 350, 650, 370], None, None), ([700, 350, 720, 370], None, None)]
     assert associate([[0, 0, 10], [1, 0, 10]], observations, P) == [(0, 0), (1, 1)]
+
+
+def test_camera_guided_cluster_uses_box_and_depth_layer():
+    rng = np.random.default_rng(4)
+    cone = rng.uniform([-.12, -.12, 9.8], [.12, .12, 10.2], (120, 3))
+    background = rng.uniform([-2, -2, 12], [2, 2, 13], (500, 3))
+    result = guided_cluster(np.vstack([cone, background]), np.eye(4), P,
+                            [625, 345, 655, 375], np.array([0, 0, 10]),
+                            voxel_size=.04, cluster_tolerance=.12)
+    assert result is not None
+    assert np.linalg.norm(result - [0, 0, 10]) < .15
+
+
+def test_camera_guided_cluster_requires_real_points():
+    assert guided_cluster([[2, 2, 15]], np.eye(4), P, [630, 350, 650, 370],
+                          np.array([0, 0, 10])) is None

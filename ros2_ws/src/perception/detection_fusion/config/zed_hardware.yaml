@@ -1,0 +1,12 @@
+/**:
+  ros__parameters:
+    general:
+      pub_downscale_factor: 1.0
+      pub_frame_rate: 15.0
+    depth:
+      depth_mode: NEURAL_LIGHT
+      openni_depth_mode: false
+    pos_tracking:
+      pos_tracking_enabled: true
+      map_frame: map
+      odometry_frame: odom

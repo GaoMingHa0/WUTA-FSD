@@ -1,0 +1,5 @@
+#!/usr/bin/python3
+from camera_detection.yolo_node import main
+
+if __name__ == '__main__':
+    main()

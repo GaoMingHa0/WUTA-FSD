@@ -1,0 +1,23 @@
+# 感知栈共享外参
+# 约定：p_camera = rotation * p_lidar + translation_m
+# camera 为校正左目光学坐标：x 向右，y 向下，z 向前
+# rotation 按行排列；translation_m 单位为米
+
+schema_version: 1
+
+lidar_frame: rslidar
+camera_frame: zed_left_camera_optical_frame
+
+transform_camera_from_lidar:
+  rotation:
+    - [0.0106084145794527, -0.9996151424057500, -0.0256325693843221]
+    - [0.0191546763256897,  0.0258324536958275, -0.9994827575855980]
+    - [0.9997602512177450,  0.0101119438875302,  0.0194213458814503]
+
+  translation_m:
+    - 0.0424115576688025
+    - 1.0792997325922000
+    - 1.6472953670938700
+
+calibration_source: "MATLAB Lidar Camera Calibrator"
+calibration_date: "2026-09-13"

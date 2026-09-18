@@ -80,8 +80,15 @@ PointCloud::Ptr TraditionalDetector::removeGround(const PointCloud::ConstPtr & c
   // RANSAC plane segmentation
   pcl::SACSegmentation<pcl::PointXYZ> seg;
   seg.setOptimizeCoefficients(true);
-  seg.setModelType(pcl::SACMODEL_PLANE);
+  // An unconstrained plane frequently selects walls, doors, or vehicle panels
+  // in indoor M1 scans. Only a plane whose normal follows the calibrated lidar
+  // Z axis can be ground.
+  seg.setModelType(pcl::SACMODEL_PERPENDICULAR_PLANE);
+  seg.setAxis(Eigen::Vector3f::UnitZ());
+  seg.setEpsAngle(cfg_.ground_max_tilt_deg * 3.14159265358979323846 / 180.0);
   seg.setMethodType(pcl::SAC_RANSAC);
+  seg.setMaxIterations(500);
+  seg.setProbability(0.999);
   seg.setDistanceThreshold(cfg_.ransac_distance_threshold);
   seg.setInputCloud(cloud);
 

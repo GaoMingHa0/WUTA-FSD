@@ -2,6 +2,7 @@
 
 import numpy as np
 from scipy.optimize import linear_sum_assignment
+from scipy.spatial import cKDTree
 
 
 def transform_matrix(translation, quaternion):
@@ -106,3 +107,71 @@ def fuse_position(lidar, camera, camera_cov, lidar_sigma=0.12, max_shift=0.25):
     if np.linalg.norm(fused-lidar[:2]) > max_shift:
         return lidar.copy()
     return np.array([fused[0], fused[1], lidar[2]])
+
+
+def guided_cluster(points_lidar, lidar_to_camera, projection, bbox, camera_point=None,
+                   voxel_size=0.05, cluster_tolerance=0.15, depth_tolerance=0.4,
+                   min_cluster_size=5, max_cluster_size=200,
+                   max_width=0.5, min_height=0.08, max_height=0.7):
+    """Extract a real 3D point cluster inside a camera box and depth layer."""
+    points = np.asarray(points_lidar, dtype=float).reshape(-1, 3)
+    finite = np.all(np.isfinite(points), axis=1)
+    points = points[finite]
+    if not len(points):
+        return None
+    camera = points @ lidar_to_camera[:3, :3].T + lidar_to_camera[:3, 3]
+    pixels = project(camera, projection)
+    box = np.asarray(bbox, dtype=float)
+    inside = ((camera[:, 2] > 0.3) & np.all(np.isfinite(pixels), axis=1)
+              & (pixels[:, 0] >= box[0]) & (pixels[:, 0] <= box[2])
+              & (pixels[:, 1] >= box[1]) & (pixels[:, 1] <= box[3]))
+    reference = None
+    if camera_point is not None:
+        reference = np.asarray(camera_point, dtype=float)
+        if reference.shape != (3,) or not np.all(np.isfinite(reference)) or reference[2] <= 0:
+            reference = None
+        else:
+            inside &= np.abs(camera[:, 2] - reference[2]) <= depth_tolerance
+    selected = points[inside]
+    if len(selected) < min_cluster_size:
+        return None
+
+    # Voxel centroids preserve geometry better than taking an arbitrary point.
+    keys = np.floor(selected / voxel_size).astype(np.int64)
+    _, inverse = np.unique(keys, axis=0, return_inverse=True)
+    counts = np.bincount(inverse)
+    voxels = np.column_stack([
+        np.bincount(inverse, weights=selected[:, axis]) / counts for axis in range(3)])
+    if len(voxels) < min_cluster_size:
+        return None
+
+    pairs = cKDTree(voxels).query_pairs(cluster_tolerance)
+    parents = np.arange(len(voxels))
+
+    def root(index):
+        while parents[index] != index:
+            parents[index] = parents[parents[index]]
+            index = parents[index]
+        return index
+
+    for first, second in pairs:
+        first, second = root(first), root(second)
+        if first != second:
+            parents[second] = first
+    groups = {}
+    for index in range(len(voxels)):
+        groups.setdefault(root(index), []).append(index)
+
+    candidates = []
+    for indices in groups.values():
+        cluster = voxels[indices]
+        dimensions = np.ptp(cluster, axis=0)
+        if (min_cluster_size <= len(cluster) <= max_cluster_size
+                and dimensions[0] < max_width and dimensions[1] < max_width
+                and min_height < dimensions[2] < max_height):
+            centre = cluster.mean(axis=0)
+            camera_centre = centre @ lidar_to_camera[:3, :3].T + lidar_to_camera[:3, 3]
+            score = (np.linalg.norm(camera_centre-reference) if reference is not None
+                     else camera_centre[2])
+            candidates.append((score, -len(cluster), centre))
+    return min(candidates, key=lambda item: (item[0], item[1]))[2] if candidates else None

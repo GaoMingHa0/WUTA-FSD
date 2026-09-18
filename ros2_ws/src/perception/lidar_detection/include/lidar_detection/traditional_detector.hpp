@@ -10,6 +10,7 @@ struct TraditionalDetectorConfig
   // Ground removal
   double ground_z_threshold{-0.8};     // Points below this height (m) relative to sensor are ground
   double ransac_distance_threshold{0.2}; // RANSAC inlier distance (m)
+  double ground_max_tilt_deg{5.0};       // Ground normal must remain close to lidar Z
   bool use_ransac{true};               // true=RANSAC, false=simple height threshold
 
   // Voxel downsampling before clustering

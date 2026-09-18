@@ -19,7 +19,11 @@ LidarDetectionNode::LidarDetectionNode(const rclcpp::NodeOptions & options)
   TraditionalDetectorConfig cfg;
   cfg.ground_z_threshold      = declare_parameter("ground_z_threshold",      cfg.ground_z_threshold);
   cfg.ransac_distance_threshold = declare_parameter("ransac_distance_threshold", cfg.ransac_distance_threshold);
+  cfg.ground_max_tilt_deg    = declare_parameter("ground_max_tilt_deg",    cfg.ground_max_tilt_deg);
   cfg.use_ransac              = declare_parameter("use_ransac",               cfg.use_ransac);
+  if (cfg.ground_max_tilt_deg <= 0.0 || cfg.ground_max_tilt_deg > 45.0) {
+    throw std::invalid_argument("ground_max_tilt_deg must be in (0, 45]");
+  }
   cfg.voxel_leaf_size         = declare_parameter("voxel_leaf_size",          cfg.voxel_leaf_size);
   cfg.cluster_tolerance       = declare_parameter("cluster_tolerance",        cfg.cluster_tolerance);
   cfg.min_cluster_size        = declare_parameter("min_cluster_size",         cfg.min_cluster_size);
