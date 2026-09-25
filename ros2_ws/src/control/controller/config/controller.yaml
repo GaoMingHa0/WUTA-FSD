@@ -45,7 +45,7 @@ controller_node:
     inspection_speed: 1.0      # m/s 慢速驱动速度
     inspection_steer_amp: 15.0 # deg 正弦波转向幅值
     inspection_steer_freq: 0.4 # Hz 正弦波频率
-    inspection_duration: 10.0  # s 演示时长，完成后发布 mission_complete
+    inspection_duration: 27.0  # s 车检时长，完成后发布 mission_complete
 
     # 速度 PID：目标速度 → 油门/刹车开度（随 /control/command 发布，[-1,1]）
     pid_speed_kp: 1.0     # 比例
