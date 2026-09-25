@@ -33,7 +33,7 @@ class DetectionFusion(Node):
             'camera_topic': '/perception/camera/cones',
             'camera_info_topic': '/perception/camera/camera_info',
             'output_topic': '/perception/fused/cones',
-            'fixed_frame': 'odom', 'sync_slop_sec': 0.06,
+            'fixed_frame': 'odom', 'sync_slop_sec': 0.03,
             'max_wait_sec': 0.10, 'max_queue': 20,
             'max_match_distance': 0.8, 'mahalanobis_gate': 11.345,
             'pixel_margin': 8.0, 'ambiguity_margin': 0.15,

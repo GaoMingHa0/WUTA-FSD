@@ -121,6 +121,8 @@ class YoloModel:
         if suffix == '.pt':
             return PtYoloModel(path, *args, **kwargs)
         if suffix == '.engine':
+            if Path(path).stem.lower().startswith('lwdetr'):
+                return LwDetrEngineModel(path, *args, **kwargs)
             return EngineYoloModel(path, *args, **kwargs)
         return super().__new__(cls)
 
@@ -304,6 +306,127 @@ class EngineYoloModel:
     def predict(self, image, confidence=0.5, iou=0.45):
         output, scale, padding = self.raw_output(image)
         return decode(output, scale, padding, image.shape, self.color_ids, confidence, iou)
+
+
+class LwDetrEngineModel:
+    """Fixed-shape TensorRT LW-DETR with its own preprocessing and DETR decoder."""
+    backend = 'tensorrt-int8-lwdetr'
+
+    def __init__(self, path, red_color=0, threads=4, device='cuda', gpu_device_id=0,
+                 profile_prefix=None, input_size=None):
+        del profile_prefix
+        if device != 'cuda' or gpu_device_id < 0:
+            raise ValueError('LW-DETR TensorRT requires device=cuda and a nonnegative GPU ID')
+        packages = os.environ.get('YOLO_PYTHON_PACKAGES',
+            '/home/wuta/miniconda3/envs/tensorrt/lib/python3.10/site-packages')
+        if Path(packages).is_dir() and packages not in sys.path:
+            sys.path.insert(0, packages)
+        import torch
+        import tensorrt as trt
+        if not torch.cuda.is_available() or gpu_device_id >= torch.cuda.device_count():
+            raise RuntimeError('CUDA unavailable for LW-DETR TensorRT inference')
+        if red_color not in (0, 3):
+            raise ValueError('red_color must be 0 (UNKNOWN) or 3 (ORANGE)')
+        torch.set_num_threads(threads)
+        self.torch = torch
+        self.device = 'cuda'
+        self.gpu_device_id = gpu_device_id
+        self.torch_device = torch.device(f'cuda:{gpu_device_id}')
+        self.logger = trt.Logger(trt.Logger.ERROR)
+        self.runtime = trt.Runtime(self.logger)
+        self.engine = self.runtime.deserialize_cuda_engine(Path(path).read_bytes())
+        if self.engine is None:
+            raise RuntimeError(f'Failed to deserialize TensorRT engine: {path}')
+        self.context = self.engine.create_execution_context()
+        self.inputs = [self.engine.get_tensor_name(i) for i in range(self.engine.num_io_tensors)
+                       if self.engine.get_tensor_mode(self.engine.get_tensor_name(i)) == trt.TensorIOMode.INPUT]
+        self.outputs = [self.engine.get_tensor_name(i) for i in range(self.engine.num_io_tensors)
+                        if self.engine.get_tensor_mode(self.engine.get_tensor_name(i)) == trt.TensorIOMode.OUTPUT]
+        if len(self.inputs) != 1 or len(self.outputs) != 2:
+            raise ValueError(f'Expected one input and DETR boxes/logits outputs, got {self.inputs}, {self.outputs}')
+        self.input_name = self.inputs[0]
+        input_shape = tuple(self.engine.get_tensor_shape(self.input_name))
+        if len(input_shape) != 4 or input_shape[:2] != (1, 3) or min(input_shape) <= 0:
+            raise ValueError(f'Expected fixed [1,3,H,W] LW-DETR input, got {input_shape}')
+        self.size = input_shape[2:]
+        if input_size is not None and tuple(input_size) != tuple(self.size):
+            raise ValueError(f'Engine input {self.size} does not match configured input {tuple(input_size)}')
+        self.torch_dtype = {trt.DataType.FLOAT: torch.float32,
+                            trt.DataType.HALF: torch.float16}[self.engine.get_tensor_dtype(self.input_name)]
+        self.output_buffers = []
+        for name in self.outputs:
+            shape = tuple(self.engine.get_tensor_shape(name))
+            if any(dimension <= 0 for dimension in shape):
+                raise ValueError(f'LW-DETR output must have a fixed shape, got {name}: {shape}')
+            dtype = {trt.DataType.FLOAT: torch.float32, trt.DataType.HALF: torch.float16,
+                     trt.DataType.INT32: torch.int32}[self.engine.get_tensor_dtype(name)]
+            self.output_buffers.append((name, torch.empty(shape, dtype=dtype, device=self.torch_device)))
+        output_shapes = [tuple(buffer.shape) for _, buffer in self.output_buffers]
+        if not any(shape[-1:] == (4,) for shape in output_shapes) or not any(shape[-1:] == (3,) for shape in output_shapes):
+            raise ValueError(f'Expected DETR output boxes [...,4] and logits [...,3], got {output_shapes}')
+        self.boxes_name = next(name for name, buffer in self.output_buffers if buffer.shape[-1] == 4)
+        self.logits_name = next(name for name, buffer in self.output_buffers if buffer.shape[-1] == 3)
+        self.names = {0: 'red', 1: 'yellow', 2: 'blue'}
+        self.class_to_color = [red_color, 2, 1]
+        self.providers = [f'TensorRT:{trt.__version__}:cuda:{gpu_device_id}:INT8+FP16']
+        self.torch.cuda.synchronize(self.torch_device)
+        self.raw_output(np.zeros((self.size[0], self.size[1], 3), dtype=np.uint8))
+
+    def raw_output(self, image):
+        height, width = self.size
+        source_h, source_w = image.shape[:2]
+        scale = min(width / source_w, height / source_h)
+        resized_w, resized_h = round(source_w * scale), round(source_h * scale)
+        left, top = (width - resized_w) // 2, (height - resized_h) // 2
+        canvas = np.full((height, width, 3), 114, np.uint8)
+        canvas[top:top + resized_h, left:left + resized_w] = cv2.resize(
+            image, (resized_w, resized_h), interpolation=cv2.INTER_LINEAR)
+        pixels = canvas[:, :, ::-1].astype(np.float32) / 255.0
+        pixels = (pixels - np.array([0.485, 0.456, 0.406], np.float32)) / np.array(
+            [0.229, 0.224, 0.225], np.float32)
+        tensor = self.torch.from_numpy(np.ascontiguousarray(
+            pixels.transpose(2, 0, 1)[None])).to(device=self.torch_device, dtype=self.torch_dtype)
+        self.context.set_tensor_address(self.input_name, int(tensor.data_ptr()))
+        for name, buffer in self.output_buffers:
+            self.context.set_tensor_address(name, int(buffer.data_ptr()))
+        stream = self.torch.cuda.current_stream(self.torch_device)
+        if not self.context.execute_async_v3(stream.cuda_stream):
+            raise RuntimeError('TensorRT LW-DETR inference execution failed')
+        outputs = {name: buffer.float().cpu().numpy() for name, buffer in self.output_buffers}
+        return outputs[self.boxes_name], outputs[self.logits_name], scale, (left, top)
+
+    def predict(self, image, confidence=0.5, iou=0.45):
+        coords, logits, scale, (left, top) = self.raw_output(image)
+        boxes = np.asarray(coords).reshape(-1, 4)
+        scores_by_class = 1.0 / (1.0 + np.exp(-np.clip(np.asarray(logits).reshape(-1, 3), -80, 80)))
+        count = min(300, scores_by_class.size)
+        flat = scores_by_class.reshape(-1)
+        chosen = np.argpartition(flat, -count)[-count:]
+        chosen = chosen[np.argsort(flat[chosen])[::-1]]
+        query_ids, class_ids = chosen // 3, chosen % 3
+        scores = flat[chosen]
+        cxcy, wh = boxes[query_ids, :2], boxes[query_ids, 2:]
+        xyxy = np.concatenate((cxcy - wh / 2, cxcy + wh / 2), axis=1)
+        xyxy *= np.array([self.size[1], self.size[0], self.size[1], self.size[0]])
+        xyxy -= np.array([left, top, left, top])
+        xyxy /= scale
+        source_h, source_w = image.shape[:2]
+        xyxy[:, [0, 2]] = np.clip(xyxy[:, [0, 2]], 0, source_w)
+        xyxy[:, [1, 3]] = np.clip(xyxy[:, [1, 3]], 0, source_h)
+        keep = (scores >= confidence) & (xyxy[:, 2] > xyxy[:, 0]) & (xyxy[:, 3] > xyxy[:, 1])
+        indices = np.flatnonzero(keep)
+        if not len(indices):
+            return []
+        nms_boxes = np.column_stack((xyxy[indices, :2], xyxy[indices, 2:] - xyxy[indices, :2]))
+        nms = np.asarray(cv2.dnn.NMSBoxes(nms_boxes.tolist(), scores[indices].tolist(),
+                                         confidence, iou)).reshape(-1)
+        results = []
+        for index in indices[nms]:
+            probabilities = np.zeros(4, dtype=np.float32)
+            probabilities[self.class_to_color[class_ids[index]]] = scores[index]
+            probabilities[0] = 1.0 - scores[index]
+            results.append((xyxy[index].tolist(), probabilities.tolist(), float(scores[index])))
+        return results
 
 
 def annotate(image, predictions, status_text=None):

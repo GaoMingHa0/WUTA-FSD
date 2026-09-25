@@ -1,4 +1,5 @@
 """Bounded latest-image inference; publish the original exposure header."""
+from array import array
 from copy import deepcopy
 import json
 import threading
@@ -37,7 +38,7 @@ class YoloNode(Node):
         self.model = YoloModel(self.cfg['model_path'], self.cfg['red_color'], self.cfg['inference_threads'],
                                self.cfg['device'], self.cfg['gpu_device_id'], input_size=input_size)
         self.get_logger().info('Loaded model classes: ' + str(self.model.names))
-        self.get_logger().info('YOLO device: ' + self.model.device +
+        self.get_logger().info('Detector device: ' + str(getattr(self.model, 'device', 'cuda')) +
                                '; backend: ' + self.model.backend + '; providers: ' + str(self.model.providers))
         self.pub = self.create_publisher(CameraConeDetectionArray, self.cfg['output_topic'], 10)
         self.image_pub = self.create_publisher(Image, self.cfg['annotated_topic'], qos_profile_sensor_data)
@@ -78,25 +79,46 @@ class YoloNode(Node):
                     detection.position_valid = False
                     result.detections.append(detection)
                 self.pub.publish(result)
+                detection_publish_ms = (time.monotonic() - started) * 1000 - inference_ms
+                annotation_ms = 0.0
+                render_ms = 0.0
+                image_data_ms = 0.0
+                annotated_publish_ms = 0.0
                 if self.cfg['publish_annotated_image'] and self.image_pub.get_subscription_count():
+                    annotation_started = time.monotonic()
                     device_label = (f'CUDA GPU {self.model.gpu_device_id}'
                                     if self.model.device == 'cuda' else 'CPU')
                     annotated = annotate(image, predictions,
-                        f'YOLO {self.model.backend} {device_label} | cones: {len(predictions)} | {inference_ms:.0f} ms')
+                        f'{self.model.backend} {device_label} | cones: {len(predictions)} | {inference_ms:.0f} ms')
+                    render_ms = (time.monotonic() - annotation_started) * 1000
                     image_msg = Image()
                     image_msg.header = deepcopy(source.header)
                     image_msg.height, image_msg.width = annotated.shape[:2]
                     image_msg.encoding = 'bgr8'
                     image_msg.is_bigendian = 0
                     image_msg.step = image_msg.width * 3
-                    image_msg.data = annotated.tobytes()
+                    data_started = time.monotonic()
+                    # The ROS 2 generated setter validates every byte in a
+                    # plain bytes object in Python. array('B') takes its fast
+                    # path and preserves the exact BGR byte sequence.
+                    image_msg.data = array('B', annotated.tobytes())
+                    image_data_ms = (time.monotonic() - data_started) * 1000
+                    annotation_ms = (time.monotonic() - annotation_started) * 1000
+                    publish_started = time.monotonic()
                     self.image_pub.publish(image_msg)
+                    annotated_publish_ms = (time.monotonic() - publish_started) * 1000
                 self.status.publish(String(data=json.dumps({'detections': len(result.detections),
                     'inference_ms': inference_ms, 'device': self.model.device,
                     'backend': self.model.backend, 'providers': self.model.providers,
+                    'detection_publish_ms': detection_publish_ms,
+                    'annotation_ms': annotation_ms,
+                    'render_ms': render_ms,
+                    'image_data_ms': image_data_ms,
+                    'annotated_publish_ms': annotated_publish_ms,
+                    'cycle_ms': (time.monotonic() - started) * 1000,
                     'stamp_ns': source.header.stamp.sec * 1000000000 + source.header.stamp.nanosec})))
             except Exception as error:
-                self.get_logger().error('YOLO inference failed: ' + str(error))
+                self.get_logger().error('Detector inference failed: ' + str(error))
 
     def close(self):
         self.stopping.set()

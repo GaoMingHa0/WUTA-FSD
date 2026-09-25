@@ -1,5 +1,7 @@
 #include "lidar_detection/traditional_detector.hpp"
 
+#include <chrono>
+#include <cmath>
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/filters/passthrough.h>
 #include <pcl/segmentation/sac_segmentation.h>
@@ -17,24 +19,54 @@ wuta_msgs::msg::ConeArray TraditionalDetector::detect(const PointCloud::ConstPtr
 {
   wuta_msgs::msg::ConeArray result;
 
-  // 1. Range filter: discard points beyond max detection range
+  using Clock = std::chrono::steady_clock;
+  const auto elapsed = [](Clock::time_point before, Clock::time_point after) {
+    return std::chrono::duration<double, std::milli>(after - before).count();
+  };
+  last_timings_ = {};
+  last_timings_.input_points = cloud->size();
+  const auto t0 = Clock::now();
   PointCloud::Ptr range_filtered(new PointCloud);
+  range_filtered->reserve(cloud->size());
+  const float max_range_sq = static_cast<float>(cfg_.max_detection_range * cfg_.max_detection_range);
   for (const auto & pt : cloud->points) {
-    if (pt.x * pt.x + pt.y * pt.y < cfg_.max_detection_range * cfg_.max_detection_range) {
-      range_filtered->points.push_back(pt);
-    }
+    if (std::isfinite(pt.x) && std::isfinite(pt.y) && std::isfinite(pt.z) &&
+        pt.x * pt.x + pt.y * pt.y < max_range_sq) range_filtered->push_back(pt);
   }
+  const auto t1 = Clock::now();
+  last_timings_.range_ms = elapsed(t0, t1);
+  last_timings_.range_points = range_filtered->size();
+  if (range_filtered->empty()) return result;
 
-  // 2. Ground removal
-  PointCloud::Ptr no_ground = removeGround(range_filtered);
-  if (no_ground->empty()) return result;
-
-  // 3. Voxel downsampling
-  PointCloud::Ptr downsampled = voxelDownsample(no_ground);
-  if (downsampled->empty()) return result;
-
-  // 4. Euclidean clustering
-  auto clusters = euclideanCluster(downsampled);
+  PointCloud::Ptr no_ground;
+  PointCloud::Ptr cluster_input;
+  if (cfg_.voxel_before_ground) {
+    const auto v0 = Clock::now();
+    auto downsampled = voxelDownsample(range_filtered);
+    const auto v1 = Clock::now();
+    last_timings_.voxel_ms = elapsed(v0, v1);
+    last_timings_.voxel_points = downsampled->size();
+    if (downsampled->empty()) return result;
+    no_ground = removeGround(downsampled);
+    last_timings_.ground_ms = elapsed(v1, Clock::now());
+    cluster_input = no_ground;
+  } else {
+    const auto g0 = Clock::now();
+    no_ground = removeGround(range_filtered);
+    const auto g1 = Clock::now();
+    last_timings_.ground_ms = elapsed(g0, g1);
+    if (no_ground->empty()) return result;
+    const auto v0 = Clock::now();
+    cluster_input = voxelDownsample(no_ground);
+    last_timings_.voxel_ms = elapsed(v0, Clock::now());
+    last_timings_.voxel_points = cluster_input->size();
+  }
+  last_timings_.nonground_points = no_ground->size();
+  if (cluster_input->empty()) return result;
+  const auto c0 = Clock::now();
+  auto clusters = euclideanCluster(cluster_input);
+  const auto c1 = Clock::now();
+  last_timings_.cluster_ms = elapsed(c0, c1);
 
   // 5. Cone shape filter → centroid extraction
   for (const auto & cluster : clusters) {
@@ -60,6 +92,7 @@ wuta_msgs::msg::ConeArray TraditionalDetector::detect(const PointCloud::ConstPtr
     result.cones.push_back(cone);
   }
 
+  last_timings_.shape_ms = elapsed(c1, Clock::now());
   return result;
 }
 
@@ -87,8 +120,8 @@ PointCloud::Ptr TraditionalDetector::removeGround(const PointCloud::ConstPtr & c
   seg.setAxis(Eigen::Vector3f::UnitZ());
   seg.setEpsAngle(cfg_.ground_max_tilt_deg * 3.14159265358979323846 / 180.0);
   seg.setMethodType(pcl::SAC_RANSAC);
-  seg.setMaxIterations(500);
-  seg.setProbability(0.999);
+  seg.setMaxIterations(cfg_.ransac_max_iterations);
+  seg.setProbability(cfg_.ransac_probability);
   seg.setDistanceThreshold(cfg_.ransac_distance_threshold);
   seg.setInputCloud(cloud);
 

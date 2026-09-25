@@ -85,12 +85,42 @@ def associate(lidar_camera, observations, projection, max_distance=0.8,
         cost[i, :] = np.inf
     for j in cols_bad:
         cost[:, j] = np.inf
-    # Dummy columns represent unmatched LiDAR cones.
-    augmented = np.concatenate([np.where(np.isfinite(cost), cost, 1e6),
-                                np.full((len(points), len(points)), 10.0)], axis=1)
-    rows, cols = linear_sum_assignment(augmented)
-    return [(int(i), int(j)) for i, j in zip(rows, cols)
-            if j < len(observations) and np.isfinite(cost[i, j])]
+
+    # A mutual row/column minimum is an unambiguous one-to-one match. Resolve
+    # those directly and run Hungarian only on the remaining conflict subset.
+    row_best = np.argmin(cost, axis=1)
+    col_best = np.argmin(cost, axis=0)
+    row_valid = np.any(np.isfinite(cost), axis=1)
+    col_valid = np.any(np.isfinite(cost), axis=0)
+    row_degree = np.sum(np.isfinite(cost), axis=1)
+    col_degree = np.sum(np.isfinite(cost), axis=0)
+    matches = []
+    used_rows, used_cols = set(), set()
+    for i, j in enumerate(row_best):
+        j = int(j)
+        if (row_valid[i] and col_valid[j] and row_degree[i] == 1 and
+                col_degree[j] == 1 and col_best[j] == i):
+            matches.append((int(i), j))
+            used_rows.add(int(i))
+            used_cols.add(j)
+
+    remaining_rows = [i for i in range(len(points)) if i not in used_rows]
+    remaining_cols = [j for j in range(len(observations)) if j not in used_cols]
+    if remaining_rows and remaining_cols:
+        residual = cost[np.ix_(remaining_rows, remaining_cols)]
+        active_rows = np.flatnonzero(np.any(np.isfinite(residual), axis=1))
+        active_cols = np.flatnonzero(np.any(np.isfinite(residual), axis=0))
+        if len(active_rows) and len(active_cols):
+            reduced = residual[np.ix_(active_rows, active_cols)]
+            # Dummy columns represent unmatched LiDAR cones.
+            augmented = np.concatenate([np.where(np.isfinite(reduced), reduced, 1e6),
+                                        np.full((len(active_rows), len(active_rows)), 10.0)], axis=1)
+            rows, cols = linear_sum_assignment(augmented)
+            for row, col in zip(rows, cols):
+                if col < len(active_cols) and np.isfinite(reduced[row, col]):
+                    matches.append((remaining_rows[active_rows[row]],
+                                    remaining_cols[active_cols[col]]))
+    return sorted(matches)
 
 
 def fuse_position(lidar, camera, camera_cov, lidar_sigma=0.12, max_shift=0.25):

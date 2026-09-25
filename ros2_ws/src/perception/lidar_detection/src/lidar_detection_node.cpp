@@ -2,6 +2,7 @@
 #include "lidar_detection/traditional_detector.hpp"
 #include "lidar_detection/dl_detector.hpp"
 
+#include <chrono>
 #include <pcl_conversions/pcl_conversions.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <visualization_msgs/msg/marker.hpp>
@@ -21,6 +22,14 @@ LidarDetectionNode::LidarDetectionNode(const rclcpp::NodeOptions & options)
   cfg.ransac_distance_threshold = declare_parameter("ransac_distance_threshold", cfg.ransac_distance_threshold);
   cfg.ground_max_tilt_deg    = declare_parameter("ground_max_tilt_deg",    cfg.ground_max_tilt_deg);
   cfg.use_ransac              = declare_parameter("use_ransac",               cfg.use_ransac);
+  cfg.ransac_max_iterations   = declare_parameter("ransac_max_iterations", cfg.ransac_max_iterations);
+  cfg.ransac_probability      = declare_parameter("ransac_probability", cfg.ransac_probability);
+  cfg.voxel_before_ground     = declare_parameter("voxel_before_ground", cfg.voxel_before_ground);
+  const bool profile_stages = declare_parameter("profile_stages", false);
+  if (cfg.ransac_max_iterations < 1 || cfg.ransac_probability <= 0.0 || cfg.ransac_probability >= 1.0) {
+    throw std::invalid_argument("Invalid RANSAC iteration/probability parameters");
+  }
+  profile_stages_ = profile_stages;
   if (cfg.ground_max_tilt_deg <= 0.0 || cfg.ground_max_tilt_deg > 45.0) {
     throw std::invalid_argument("ground_max_tilt_deg must be in (0, 45]");
   }
@@ -55,8 +64,13 @@ LidarDetectionNode::LidarDetectionNode(const rclcpp::NodeOptions & options)
   tf_buffer_ = std::make_shared<tf2_ros::Buffer>(get_clock());
   tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
+  // Detection is heavier than the incoming scan cadence on this M1 host.
+  // Keep only the newest waiting scan so a slow callback cannot build a
+  // several-frame backlog and publish stale cone positions.
+  auto pointcloud_qos = rclcpp::SensorDataQoS();
+  pointcloud_qos.keep_last(1);
   pointcloud_sub_ = create_subscription<sensor_msgs::msg::PointCloud2>(
-    input_topic, rclcpp::SensorDataQoS(),
+    input_topic, pointcloud_qos,
     std::bind(&LidarDetectionNode::onPointCloud, this, std::placeholders::_1));
 
   cone_pub_   = create_publisher<wuta_msgs::msg::ConeArray>(output_topic, 10);
@@ -71,7 +85,20 @@ void LidarDetectionNode::onPointCloud(const sensor_msgs::msg::PointCloud2::Share
   PointCloud::Ptr cloud(new PointCloud);
   pcl::fromROSMsg(*msg, *cloud);
 
+  const auto detect_started = std::chrono::steady_clock::now();
   auto cones = detector_->detect(cloud);
+  const double detect_ms = std::chrono::duration<double, std::milli>(
+    std::chrono::steady_clock::now() - detect_started).count();
+  if (profile_stages_) {
+    if (const auto *traditional = dynamic_cast<TraditionalDetector *>(detector_.get())) {
+      const auto &t = traditional->lastTimings();
+      RCLCPP_INFO(get_logger(),
+        "lidar_profile input=%zu range=%zu voxel=%zu nonground=%zu cones=%zu "
+        "range_ms=%.3f voxel_ms=%.3f ground_ms=%.3f cluster_ms=%.3f shape_ms=%.3f detect_ms=%.3f",
+        t.input_points, t.range_points, t.voxel_points, t.nonground_points, cones.cones.size(),
+        t.range_ms, t.voxel_ms, t.ground_ms, t.cluster_ms, t.shape_ms, detect_ms);
+    }
+  }
   cones.header = msg->header;
 
   cone_pub_->publish(cones);

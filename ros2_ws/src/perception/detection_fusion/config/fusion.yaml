@@ -5,7 +5,7 @@ detection_fusion_node:
     camera_info_topic: /perception/camera/camera_info
     output_topic: /perception/fused/cones
     fixed_frame: odom
-    sync_slop_sec: 0.06
+    sync_slop_sec: 0.03
     max_wait_sec: 0.10
     max_queue: 20
     max_match_distance: 0.8

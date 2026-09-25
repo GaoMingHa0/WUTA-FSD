@@ -46,6 +46,12 @@ def test_assignment_is_one_to_one():
     assert associate([[0, 0, 10], [1, 0, 10]], observations, P) == [(0, 0), (1, 1)]
 
 
+def test_conflicting_candidates_use_global_assignment():
+    observations = [([523.5, 345, 756.5, 375], None, None),
+                    ([508, 345, 702, 375], None, None)]
+    assert associate([[0, 0, 10], [1, 0, 10]], observations, P) == [(0, 1), (1, 0)]
+
+
 def test_camera_guided_cluster_uses_box_and_depth_layer():
     rng = np.random.default_rng(4)
     cone = rng.uniform([-.12, -.12, 9.8], [.12, .12, 10.2], (120, 3))

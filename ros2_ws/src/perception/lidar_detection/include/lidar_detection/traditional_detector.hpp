@@ -12,6 +12,9 @@ struct TraditionalDetectorConfig
   double ransac_distance_threshold{0.2}; // RANSAC inlier distance (m)
   double ground_max_tilt_deg{5.0};       // Ground normal must remain close to lidar Z
   bool use_ransac{true};               // true=RANSAC, false=simple height threshold
+  int ransac_max_iterations{500};
+  double ransac_probability{0.999};
+  bool voxel_before_ground{false};
 
   // Voxel downsampling before clustering
   double voxel_leaf_size{0.1};         // m
@@ -30,15 +33,22 @@ struct TraditionalDetectorConfig
   double max_detection_range{20.0};    // m from sensor origin
 };
 
+struct DetectorTimings {
+  double range_ms{0}, voxel_ms{0}, ground_ms{0}, cluster_ms{0}, shape_ms{0};
+  std::size_t input_points{0}, range_points{0}, voxel_points{0}, nonground_points{0};
+};
+
 class TraditionalDetector : public IDetector
 {
 public:
   explicit TraditionalDetector(const TraditionalDetectorConfig & config);
 
   wuta_msgs::msg::ConeArray detect(const PointCloud::ConstPtr & cloud) override;
+  const DetectorTimings & lastTimings() const { return last_timings_; }
 
 private:
   TraditionalDetectorConfig cfg_;
+  DetectorTimings last_timings_;
 
   PointCloud::Ptr removeGround(const PointCloud::ConstPtr & cloud) const;
   PointCloud::Ptr voxelDownsample(const PointCloud::ConstPtr & cloud) const;

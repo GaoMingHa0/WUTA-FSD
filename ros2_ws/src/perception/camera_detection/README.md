@@ -1,20 +1,31 @@
-# YOLOv8 / stereo adapter
+# Camera cone detector / stereo adapter
 
-`yolov8_node` loads the fixed-shape FP16 `best-new.engine` with TensorRT by default.
+The hardware launch defaults to the YOLOv8s-P2 INT8 engine
+`models/yolov8sp2-int8.engine`, loaded by the retained Python/TensorRT
+`yolov8_node`. `detector_backend:=auto` selects the C++/TensorRT
+`lwdetr_tensorrt_node` only for a LW-DETR `.engine`; YOLO models use Python.
+Use `detector_backend:=cpp` to require the C++ node or `python` to select Python.
+Both nodes publish the same detection, annotated image, and status topics.
+LW-DETR engines use a DETR-specific decoder; other `.engine` files retain the YOLO decoder.
 `.pt` weights remain supported through native PyTorch CUDA and `.onnx` through ONNX Runtime.
-`stereo_detection_adapter` adds registered ZED depth to those detections.
+`stereo_detection_adapter_cpp` adds registered ZED depth to those detections by
+default. The original Python `stereo_detection_adapter` remains available with
+`adapter_backend:=python` in the hardware launch.
 Driver acquisition is supplied by the standalone hardware fusion launch.
 
-Store hardware weights at `models/best-new.engine` and shared camera-from-LiDAR calibration at
+Store hardware engines in `models/` and shared camera-from-LiDAR calibration at
 `../calibration/camera_lidar.yaml`. The supplied model classes are red/yellow/blue;
 the user confirmed red means ORANGE. Model IDs are mapped explicitly.
 
-The YOLO node consumes the latest image in a bounded worker, reverses letterbox,
+The detector node consumes the latest image in a bounded worker, reverses letterbox,
 and publishes `/camera/yolo/cones` with the original exposure stamp/frame.
 `/camera/yolo/image_annotated` is a full-resolution bgr8 image with boxes, semantic
 color names and confidence; it is rendered only while subscribers exist.
 Use Best Effort QoS in RViz/rqt_image_view. No detections produces an unmarked
-image. `/perception/camera/yolo/status` reports count, exposure time and inference ms.
+image. `/perception/camera/yolo/status` reports detection count, source image
+timestamp, inference time, detection publishing time, annotation rendering time,
+image-data conversion time, annotated image publishing time and total cycle time.
+The image timestamp is not the camera shutter duration.
 Parameters: `model_path`, `image_topic`, `output_topic`, `confidence_threshold`,
 `nms_iou_threshold`, `red_color` (default 3), `inference_threads` (default 4),
 `annotated_topic`, `publish_annotated_image` (default true), `model_input_width`,
@@ -25,7 +36,23 @@ the legacy/model default.
 checked, and failure raises an error; CPU execution requires explicit `device:=cpu`.
 The annotated image includes the device, detected-cone count and inference time.
 
-PT and TensorRT inference use the existing Python 3.10 PyTorch/Ultralytics packages at
+The LW-DETR engine expects fixed float input `[1,3,768,1280]`, RGB ImageNet normalization,
+and emits 300 normalized boxes plus class logits. A 1280x720 camera frame is letterboxed
+with 24-pixel top and bottom padding. Class IDs map as `0=red -> ORANGE`,
+`1=yellow -> YELLOW`, `2=blue -> BLUE`. The model-specific engine is detected from the
+`lwdetr` filename prefix. The default engine is generated locally and is not committed.
+
+To regenerate it, put the checkpoint at `models/checkpoint_best_ema.pth.1` and run:
+
+```bash
+PYTHONNOUSERSITE=1 /home/wuta/miniconda3/envs/tensorrt/bin/python tools/export_lwdetr_onnx.py
+PYTHONNOUSERSITE=1 /home/wuta/miniconda3/envs/tensorrt/bin/python tools/build_lwdetr_engine.py
+```
+
+The build script calibrates using up to 32 PNG images under `/home/wuta/BiaoDing/data/camera`.
+For another camera domain, provide a representative calibration directory with `--calibration-dir`.
+
+PT and TensorRT inference use the existing Python 3.10 PyTorch/TensorRT packages at
 `/home/wuta/miniconda3/envs/tensorrt/lib/python3.10/site-packages` (validated:
 PyTorch 2.13.0+cu130, Ultralytics 8.4.104, GTX 1660 SUPER). Override this package
 directory with `YOLO_PYTHON_PACKAGES` when deploying elsewhere; packages must
@@ -64,7 +91,8 @@ with `--target .hardware_deps --no-deps scipy==1.15.3` from the repository root.
   calibrated rectified P. Publish periodically for late subscribers.
 
 The three input topic names are parameters `boxes_topic`, `depth_topic`,
-`info_topic`. Outputs `/perception/camera/cones` and
+`info_topic`. The C++ node also accepts `output_topic` and `output_info_topic`
+for isolated interface tests. Default outputs `/perception/camera/cones` and
 `/perception/camera/camera_info` match the fusion contract. Inputs use sensor-data
 QoS; outputs Reliable/Volatile depth 10.
 
@@ -78,7 +106,8 @@ position fusion. A uniformly wrong/background depth can pass ROI checks, so
 fusion also checks against LiDAR geometry.
 
 ```bash
-ros2 run camera_detection stereo_detection_adapter
+ros2 run camera_detection stereo_detection_adapter_cpp
+# Python backup: ros2 run camera_detection stereo_detection_adapter
 PYTHONPATH=. python3 -m pytest test -q
 ```
 
