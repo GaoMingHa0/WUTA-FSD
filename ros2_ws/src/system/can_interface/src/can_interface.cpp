@@ -94,8 +94,13 @@ void CANInterfaceNode::onDevicesInspection(
 {
   // Signal3：设备自检通过 → 上线=1；失败 → 0（mission_manager 已切 EMERGENCY）
   can_online_ = msg->ok;
-  RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000,
-    "Devices inspection: ok=%d online=%d", msg->ok, can_online_);
+  if (msg->ok) {
+    RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 2000,
+      "Devices inspection: ok=%d online=%d", msg->ok, can_online_);
+  } else {
+    RCLCPP_ERROR(get_logger(), "Devices inspection: ok=%d online=%d",
+      msg->ok, can_online_);
+  }
   sendControlFrame();
 }
 
@@ -164,7 +169,7 @@ void CANInterfaceNode::repeatVcuSignals()
     std_msgs::msg::Bool emergency;
     emergency.data = true;
     emergency_pub_->publish(emergency);
-    RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), 5000,
+    RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000,
       "Repeat EMERGENCY (VCU state 12).");
   }
 }
@@ -190,7 +195,7 @@ void CANInterfaceNode::parseVcuFrame(const CanFrame & frame)
         break;
       case 12:  // 无人 EMERGENCY
         emergency.data = true;
-        RCLCPP_ERROR(get_logger(), "VCU state 12 (EMERGENCY)!");
+        RCLCPP_WARN(get_logger(), "VCU state 12 (EMERGENCY)!");
         break;
       default:  // 静默/有人/无人待命等：不启动、不触发急停
         RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 2000,

@@ -51,6 +51,9 @@ controller_node:
     pid_speed_kp: 1.0     # 比例
     pid_speed_ki: 0.05    # 积分
     pid_speed_kd: 0.1     # 微分
+    # 停车消积分阈值 [m/s]：目标速度（经 TwistFilter 平滑）低于该值且车速
+    # 接近停稳时清零积分，避免停车后残留驱动开度
+    pid_stop_clear_eps: 0.05
 
     # Skidpad completion: the vehicle must stop at the 25 m exit endpoint.
     finish_position_tolerance: 0.75  # m

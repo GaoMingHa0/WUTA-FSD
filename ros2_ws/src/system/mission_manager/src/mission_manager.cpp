@@ -186,6 +186,8 @@ void MissionManager::advanceRaceWhenReady()
 
 void MissionManager::transitionTo(uint8_t new_state)
 {
+  if (new_state == current_state_) return;
+
   const auto state_name = [](uint8_t s) -> std::string {
     switch (s) {
       case State::IDLE:         return "IDLE";
@@ -455,7 +457,8 @@ void MissionManager::onEmergency(const std_msgs::msg::Bool::SharedPtr msg)
 {
   // 仅负责 mission_state 状态切换；刹车动作（控制输出归零）由 controller_node 负责
   if (msg->data) {
-    RCLCPP_ERROR(get_logger(), "EMERGENCY triggered!");
+    // 急停是安全事件而非程序错误，按 WARN 记录（可见但不误报为故障）
+    RCLCPP_WARN(get_logger(), "EMERGENCY triggered!");
     transitionTo(State::EMERGENCY);
   }
 }

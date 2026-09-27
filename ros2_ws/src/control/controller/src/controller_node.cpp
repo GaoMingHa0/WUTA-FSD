@@ -82,6 +82,7 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
   pid_speed_kp_ = declare_parameter("pid_speed_kp", pid_speed_kp_);
   pid_speed_ki_ = declare_parameter("pid_speed_ki", pid_speed_ki_);
   pid_speed_kd_ = declare_parameter("pid_speed_kd", pid_speed_kd_);
+  pid_stop_clear_eps_ = declare_parameter("pid_stop_clear_eps", pid_stop_clear_eps_);
 
   pure_pursuit_ = std::make_unique<PurePursuit>(vp, pp_cfg);
   twist_filter_ = std::make_unique<TwistFilter>(
@@ -161,8 +162,10 @@ double ControllerNode::computeSpeedPid(double target_speed)
   const double err = target_speed - vehicle_state_.velocity;
 
   // 停车消积分：目标 0 且车速已接近停稳时清零积分，防止巡航期残留
-  // 的正积分在停车后输出驱动开度导致溜车
-  if (target_speed <= 0.0 && vehicle_state_.velocity < 0.5) {
+  // 的正积分在停车后输出驱动开度导致溜车。
+  // TwistFilter 的减速输出渐近趋 0（0.3 倍衰减）但永不为 0，若用严格
+  // `target_speed <= 0.0` 判定则永不成立、积分残留，故引入小阈值。
+  if (target_speed <= pid_stop_clear_eps_ && vehicle_state_.velocity < 0.5) {
     pid_integral_ = 0.0;
   }
 
@@ -216,7 +219,7 @@ void ControllerNode::onMissionState(const MissionState::SharedPtr msg)
     last_valid_trackdrive_cmd_ready_ = false;
     trackdrive_start_speed_started_ = false;
     // Publish stop command
-    publishZeroCommand();
+    publishZeroCommand(" [inactive state]");
   }
 
   // 车检模式：进入 INSPECTION 启动演示，离开时复位
@@ -246,7 +249,7 @@ void ControllerNode::controlLoop()
   if (emergency_) {
     twist_filter_->reset();
     last_valid_trackdrive_cmd_ready_ = false;
-    publishZeroCommand();
+    publishZeroCommand(" [EMERGENCY zero hold]");
     return;
   }
 
@@ -323,7 +326,7 @@ void ControllerNode::controlLoop()
     } else {
       last_valid_trackdrive_cmd_ready_ = false;
       twist_filter_->reset();
-      publishZeroCommand();
+      publishZeroCommand(" [no forward target]");
       RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
         "No forward waypoint target available; publishing stop command.");
       return;
@@ -354,32 +357,19 @@ void ControllerNode::controlLoop()
   auto filtered = twist_filter_->filter(raw_cmd.steering_angle, raw_cmd.velocity);
 
   // 3. Publish command
+  const double throttle_brake = computeThrottleBrake(filtered.velocity);  // 速度 PID → 纵向开度
   autoware_msgs::msg::Command cmd;
   cmd.header.stamp = loop_time;
   cmd.header.frame_id = "base_link";
   cmd.speed    = filtered.velocity;
   cmd.angle    = filtered.steering_angle;
-  cmd.throttle_brake = computeThrottleBrake(filtered.velocity);  // 速度 PID → 纵向开度
+  cmd.throttle_brake = throttle_brake;
   cmd_pub_->publish(cmd);
 
-  // DEBUG: throttled to 2 Hz
-  {
-    static auto last_log = std::chrono::steady_clock::now();
-    auto now = std::chrono::steady_clock::now();
-    if (std::chrono::duration_cast<std::chrono::milliseconds>(now - last_log).count() >= 500) {
-      last_log = now;
-      int tgt = pure_pursuit_->targetIndex();
-      int prog = pure_pursuit_->progressIndex();
-      double ld = pure_pursuit_->lookaheadDistance();
-      RCLCPP_INFO(get_logger(),
-        "state=(%.2f,%.2f) yaw=%.2f° v=%.2f | waypoints=%zu | target=%d prog=%d/%zu ld=%.2f "
-        "| raw(angle=%.1f° vel=%.1f) | cmd(angle=%.1f° vel=%.1f)",
-        vehicle_state_.x, vehicle_state_.y, vehicle_state_.yaw * 180.0 / M_PI,
-        vehicle_state_.velocity, waypoints_.size(), tgt, prog, waypoints_.size(), ld,
-        raw_cmd.steering_angle, raw_cmd.velocity,
-        filtered.steering_angle, filtered.velocity);
-    }
-  }
+  // 调试日志（2Hz，独立节流点）：与零指令路径共用 controlLine，格式逐行对齐
+  RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 500, "%s",
+    controlLine(raw_cmd.steering_angle, raw_cmd.velocity,
+      cmd.angle, cmd.speed, throttle_brake, "").c_str());
 
   // 4. Visualization (target waypoint marker)
   if (target_viz_pub_->get_subscription_count() > 0 &&
@@ -568,7 +558,7 @@ void ControllerNode::publishVisualization(double target_x, double target_y)
   target_viz_pub_->publish(arr);
 }
 
-void ControllerNode::publishZeroCommand()
+void ControllerNode::publishZeroCommand(const char * tag)
 {
   autoware_msgs::msg::Command cmd;
   cmd.header.stamp = now();
@@ -577,6 +567,28 @@ void ControllerNode::publishZeroCommand()
   cmd.angle = 0.0;
   cmd.throttle_brake = computeThrottleBrake(0.0);
   cmd_pub_->publish(cmd);
+
+  // 零指令路径（急停/未使能/无目标/完成）同样周期打印，确认仍在持续发布全零；
+  // 独立节流点（2Hz），不被正常路径日志顶掉。
+  RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 500, "%s",
+    controlLine(0.0, 0.0, cmd.angle, cmd.speed, cmd.throttle_brake, tag).c_str());
+}
+
+std::string ControllerNode::controlLine(
+  double raw_angle, double raw_vel,
+  double cmd_angle, double cmd_vel, double cmd_thr,
+  const char * tag)
+{
+  char buf[256];
+  std::snprintf(buf, sizeof(buf),
+    "state=(%.2f,%.2f) yaw=%.2f° v=%.2f | waypoints=%zu | target=%d prog=%d/%zu ld=%.2f "
+    "| raw(angle=%.1f° vel=%.1f) | cmd(angle=%.1f° vel=%.1f thr=%.2f)%s",
+    vehicle_state_.x, vehicle_state_.y, vehicle_state_.yaw * 180.0 / M_PI,
+    vehicle_state_.velocity, waypoints_.size(),
+    pure_pursuit_->targetIndex(), pure_pursuit_->progressIndex(),
+    waypoints_.size(), pure_pursuit_->lookaheadDistance(),
+    raw_angle, raw_vel, cmd_angle, cmd_vel, cmd_thr, tag);
+  return std::string(buf);
 }
 
 }  // namespace controller

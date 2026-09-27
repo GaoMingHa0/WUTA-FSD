@@ -34,7 +34,12 @@ private:
   bool isSamePath(const std::vector<autoware_msgs::msg::Waypoint> & candidate) const;
   double trackdriveLookahead(const rclcpp::Time & loop_time);
   void publishMissionComplete();
-  void publishZeroCommand();
+  void publishZeroCommand(const char * tag = "");
+  // 统一控制日志格式：正常路径与零指令路径共用同一格式串，保证逐行对齐；
+  // 节流放在各调用点，避免两路共用节流互相顶掉。
+  std::string controlLine(double raw_angle, double raw_vel,
+                          double cmd_angle, double cmd_vel, double cmd_thr,
+                          const char * tag);
 
   // 速度 PID（目标速度 → 油门/刹车开度）
   double computeSpeedPid(double target_speed);
@@ -98,6 +103,9 @@ private:
   double pid_speed_kp_{1.0};
   double pid_speed_ki_{0.05};
   double pid_speed_kd_{0.1};
+  // 停车消积分判据阈值：TwistFilter 输出的目标速度渐近趋 0 但永不为 0，
+  // 用严格 `target <= 0` 会导致停车后残留积分开度（溜车），故按阈值判定
+  double pid_stop_clear_eps_{0.05};
   double pid_integral_{0.0};
   double pid_prev_err_{0.0};
   rclcpp::Time pid_last_time_;
