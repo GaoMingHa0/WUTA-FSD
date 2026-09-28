@@ -11,6 +11,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ConeArray.msg"
   "msg/ConeMap.msg"
   "msg/DevicesInspection.msg"
+  "msg/CameraConeDetection.msg"
+  "msg/CameraConeDetectionArray.msg"
   "msg/MissionState.msg"
   DEPENDENCIES std_msgs geometry_msgs
 )

@@ -1,0 +1,51 @@
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+  - Class: rviz_common/Views
+    Name: Views
+Visualization Manager:
+  Class: ""
+  Global Options:
+    Fixed Frame: map
+    Frame Rate: 20
+  Displays:
+    - Class: rviz_default_plugins/PointCloud2
+      Name: M1 Live PointCloud
+      Enabled: true
+      Topic:
+        Value: /rslidar_points
+        Reliability Policy: Best Effort
+        Durability Policy: Volatile
+        Depth: 5
+      Style: Points
+      Size (Pixels): 2
+      Color Transformer: AxisColor
+      Axis: Z
+    - Class: rviz_default_plugins/MarkerArray
+      Name: Fused Cone Map
+      Enabled: true
+      Topic:
+        Value: /mapping/cone_map_viz
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+        Depth: 10
+  Tools:
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/Interact
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Name: Current View
+      Value: Orbit (rviz)
+      Distance: 15
+      Pitch: 0.5
+      Yaw: 0.8
+      Focal Point:
+        X: 5
+        Y: 0
+        Z: 0
+      Near Clip Distance: 0.01
+      Target Frame: rslidar
+Window Geometry:
+  Width: 1280
+  Height: 800

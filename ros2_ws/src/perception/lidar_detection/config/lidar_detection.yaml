@@ -18,6 +18,7 @@ lidar_detection_node:
     use_ransac: false
     ground_z_threshold: -0.95       # m, keep points above this height
     ransac_distance_threshold: 0.2  # m
+    ground_max_tilt_deg: 5.0        # ground normal must stay within 5 deg of lidar Z
 
     # Voxel downsampling
     voxel_leaf_size: 0.1            # m

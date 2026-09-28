@@ -61,3 +61,11 @@ __pycache__/
 *.tmp
 install/
 log/
+
+# Hardware perception assets (keep documentation and calibration examples)
+ros2_ws/src/perception/camera_detection/models/*.onnx
+ros2_ws/src/perception/camera_detection/models/*.engine
+ros2_ws/src/perception/camera_detection/models/*.pt
+ros2_ws/src/perception/camera_detection/models/*.pth*
+ros2_ws/src/perception/camera_detection/models/*.calib
+ros2_ws/src/perception/calibration/camera_lidar.yaml

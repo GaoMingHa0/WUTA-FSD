@@ -47,4 +47,14 @@ LidarDetectionNode
 
 ## 线程模型
 
-单线程。PCL 聚类在 128 线点云下耗时 < 20ms，10Hz 输入无压力。
+单线程。硬件链路使用最新点云 QoS（深度 1），避免检测慢于扫描时堆积旧帧。
+
+## RoboSense M1 硬件配置与实测
+
+`fusion_hardware.launch.py` 对 M1 默认先做 8 cm PCL VoxelGrid 降采样，再做 RANSAC 地面去除和 PCL KD-tree 欧式聚类。它保留原有的 20 m 距离裁剪及锥桶形状筛选，没有增加高度 ROI。其他场景仍可用 `lidar_voxel_before_ground:=false` 保持原顺序。
+
+硬件启动参数：`lidar_voxel_before_ground`、`lidar_voxel_leaf_size`、`lidar_ransac_max_iterations`、`lidar_ransac_probability`。`profile_lidar:=true` 会逐帧记录输入/各阶段点数和耗时，调试后应关闭。
+实地常用雷达、相机和融合门限统一见 [perception/config/field_tuning.yaml](../config/field_tuning.yaml)，
+参数含义与当日测量见同目录 [README](../config/README.md)。
+
+2026-09-25，在 M1 每帧约 78,750 点的静态场景，原配置的雷达检测耗时中位数约 130 ms（聚类约 112 ms）；8 cm 预降采样后约 32 ms（聚类约 28 ms）。最终配置下，20 秒监测得到聚类和融合输出约 9.6 Hz，雷达时间戳到融合结果到达约 130 ms 中位数。画面中的近处橙色锥桶主要由融合节点的相机引导局部聚类检出，普通全局聚类仍可能漏检；这些数字不代表其他赛道上的召回率。

@@ -97,6 +97,8 @@ private:
   double merge_distance_{0.5};         // m — cones closer than this are merged
   double consolidation_distance_{1.0}; // m — converged duplicate-track cleanup radius
   int min_hit_count_{3};               // Minimum detections before cone is added to published map
+  bool allow_semantic_color_correction_{false};
+  int semantic_color_confirmation_hits_{1};
   double loop_closure_distance_{3.0};  // m — distance to start to trigger loop closure
   int min_cones_for_closure_{10};      // Minimum cones before loop closure is considered
   int mapping_laps_{1};                // Formal laps required before freezing the map

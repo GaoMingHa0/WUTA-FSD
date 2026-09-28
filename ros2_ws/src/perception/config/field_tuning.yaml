@@ -1,0 +1,55 @@
+# Hardware perception field tuning. Units are metres, seconds, degrees, or pixels
+# as indicated in each key. Loaded by start_hardware_fusion.sh; command-line
+# name:=value arguments override these values. No height ROI is applied.
+
+# Camera / YOLOv8s TensorRT. Keep input dimensions matched to the engine.
+confidence_threshold: 0.25
+red_color: 3                 # Model red class is ORANGE in WUTA messages.
+model_input_width: 1280
+model_input_height: 768
+inference_threads: 4
+publish_annotated_image: true
+
+# M1 global LiDAR detection.
+lidar_voxel_before_ground: true
+lidar_voxel_leaf_size: 0.08
+lidar_ransac_distance_threshold: 0.08
+lidar_ground_max_tilt_deg: 5.0
+lidar_ransac_max_iterations: 500
+lidar_ransac_probability: 0.999
+lidar_cluster_tolerance: 0.4
+lidar_min_cluster_size: 3
+lidar_max_cluster_size: 200
+lidar_max_cone_width: 0.5
+lidar_min_cone_height: 0.1
+lidar_max_cone_height: 0.6
+lidar_max_detection_range: 20.0
+profile_lidar: false
+
+# Normal camera/LiDAR fusion.
+fusion_wait_sec: 0.10
+fusion_sync_slop_sec: 0.03
+fusion_max_match_distance: 0.8
+fusion_mahalanobis_gate: 11.345
+fusion_pixel_margin: 8.0
+fusion_ambiguity_margin: 0.15
+fusion_min_color_probability: 0.6
+fusion_fuse_positions: false
+publish_unmatched_lidar: false
+
+# Camera-guided local clustering. 0.15 m is the connectivity distance;
+# 0.05 m is the voxel size. The requested 0.04 m experiment was cancelled.
+guided_voxel_size: 0.05
+guided_cluster_tolerance: 0.15
+guided_depth_tolerance: 0.4
+guided_min_cluster_size: 5
+guided_max_cluster_size: 200
+guided_max_width: 0.5
+guided_min_height: 0.08
+guided_max_height: 0.7
+
+# Live orange-only debug mode. It publishes current positions and clears old
+# markers; normal map accumulation is disabled while this mode is enabled.
+debug_orange: false
+debug_sync_slop_sec: 0.06
+debug_pixel_margin: 8.0

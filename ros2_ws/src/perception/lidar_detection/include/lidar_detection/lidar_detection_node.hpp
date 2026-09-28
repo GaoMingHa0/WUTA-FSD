@@ -34,6 +34,7 @@ private:
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
   double visualization_tf_timeout_sec_{0.1};
+  bool profile_stages_{false};
 };
 
 }  // namespace lidar_detection

@@ -1,0 +1,5 @@
+#!/usr/bin/env python3
+from camera_detection.adapter import main
+
+if __name__ == '__main__':
+    main()

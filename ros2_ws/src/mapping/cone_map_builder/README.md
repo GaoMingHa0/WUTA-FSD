@@ -121,3 +121,10 @@ cone_map:
 - [ ] 上相机后将 `assign_colors` 改为 false，由 detection_fusion 提供颜色；builder 将保留上游颜色并继续做合并投票
 - [ ] 地图加载接口（供 NDT 模式初始化使用）
 - [ ] 橙色锥桶（起终点）的特殊处理
+
+## 后融合语义颜色
+
+独立后融合入口将输入 remap 到 `/perception/fused/cones`（ConeArray），关闭 assign_colors。
+`allow_semantic_color_correction=true` 时颜色冲突不阻断同一 0.5 m 几何门内的关联，避免偶发错色
+生成重复地标；`semantic_color_confirmation_hits=3` 要求至少三次支持且颜色占比 >=70%，否则 UNKNOWN。
+默认值 false/1 保留原路径行为。同帧共视去重保护继续生效；位置仍按命中次数平均，尚未做地图协方差滤波。
