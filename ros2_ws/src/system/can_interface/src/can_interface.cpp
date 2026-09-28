@@ -71,8 +71,9 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
     "/system/mission_mode_cmd", 10);
   start_command_pub_ = create_publisher<std_msgs::msg::Bool>(
     "/system/start_command", 10);
+  // 急停总线：latched（transient_local），晚启动的订阅者也能立即拿到当前急停态
   emergency_pub_ = create_publisher<std_msgs::msg::Bool>(
-    "/system/emergency", 10);
+    "/system/emergency", rclcpp::QoS(1).reliable().transient_local());
   // 预留，目前暂时不由VCU发轮边速度
   // velocity_pub_ = create_publisher<geometry_msgs::msg::TwistStamped>(
   //   "/chcnav/velocity", 50);
@@ -83,9 +84,8 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
 
 void CANInterfaceNode::onMissionState(const wuta_msgs::msg::MissionState::SharedPtr msg)
 {
-  // Signal4：任务 FINISH 后上报 VCU；FSD 内部 EMERGENCY 时停发控制（控制量归零）
+  // Signal4：任务 FINISH 后上报 VCU（急停归零由 controller 负责，本节点不参与判定）
   can_finished_ = (msg->state == wuta_msgs::msg::MissionState::FINISH);
-  fsd_emergency_ = (msg->state == wuta_msgs::msg::MissionState::EMERGENCY);
   sendControlFrame();
 }
 
@@ -136,13 +136,10 @@ CanFrame CANInterfaceNode::packControlFrame(
   frame.can_id = 0x210;  // 工控机→VCU 单帧
   frame.dlc = 8;
 
-  // 任一急停（RES/VCU 状态12 或 设备故障/FSD EMERGENCY）→ 停发控制：油门0、转向居中
-  const bool emergency = vcu_emergency_ || fsd_emergency_;
-  const double throttle = emergency ? 0.0 : throttle_brake;
-  const double angle    = emergency ? 0.0 : steer_deg;
-  const uint16_t s1 = scaleControl(throttle);          // 纵向：驱动/制动
+  // 纯转发：急停归零由 controller 完成，本节点不做任何判定
+  const uint16_t s1 = scaleControl(throttle_brake);    // 纵向：驱动/制动
   // 横向：angle 正=左（autoware 约定），协议 Signal2 小值=左，故取反映射
-  const uint16_t s2 = scaleControl(-angle / max_steer_deg_);
+  const uint16_t s2 = scaleControl(-steer_deg / max_steer_deg_);
   frame.data[0] = static_cast<uint8_t>(s1 & 0xFF);
   frame.data[1] = static_cast<uint8_t>((s1 >> 8) & 0xFF);
   frame.data[2] = static_cast<uint8_t>(s2 & 0xFF);
@@ -184,8 +181,6 @@ void CANInterfaceNode::parseVcuFrame(const CanFrame & frame)
 
   // ---- Byte1 状态 → start_command / emergency（最新值覆盖，仅变化时发布） ----
   if (vcu_state != last_vcu_state_) {
-    // RES 急停：读到 VCU 状态12 立即停发控制（油门0、转向居中）；离开该状态解除
-    vcu_emergency_ = (vcu_state == 12);
     std_msgs::msg::Bool start_cmd;
     std_msgs::msg::Bool emergency;
     switch (vcu_state) {

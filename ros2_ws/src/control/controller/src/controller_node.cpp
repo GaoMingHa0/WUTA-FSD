@@ -240,7 +240,8 @@ void ControllerNode::onMissionState(const MissionState::SharedPtr msg)
 
 void ControllerNode::onEmergency(const std_msgs::msg::Bool::SharedPtr msg)
 {
-  emergency_ = msg->data;
+  // 急停不可恢复：只置位，不因上游 false 解除（与 mission_manager 终态语义一致）
+  if (msg->data) emergency_ = true;
 }
 
 void ControllerNode::controlLoop()

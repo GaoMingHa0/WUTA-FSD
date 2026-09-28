@@ -150,7 +150,9 @@ skidpad 5 m/s；acceleration 15 m/s；EBS 12 m/s。
 ## 状态与赛项
 
 - 使能状态：`EXPLORE` / `MAPPING_DONE` / `RACE` 时运行控制；其它状态下复位滤波器并发布零命令
-- 急停：`emergency_` 为真时持续发布全零命令直至解除
+- 急停：`emergency_` 为真时持续发布全零命令；该标志由 `/system/emergency` 置位后
+  **不可解除**（急停不可恢复，需重启）。该话题由 can_interface（0x501 Byte1=12，VCU 侧急停）
+  与 mission_manager（传感器自检失败）共同发布——controller 是唯一的归零执行者
 - 路径变化：`onWaypoints` 逐点比较路径，变化时复位 Pure Pursuit 进度与 `mission_complete_`
 - 完成判定：`SKIDPAD` / `ACCELERATION` / `EBS_TEST` 在「进度到最后一个点 + 距终点 ≤
   `finish_position_tolerance` + 车速 ≤ `finish_speed_threshold`」时发布 `mission_complete`

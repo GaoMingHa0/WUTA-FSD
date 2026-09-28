@@ -56,6 +56,8 @@ MissionManager::MissionManager(const rclcpp::NodeOptions & options)
     "/system/lap_count", latched_qos);
   devices_inspection_pub_ = create_publisher<wuta_msgs::msg::DevicesInspection>(
     "/system/devices_inspection", 10);
+  emergency_pub_ = create_publisher<std_msgs::msg::Bool>(
+    "/system/emergency", latched_qos);
 
   // Subscribers — normal mission
   cone_map_sub_ = create_subscription<wuta_msgs::msg::ConeMap>(
@@ -543,6 +545,10 @@ void MissionManager::selfCheckTick()
     if (imu_off)   failures.push_back("imu");
     if (cam_off)   failures.push_back("camera");
     publishDevicesInspection(false, failures);  // 通知 can_interface → Signal3=0 → VCU 切 EMERGENCY
+    // 急停总线：自检失败与 VCU 侧急停同一通道，controller 收到后归零控制
+    std_msgs::msg::Bool emergency;
+    emergency.data = true;
+    emergency_pub_->publish(emergency);
     return;
   }
 

@@ -112,6 +112,8 @@ private:
   rclcpp::Publisher<wuta_msgs::msg::MissionState>::SharedPtr state_pub_;
   rclcpp::Publisher<std_msgs::msg::UInt32>::SharedPtr lap_count_pub_;
   rclcpp::Publisher<wuta_msgs::msg::DevicesInspection>::SharedPtr devices_inspection_pub_;
+  // 急停总线：自检失败与 VCU 侧急停在同一条话题上发布，controller 据此归零
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr emergency_pub_;
 
   // Subscribers
   rclcpp::Subscription<wuta_msgs::msg::ConeMap>::SharedPtr cone_map_sub_;
