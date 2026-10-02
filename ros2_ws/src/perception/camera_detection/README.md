@@ -15,7 +15,7 @@ Driver acquisition is supplied by the standalone hardware fusion launch.
 
 Store hardware engines in `models/` and shared camera-from-LiDAR calibration at
 `../calibration/camera_lidar.yaml`. The supplied model classes are red/yellow/blue;
-the user confirmed red means ORANGE. Model IDs are mapped explicitly.
+model IDs are used directly: 0=RED, 1=YELLOW, 2=BLUE. Red is the left boundary and blue the right boundary.
 
 The detector node consumes the latest image in a bounded worker, reverses letterbox,
 and publishes `/camera/yolo/cones` with the original exposure stamp/frame.
@@ -27,7 +27,7 @@ timestamp, inference time, detection publishing time, annotation rendering time,
 image-data conversion time, annotated image publishing time and total cycle time.
 The image timestamp is not the camera shutter duration.
 Parameters: `model_path`, `image_topic`, `output_topic`, `confidence_threshold`,
-`nms_iou_threshold`, `red_color` (default 3), `inference_threads` (default 4),
+`nms_iou_threshold`, `inference_threads` (default 4),
 `annotated_topic`, `publish_annotated_image` (default true), `model_input_width`,
 and `model_input_height`. Set both dimensions for rectangular PT/engine input validation;
 1280x760 is stride-aligned to a 1280x768 inference tensor. Leave both zero for
@@ -38,7 +38,7 @@ The annotated image includes the device, detected-cone count and inference time.
 
 The LW-DETR engine expects fixed float input `[1,3,768,1280]`, RGB ImageNet normalization,
 and emits 300 normalized boxes plus class logits. A 1280x720 camera frame is letterboxed
-with 24-pixel top and bottom padding. Class IDs map as `0=red -> ORANGE`,
+with 24-pixel top and bottom padding. Class IDs pass through as `0=RED`,
 `1=yellow -> YELLOW`, `2=blue -> BLUE`. The model-specific engine is detected from the
 `lwdetr` filename prefix. The default engine is generated locally and is not committed.
 
@@ -59,7 +59,7 @@ directory with `YOLO_PYTHON_PACKAGES` when deploying elsewhere; packages must
 match ROS Python 3.10. The path is added only inside the YOLO process.
 TensorRT uses the engine's fixed FP16 1280x768 input. PT uses float32 at its
 configured input size. Both use the same raw class-score decoding/NMS as ONNX;
-exposure headers, source-pixel boxes and red-to-ORANGE mapping are retained.
+exposure headers, source-pixel boxes and original class IDs are retained.
 CUDA availability is checked before loading weights; there is no CPU fallback.
 
 For optional ONNX weights, ONNX Runtime must be installed for ROS system Python.
@@ -81,8 +81,9 @@ with `--target .hardware_deps --no-deps scipy==1.15.3` from the repository root.
 * `/camera/yolo/cones`: `wuta_msgs/msg/CameraConeDetectionArray`, exposure stamp,
   rectified LEFT optical frame. YOLO boxes must be converted from resized/letterbox
   inference coordinates to original rectified-image pixels. `bbox_xyxy` is
-  `[xmin,ymin,xmax,ymax]`. Map model class IDs to `[UNKNOWN,BLUE,YELLOW,ORANGE]`
-  probabilities explicitly; model class IDs are not Cone enum values. A top-1
+  `[xmin,ymin,xmax,ymax]`. Model class IDs equal Cone enum values (0:red,
+  1:yellow, 2:blue); publish probabilities in `[RED,YELLOW,BLUE,ORANGE,UNKNOWN]`
+  order without color remapping. A top-1
   score may be represented as class probability with residual UNKNOWN mass.
 * `/camera/left/depth_registered`: `sensor_msgs/msg/Image`, 32FC1 metres or
   16UC1 millimetres, depth registered to the same left image. The stereo driver
@@ -113,3 +114,9 @@ PYTHONPATH=. python3 -m pytest test -q
 
 High/low yellow cones share the current YELLOW enum; size classification is not
 introduced by this adapter. Physical stereo baseline/extrinsics remain external.
+
+
+2026-10-02 颜色接口：模型原始编号直接传递，RED=0 / YELLOW=1 / BLUE=2 / ORANGE=3 /
+UNKNOWN=4；相机颜色概率长度 5。红色为左边界、蓝色为右边界；`red_color` 已移除。
+使用 `./start_hardware_fusion.sh --debug-red --rviz` 检查模型红类及当前红锥 XYZ。
+`--debug-orange` 只检查实际橙色类别，不再将红锥当橙锥。旧消息消费者需重新构建并重启。

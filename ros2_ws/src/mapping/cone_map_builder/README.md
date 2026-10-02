@@ -78,7 +78,7 @@
 | `map_save_path` | `/tmp/wuta_cone_map.yaml` | 地图保存路径 |
 
 Note: `assign_colors=true` only fills in `COLOR_UNKNOWN` detections. If an
-upstream detector or fusion node already provides blue/yellow/orange, the
+upstream detector or fusion node already provides red/blue/yellow/orange, the
 builder preserves that semantic color and uses it in the merge vote. For
 unknown detections, the closest observation is used instead of all-frame
 majority voting so that distant visible sections do not dominate the side label.
@@ -111,7 +111,7 @@ cone_map:
   - x: 10.5
     y: 3.2
     z: 0.1
-    color: 1      # 1=BLUE, 2=YELLOW
+    color: 1      # 0=RED(left), 1=YELLOW, 2=BLUE(right), 3=ORANGE, 4=UNKNOWN
     hit_count: 8
   - ...
 ```
@@ -128,3 +128,9 @@ cone_map:
 `allow_semantic_color_correction=true` 时颜色冲突不阻断同一 0.5 m 几何门内的关联，避免偶发错色
 生成重复地标；`semantic_color_confirmation_hits=3` 要求至少三次支持且颜色占比 >=70%，否则 UNKNOWN。
 默认值 false/1 保留原路径行为。同帧共视去重保护继续生效；位置仍按命中次数平均，尚未做地图协方差滤波。
+
+
+2026-10-02 颜色接口：模型原始编号直接传递，RED=0 / YELLOW=1 / BLUE=2 / ORANGE=3 /
+UNKNOWN=4；相机颜色概率长度 5。红色为左边界、蓝色为右边界；`red_color` 已移除。
+使用 `./start_hardware_fusion.sh --debug-red --rviz` 检查模型红类及当前红锥 XYZ。
+`--debug-orange` 只检查实际橙色类别，不再将红锥当橙锥。旧消息消费者需重新构建并重启。

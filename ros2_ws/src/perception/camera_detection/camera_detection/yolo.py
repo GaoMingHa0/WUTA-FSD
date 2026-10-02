@@ -12,6 +12,20 @@ except ImportError:
     ort = None
 
 
+# Match the deployed model metadata and wuta_msgs/Cone exactly.
+COLOR_NAMES = ('red', 'yellow', 'blue', 'orange', 'unknown')
+COLOR_UNKNOWN = 4
+
+
+def validate_class_names(names):
+    if (not isinstance(names, dict) or len(names) not in (3, 4)
+            or set(names) != set(range(len(names)))
+            or [names[i] for i in range(len(names))] != list(COLOR_NAMES[:len(names)])):
+        raise ValueError('Model classes must be 0:red, 1:yellow, 2:blue, optionally 3:orange; '
+                         'class IDs are passed directly to FSD')
+    return len(names)
+
+
 def image_bgr(msg):
     channels = {'bgr8': 3, 'rgb8': 3, 'bgra8': 4, 'rgba8': 4}
     if msg.encoding not in channels:
@@ -63,9 +77,9 @@ def checkpoint_input_size(value, stride):
     return tuple((number + stride - 1) // stride * stride for number in size)
 
 
-def decode(output, scale, padding, image_shape, color_ids, confidence=0.5, iou=0.45):
+def decode(output, scale, padding, image_shape, class_count, confidence=0.5, iou=0.45):
     rows = np.asarray(output)
-    if rows.ndim != 3 or rows.shape[0] != 1 or rows.shape[1] != 4 + len(color_ids):
+    if rows.ndim != 3 or rows.shape[0] != 1 or rows.shape[1] != 4 + class_count:
         raise ValueError('Expected YOLOv8 output [1, 4 + classes, anchors], without NMS')
     rows = rows[0].T
     rows = rows[np.all(np.isfinite(rows), axis=1)]
@@ -90,12 +104,11 @@ def decode(output, scale, padding, image_shape, color_ids, confidence=0.5, iou=0
     for index in indices:
         # Independent class scores are evidence, not calibrated probabilities.
         # Retain unassigned confidence as UNKNOWN rather than making weak scores certain.
-        probabilities = np.zeros(4)
+        probabilities = np.zeros(len(COLOR_NAMES))
         evidence = np.clip(rows[index, 4:], 0, 1)
         evidence /= max(1.0, evidence.sum())
-        for class_id, color_id in enumerate(color_ids):
-            probabilities[color_id] += evidence[class_id]
-        probabilities[0] += max(0.0, 1.0 - probabilities.sum())
+        probabilities[:class_count] = evidence
+        probabilities[COLOR_UNKNOWN] += max(0.0, 1.0 - probabilities.sum())
         detections.append((boxes[index].tolist(), probabilities.tolist(), float(scores[index])))
     return detections
 
@@ -132,7 +145,7 @@ class YoloModel:
     def providers(self):
         return self.session.get_providers()
 
-    def __init__(self, path, red_color=0, threads=4, device='cuda', gpu_device_id=0,
+    def __init__(self, path, threads=4, device='cuda', gpu_device_id=0,
                  profile_prefix=None, input_size=None):
         providers = execution_providers(device, gpu_device_id)
         if device == 'cuda' and hasattr(ort, 'preload_dlls'):
@@ -167,23 +180,20 @@ class YoloModel:
         names = ast.literal_eval(self.session.get_modelmeta().custom_metadata_map.get('names', '{}'))
         if not isinstance(names, dict) or set(names) != set(range(len(names))) or not names:
             raise ValueError('Model must provide contiguous class names metadata')
-        mapping = {'blue': 1, 'yellow': 2, 'orange': 3, 'red': red_color}
-        if red_color not in (0, 3) or any(name not in mapping for name in names.values()):
-            raise ValueError('Unsupported model class mapping')
-        self.color_ids = [mapping[names[i]] for i in range(len(names))]
+        self.class_count = validate_class_names(names)
         self.names = names
 
     def predict(self, image, confidence=0.5, iou=0.45):
         tensor, scale, padding = letterbox(image, self.size)
         output = self.session.run(None, {self.input_name: tensor})[0]
-        return decode(output, scale, padding, image.shape, self.color_ids, confidence, iou)
+        return decode(output, scale, padding, image.shape, self.class_count, confidence, iou)
 
 
 class PtYoloModel:
     """Native PyTorch inference with the same preprocessing and color evidence as ONNX."""
     backend = 'pytorch'
 
-    def __init__(self, path, red_color=0, threads=4, device='cuda', gpu_device_id=0,
+    def __init__(self, path, threads=4, device='cuda', gpu_device_id=0,
                  profile_prefix=None, input_size=None):
         if device not in ('cuda', 'cpu') or gpu_device_id < 0:
             raise ValueError('device must be cuda/cpu and gpu_device_id must be nonnegative')
@@ -206,12 +216,7 @@ class PtYoloModel:
             raise ValueError('PT weights must be a YOLO detection model')
         self.model = loaded.model.to(self.torch_device).float().eval()
         self.names = loaded.names
-        mapping = {'blue': 1, 'yellow': 2, 'orange': 3, 'red': red_color}
-        if (red_color not in (0, 3) or not isinstance(self.names, dict) or not self.names
-                or set(self.names) != set(range(len(self.names)))
-                or any(name not in mapping for name in self.names.values())):
-            raise ValueError('Unsupported model class mapping')
-        self.color_ids = [mapping[self.names[i]] for i in range(len(self.names))]
+        self.class_count = validate_class_names(self.names)
         checkpoint_size = self.model.args.get('imgsz')
         # Existing best.pt records the scalar training value 1280, but the
         # deployed model was validated at 640x640 and performs poorly when that
@@ -236,14 +241,14 @@ class PtYoloModel:
 
     def predict(self, image, confidence=0.5, iou=0.45):
         output, scale, padding = self.raw_output(image)
-        return decode(output, scale, padding, image.shape, self.color_ids, confidence, iou)
+        return decode(output, scale, padding, image.shape, self.class_count, confidence, iou)
 
 
 class EngineYoloModel:
     """Fixed-shape TensorRT FP16 inference with the common WUTA decoder."""
     backend = 'tensorrt'
 
-    def __init__(self, path, red_color=0, threads=4, device='cuda', gpu_device_id=0,
+    def __init__(self, path, threads=4, device='cuda', gpu_device_id=0,
                  profile_prefix=None, input_size=None):
         del profile_prefix
         if device != 'cuda' or gpu_device_id < 0:
@@ -275,12 +280,7 @@ class EngineYoloModel:
                 raise ValueError(
                     f'TensorRT engine input is {self.size}, but requested input aligns to {requested}')
         self.names = self.model.names
-        mapping = {'blue': 1, 'yellow': 2, 'orange': 3, 'red': red_color}
-        if (red_color not in (0, 3) or not isinstance(self.names, dict) or not self.names
-                or set(self.names) != set(range(len(self.names)))
-                or any(name not in mapping for name in self.names.values())):
-            raise ValueError('Unsupported model class mapping')
-        self.color_ids = [mapping[self.names[i]] for i in range(len(self.names))]
+        self.class_count = validate_class_names(self.names)
         import tensorrt as trt
         self.providers = [f'TensorRT:{trt.__version__}:cuda:{gpu_device_id}']
         self.model.warmup((1, 3, *self.size))
@@ -305,14 +305,14 @@ class EngineYoloModel:
 
     def predict(self, image, confidence=0.5, iou=0.45):
         output, scale, padding = self.raw_output(image)
-        return decode(output, scale, padding, image.shape, self.color_ids, confidence, iou)
+        return decode(output, scale, padding, image.shape, self.class_count, confidence, iou)
 
 
 class LwDetrEngineModel:
     """Fixed-shape TensorRT LW-DETR with its own preprocessing and DETR decoder."""
     backend = 'tensorrt-int8-lwdetr'
 
-    def __init__(self, path, red_color=0, threads=4, device='cuda', gpu_device_id=0,
+    def __init__(self, path, threads=4, device='cuda', gpu_device_id=0,
                  profile_prefix=None, input_size=None):
         del profile_prefix
         if device != 'cuda' or gpu_device_id < 0:
@@ -325,8 +325,6 @@ class LwDetrEngineModel:
         import tensorrt as trt
         if not torch.cuda.is_available() or gpu_device_id >= torch.cuda.device_count():
             raise RuntimeError('CUDA unavailable for LW-DETR TensorRT inference')
-        if red_color not in (0, 3):
-            raise ValueError('red_color must be 0 (UNKNOWN) or 3 (ORANGE)')
         torch.set_num_threads(threads)
         self.torch = torch
         self.device = 'cuda'
@@ -367,7 +365,6 @@ class LwDetrEngineModel:
         self.boxes_name = next(name for name, buffer in self.output_buffers if buffer.shape[-1] == 4)
         self.logits_name = next(name for name, buffer in self.output_buffers if buffer.shape[-1] == 3)
         self.names = {0: 'red', 1: 'yellow', 2: 'blue'}
-        self.class_to_color = [red_color, 2, 1]
         self.providers = [f'TensorRT:{trt.__version__}:cuda:{gpu_device_id}:INT8+FP16']
         self.torch.cuda.synchronize(self.torch_device)
         self.raw_output(np.zeros((self.size[0], self.size[1], 3), dtype=np.uint8))
@@ -422,9 +419,9 @@ class LwDetrEngineModel:
                                          confidence, iou)).reshape(-1)
         results = []
         for index in indices[nms]:
-            probabilities = np.zeros(4, dtype=np.float32)
-            probabilities[self.class_to_color[class_ids[index]]] = scores[index]
-            probabilities[0] = 1.0 - scores[index]
+            probabilities = np.zeros(len(COLOR_NAMES), dtype=np.float32)
+            probabilities[class_ids[index]] = scores[index]
+            probabilities[COLOR_UNKNOWN] = 1.0 - scores[index]
             results.append((xyxy[index].tolist(), probabilities.tolist(), float(scores[index])))
         return results
 
@@ -432,8 +429,8 @@ class LwDetrEngineModel:
 def annotate(image, predictions, status_text=None):
     """Draw decoded boxes on a copy of the matching source image (BGR)."""
     result = image.copy()
-    colors = [(180, 180, 180), (255, 80, 0), (0, 255, 255), (0, 140, 255)]
-    names = ['unknown', 'blue', 'yellow', 'orange']
+    colors = [(0, 0, 255), (0, 255, 255), (255, 80, 0), (0, 140, 255), (180, 180, 180)]
+    names = COLOR_NAMES
     height, width = result.shape[:2]
     if status_text:
         cv2.rectangle(result, (0, 0), (width - 1, min(height - 1, 35)), (0, 0, 0), -1)

@@ -67,7 +67,7 @@ struct Config {
     double sync_slop_sec, max_wait_sec, max_match_distance, mahalanobis_gate;
     double pixel_margin, ambiguity_margin, min_detection_confidence, min_color_probability;
     double lidar_sigma, reference_sigma, max_position_shift;
-    bool fuse_positions, publish_unmatched_lidar, guided_clustering, debug_orange;
+    bool fuse_positions, publish_unmatched_lidar, guided_clustering, debug_cones;
     double guided_voxel_size, guided_cluster_tolerance, guided_depth_tolerance;
     int guided_min_cluster_size, guided_max_cluster_size;
     double guided_max_width, guided_min_height, guided_max_height;
@@ -504,9 +504,16 @@ public:
         const auto cloud_topic = declare_parameter<std::string>("pointcloud_topic", "/rslidar_points");
         const auto output_topic = declare_parameter<std::string>("output_topic", "/perception/fused/cones");
         const auto status_topic = declare_parameter<std::string>("status_topic", "/perception/fusion/status");
-        const auto debug_topic = declare_parameter<std::string>("debug_orange_topic", "/perception/debug/orange_cones");
-        const auto debug_status_topic = declare_parameter<std::string>("debug_orange_status_topic", "/perception/debug/orange_status");
-        const auto debug_marker_topic = declare_parameter<std::string>("debug_orange_marker_topic", "/perception/debug/orange_markers");
+        const bool debug_red = declare_parameter<bool>("debug_red", false);
+        const bool debug_orange = declare_parameter<bool>("debug_orange", false);
+        if (debug_red && debug_orange) throw std::runtime_error("Select only one debug cone color");
+        debug_color_ = debug_red ? wuta_msgs::msg::Cone::COLOR_RED : wuta_msgs::msg::Cone::COLOR_ORANGE;
+        debug_color_name_ = debug_red ? "red" : "orange";
+        const auto debug_prefix = "/perception/debug/" + debug_color_name_;
+        const auto parameter_prefix = "debug_" + debug_color_name_;
+        const auto debug_topic = declare_parameter<std::string>(parameter_prefix + "_topic", debug_prefix + "_cones");
+        const auto debug_status_topic = declare_parameter<std::string>(parameter_prefix + "_status_topic", debug_prefix + "_status");
+        const auto debug_marker_topic = declare_parameter<std::string>(parameter_prefix + "_marker_topic", debug_prefix + "_markers");
         config_.fixed_frame = declare_parameter<std::string>("fixed_frame", "odom");
         config_.sync_slop_sec = declare_parameter<double>("sync_slop_sec", 0.03);
         config_.max_wait_sec = declare_parameter<double>("max_wait_sec", 0.10);
@@ -523,7 +530,7 @@ public:
         config_.fuse_positions = declare_parameter<bool>("fuse_positions", true);
         config_.publish_unmatched_lidar = declare_parameter<bool>("publish_unmatched_lidar", true);
         config_.guided_clustering = declare_parameter<bool>("guided_clustering", false);
-        config_.debug_orange = declare_parameter<bool>("debug_orange", false);
+        config_.debug_cones = debug_red || debug_orange;
         debug_sync_slop_sec_ = declare_parameter<double>("debug_sync_slop_sec", 0.06);
         debug_pixel_margin_ = declare_parameter<double>("debug_pixel_margin", 8.0);
         config_.guided_voxel_size = declare_parameter<double>("guided_voxel_size", 0.05);
@@ -554,7 +561,7 @@ public:
             config_.guided_max_height <= config_.guided_min_height ||
             !std::isfinite(debug_sync_slop_sec_) || debug_sync_slop_sec_ <= 0 ||
             !std::isfinite(debug_pixel_margin_) || debug_pixel_margin_ < 0 ||
-            (config_.debug_orange && (debug_topic.empty() || debug_status_topic.empty() ||
+            (config_.debug_cones && (debug_topic.empty() || debug_status_topic.empty() ||
                                       debug_marker_topic.empty()))) {
             throw std::runtime_error("Invalid fusion node parameters");
         }
@@ -562,7 +569,7 @@ public:
         tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
         publisher_ = create_publisher<ConeArray>(output_topic, 10);
         status_ = create_publisher<std_msgs::msg::String>(status_topic, 10);
-        if (config_.debug_orange) {
+        if (config_.debug_cones) {
             debug_publisher_ = create_publisher<ConeArray>(debug_topic, 10);
             debug_status_ = create_publisher<std_msgs::msg::String>(debug_status_topic, 10);
             debug_markers_ = create_publisher<visualization_msgs::msg::MarkerArray>(debug_marker_topic, 10);
@@ -582,9 +589,9 @@ public:
                 last_camera_stamp_ = stamp;
                 cameras_.push_back(std::move(message));
                 if (static_cast<int>(cameras_.size()) > config_.max_queue) cameras_.pop_front();
-                if (config_.debug_orange && !clouds_.empty() &&
+                if (config_.debug_cones && !clouds_.empty() &&
                     Clock::now() - last_cloud_received_ < std::chrono::milliseconds(100)) {
-                    publish_debug_orange(*clouds_.back());
+                    publish_debug_cones(*clouds_.back());
                 }
                 // A pending LiDAR scan may now have its closest image. Try it
                 // immediately instead of waiting for the 10 ms timer tick.
@@ -608,7 +615,7 @@ public:
                 clouds_.push_back(std::move(message));
                 if (static_cast<int>(clouds_.size()) > config_.max_queue) clouds_.pop_front();
                 last_cloud_received_ = Clock::now();
-                if (config_.debug_orange) publish_debug_orange(*clouds_.back());
+                if (config_.debug_cones) publish_debug_cones(*clouds_.back());
             });
         timer_ = create_wall_timer(std::chrono::milliseconds(10), [this]() { process(); });
     }
@@ -629,7 +636,7 @@ private:
             const auto &point = cones.cones[i].position;
             visualization_msgs::msg::Marker marker;
             marker.header = cones.header;
-            marker.ns = "live_orange";
+            marker.ns = "live_" + debug_color_name_;
             marker.id = static_cast<int>(i * 2);
             marker.type = visualization_msgs::msg::Marker::CYLINDER;
             marker.action = visualization_msgs::msg::Marker::ADD;
@@ -639,12 +646,12 @@ private:
             marker.scale.y = 0.28;
             marker.scale.z = 0.45;
             marker.color.r = 1.0F;
-            marker.color.g = 0.45F;
+            marker.color.g = debug_color_ == wuta_msgs::msg::Cone::COLOR_RED ? 0.0F : 0.45F;
             marker.color.a = 0.9F;
             marker.lifetime.sec = 0;
             marker.lifetime.nanosec = 250000000;
             array.markers.push_back(marker);
-            marker.ns = "live_orange_xyz";
+            marker.ns = "live_" + debug_color_name_ + "_xyz";
             marker.id = static_cast<int>(i * 2 + 1);
             marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
             marker.pose.position.z += 0.42;
@@ -658,7 +665,7 @@ private:
         debug_markers_->publish(std::move(array));
     }
 
-    void publish_debug_orange(const PointCloud &cloud) {
+    void publish_debug_cones(const PointCloud &cloud) {
         const auto cloud_stamp = stamp_ns(cloud.header.stamp);
         if (cloud_stamp <= last_debug_stamp_ || !info_) return;
         CameraArray::ConstSharedPtr camera;
@@ -703,8 +710,8 @@ private:
                 detection.confidence < config_.min_detection_confidence ||
                 !std::all_of(probabilities.begin(), probabilities.end(),
                     [](float value) { return std::isfinite(value) && value >= 0; }) ||
-                total <= 0 || probabilities[3] != *std::max_element(probabilities.begin(), probabilities.end()) ||
-                probabilities[3] / total < config_.min_color_probability ||
+                total <= 0 || probabilities[debug_color_] != *std::max_element(probabilities.begin(), probabilities.end()) ||
+                probabilities[debug_color_] / total < config_.min_color_probability ||
                 !detection.position_valid) continue;
             Observation observation;
             observation.detection = &detection;
@@ -721,7 +728,7 @@ private:
                 [&center](const auto &cone) { return (vector_of(cone.position) - center).norm() < 0.3; })) continue;
             wuta_msgs::msg::Cone cone;
             assign_point(cone.position, center);
-            cone.color = wuta_msgs::msg::Cone::COLOR_ORANGE;
+            cone.color = debug_color_;
             cone.confidence = detection.confidence;
             output.cones.push_back(cone);
         }
@@ -732,8 +739,8 @@ private:
         details << "{\"stamp_ns\":" << cloud_stamp
                 << ",\"source\":\"local_cluster\""
                 << ",\"camera_delta_ms\":" << (stamp_ns(camera->header.stamp) - cloud_stamp) / 1e6
-                << ",\"orange_candidates\":" << candidates
-                << ",\"orange_cones\":" << output.cones.size()
+                << ",\"" << debug_color_name_ << "_candidates\":" << candidates
+                << ",\"" << debug_color_name_ << "_cones\":" << output.cones.size()
                 << ",\"selected_points\":" << selected_points
                 << ",\"cluster_ms\":" << cluster_ms
                 << ",\"lidar_to_output_ms\":" << (output_ns - cloud_stamp) / 1e6
@@ -814,7 +821,7 @@ private:
         for (const auto &raw : lidar.cones) {
             if (!finite(vector_of(raw.position))) continue;
             auto cone = raw;
-            cone.color = 0;
+            cone.color = wuta_msgs::msg::Cone::COLOR_UNKNOWN;
             output.cones.push_back(cone);
         }
         const int raw_count = output.cones.size();
@@ -875,7 +882,7 @@ private:
                     if (found) {
                         wuta_msgs::msg::Cone cone;
                         assign_point(cone.position, center);
-                        cone.color = 0;
+                        cone.color = wuta_msgs::msg::Cone::COLOR_UNKNOWN;
                         cone.confidence = observation.detection->confidence;
                         output.cones.push_back(cone);
                         matches.emplace_back(static_cast<int>(output.cones.size() - 1), j);
@@ -896,7 +903,7 @@ private:
                 if (valid && sum > 0) {
                     const int color = static_cast<int>(std::distance(probabilities.begin(),
                         std::max_element(probabilities.begin(), probabilities.end())));
-                    if (color > 0 && probabilities[color] / sum >= config_.min_color_probability) {
+                    if (color != wuta_msgs::msg::Cone::COLOR_UNKNOWN && probabilities[color] / sum >= config_.min_color_probability) {
                         output.cones[i].color = color;
                         ++colored;
                     }
@@ -934,12 +941,12 @@ private:
         }
         const int published = output.cones.size();
         const auto output_stamp = stamp_ns(output.header.stamp);
-        if (config_.debug_orange && output_stamp >= last_debug_stamp_ &&
+        if (config_.debug_cones && output_stamp >= last_debug_stamp_ &&
             output_stamp != last_debug_local_stamp_) {
             ConeArray current;
             current.header = output.header;
             for (const auto &cone : output.cones) {
-                if (cone.color == wuta_msgs::msg::Cone::COLOR_ORANGE) current.cones.push_back(cone);
+                if (cone.color == debug_color_) current.cones.push_back(cone);
             }
             if (!current.cones.empty()) {
                 const auto now_ns = get_clock()->now().nanoseconds();
@@ -947,8 +954,8 @@ private:
                 std::ostringstream debug_details;
                 debug_details << "{\"stamp_ns\":" << output_stamp
                               << ",\"source\":\"fusion_fallback\""
-                              << ",\"orange_candidates\":" << current.cones.size()
-                              << ",\"orange_cones\":" << current.cones.size()
+                              << ",\"" << debug_color_name_ << "_candidates\":" << current.cones.size()
+                              << ",\"" << debug_color_name_ << "_cones\":" << current.cones.size()
                               << ",\"selected_points\":0,\"cluster_ms\":0"
                               << ",\"camera_delta_ms\":" << (camera_stamp - output_stamp) / 1e6
                               << ",\"lidar_to_output_ms\":" << (now_ns - output_stamp) / 1e6
@@ -1017,6 +1024,8 @@ private:
     std::int64_t last_debug_stamp_{-1};
     std::int64_t last_debug_local_stamp_{-1};
     Clock::time_point last_cloud_received_{};
+    uint8_t debug_color_{wuta_msgs::msg::Cone::COLOR_ORANGE};
+    std::string debug_color_name_{"orange"};
     double debug_sync_slop_sec_{0.06};
     double debug_pixel_margin_{8.0};
 };

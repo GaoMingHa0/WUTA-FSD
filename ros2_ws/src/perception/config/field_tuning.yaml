@@ -4,7 +4,7 @@
 
 # Camera / YOLOv8s TensorRT. Keep input dimensions matched to the engine.
 confidence_threshold: 0.25
-red_color: 3                 # Model red class is ORANGE in WUTA messages.
+# Class IDs are passed directly: red=0, yellow=1, blue=2.
 model_input_width: 1280
 model_input_height: 768
 inference_threads: 4
@@ -48,8 +48,9 @@ guided_max_width: 0.5
 guided_min_height: 0.08
 guided_max_height: 0.7
 
-# Live orange-only debug mode. It publishes current positions and clears old
-# markers; normal map accumulation is disabled while this mode is enabled.
+# Live red-only or orange-only debug mode (choose at most one). It publishes
+# current positions and clears old markers; map accumulation is disabled.
+debug_red: false
 debug_orange: false
 debug_sync_slop_sec: 0.06
 debug_pixel_margin: 8.0

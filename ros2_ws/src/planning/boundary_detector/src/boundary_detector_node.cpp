@@ -206,8 +206,8 @@ void BoundaryDetectorNode::onConeMap(const wuta_msgs::msg::ConeMap::SharedPtr ms
   auto points = coneMapToPoints(*msg);
   if (lane.waypoints.size() < 3 && points.size() < 4) {
     RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000,
-      "Not enough cones for Trackdrive centerline (blue=%zu, yellow=%zu, total=%zu)",
-      msg->blue_cones.size(), msg->yellow_cones.size(), points.size());
+      "Not enough cones for Trackdrive centerline (red=%zu, blue=%zu, total=%zu)",
+      msg->red_cones.size(), msg->blue_cones.size(), points.size());
     return;
   }
 
@@ -267,9 +267,9 @@ std::vector<Point2d> BoundaryDetectorNode::coneMapToPoints(
     }
   };
 
-  addCones(map.blue_cones,    1);  // Point2d color=1 → blue (left)
-  addCones(map.yellow_cones,  2);  // Point2d color=2 → yellow (right)
-  addCones(map.unknown_cones, 0);
+  addCones(map.red_cones, wuta_msgs::msg::Cone::COLOR_RED);  // red = left
+  addCones(map.blue_cones, wuta_msgs::msg::Cone::COLOR_BLUE);  // blue = right
+  addCones(map.unknown_cones, wuta_msgs::msg::Cone::COLOR_UNKNOWN);
 
   return points;
 }
@@ -385,8 +385,8 @@ autoware_msgs::msg::Lane BoundaryDetectorNode::computeLocalFrameCenterline(
     }
   };
 
+  add_cones(map.red_cones);
   add_cones(map.blue_cones);
-  add_cones(map.yellow_cones);
   add_cones(map.unknown_cones);
 
   if (left_cones.empty() || right_cones.empty()) {
@@ -564,7 +564,7 @@ autoware_msgs::msg::Lane BoundaryDetectorNode::computeGlobalCenterline(
 {
   autoware_msgs::msg::Lane lane;
   confidence = 0.0;
-  if (!pose_ready_ || map.blue_cones.empty() || map.yellow_cones.empty()) {
+  if (!pose_ready_ || map.red_cones.empty() || map.blue_cones.empty()) {
     return lane;
   }
 
@@ -589,7 +589,7 @@ autoware_msgs::msg::Lane BoundaryDetectorNode::computeGlobalCenterline(
   const double max_width = std::max(min_width, global_pairing_max_width_);
   const auto append_nearest_pairs = [min_width, max_width](
       std::vector<Candidate> & raw_candidates,
-      const auto & sources, const auto & targets, bool source_is_yellow) {
+      const auto & sources, const auto & targets, bool source_is_blue) {
       for (const auto & source : sources) {
         const auto nearest = std::min_element(
           targets.begin(), targets.end(),
@@ -603,18 +603,18 @@ autoware_msgs::msg::Lane BoundaryDetectorNode::computeGlobalCenterline(
           });
         if (nearest == targets.end()) continue;
 
-        const auto & blue = source_is_yellow ? *nearest : source;
-        const auto & yellow = source_is_yellow ? source : *nearest;
+        const auto & red = source_is_blue ? *nearest : source;
+        const auto & blue = source_is_blue ? source : *nearest;
         const double width = planeDistance(
-          blue.position.x, blue.position.y,
-          yellow.position.x, yellow.position.y);
+          red.position.x, red.position.y,
+          blue.position.x, blue.position.y);
         if (width < min_width || width > max_width) continue;
 
-        const double left_x = (blue.position.x - yellow.position.x) / width;
-        const double left_y = (blue.position.y - yellow.position.y) / width;
+        const double left_x = (red.position.x - blue.position.x) / width;
+        const double left_y = (red.position.y - blue.position.y) / width;
         raw_candidates.push_back({
-          0.5 * (blue.position.x + yellow.position.x),
-          0.5 * (blue.position.y + yellow.position.y),
+          0.5 * (red.position.x + blue.position.x),
+          0.5 * (red.position.y + blue.position.y),
           left_y,
           -left_x,
           width});
@@ -624,11 +624,11 @@ autoware_msgs::msg::Lane BoundaryDetectorNode::computeGlobalCenterline(
   // Pair in both directions. The two nearest-neighbour sets fill staggered
   // cone layouts without assuming that the color arrays are already ordered.
   std::vector<Candidate> colored_raw_candidates;
-  colored_raw_candidates.reserve(map.blue_cones.size() + map.yellow_cones.size());
+  colored_raw_candidates.reserve(map.red_cones.size() + map.blue_cones.size());
   append_nearest_pairs(
-    colored_raw_candidates, map.blue_cones, map.yellow_cones, false);
+    colored_raw_candidates, map.red_cones, map.blue_cones, false);
   append_nearest_pairs(
-    colored_raw_candidates, map.yellow_cones, map.blue_cones, true);
+    colored_raw_candidates, map.blue_cones, map.red_cones, true);
 
   const auto order_candidates =
     [this](std::vector<Candidate> raw_candidates) -> OrderedCandidateSet {
@@ -789,7 +789,7 @@ autoware_msgs::msg::Lane BoundaryDetectorNode::computeGlobalCenterline(
 
   auto selected = order_candidates(std::move(colored_raw_candidates));
   const std::size_t colored_boundary_count =
-    std::min(map.blue_cones.size(), map.yellow_cones.size());
+    std::min(map.red_cones.size(), map.blue_cones.size());
   double coverage = 0.0;
   bool using_geometry_fallback =
     !passes_quality(selected, colored_boundary_count, coverage);
@@ -806,14 +806,14 @@ autoware_msgs::msg::Lane BoundaryDetectorNode::computeGlobalCenterline(
     };
     std::vector<GeometryPoint> points;
     points.reserve(
-      map.blue_cones.size() + map.yellow_cones.size() + map.unknown_cones.size());
+      map.red_cones.size() + map.blue_cones.size() + map.unknown_cones.size());
     const auto append_points = [&points](const auto & cones) {
         for (const auto & cone : cones) {
           points.push_back({cone.position.x, cone.position.y});
         }
       };
+    append_points(map.red_cones);
     append_points(map.blue_cones);
-    append_points(map.yellow_cones);
     append_points(map.unknown_cones);
 
     struct LocalTangent
@@ -983,8 +983,8 @@ autoware_msgs::msg::Lane BoundaryDetectorNode::computeGlobalCenterline(
         ++cone_confidence_count;
       }
     };
+  accumulate_confidence(map.red_cones);
   accumulate_confidence(map.blue_cones);
-  accumulate_confidence(map.yellow_cones);
   accumulate_confidence(map.unknown_cones);
   const double average_cone_confidence = cone_confidence_count == 0
     ? 0.0
@@ -1000,12 +1000,12 @@ autoware_msgs::msg::Lane BoundaryDetectorNode::computeGlobalCenterline(
 
 bool BoundaryDetectorNode::hasSevereColorImbalance(const wuta_msgs::msg::ConeMap & map) const
 {
+  const std::size_t red_count = map.red_cones.size();
   const std::size_t blue_count = map.blue_cones.size();
-  const std::size_t yellow_count = map.yellow_cones.size();
-  const std::size_t colored_count = blue_count + yellow_count;
+  const std::size_t colored_count = red_count + blue_count;
   if (colored_count < 6) return false;
 
-  const double min_fraction = static_cast<double>(std::min(blue_count, yellow_count)) /
+  const double min_fraction = static_cast<double>(std::min(red_count, blue_count)) /
     static_cast<double>(colored_count);
   return min_fraction < local_pairing_color_imbalance_ratio_;
 }
@@ -1014,7 +1014,7 @@ autoware_msgs::msg::Lane BoundaryDetectorNode::computePairedCenterline(
   const wuta_msgs::msg::ConeMap & map) const
 {
   autoware_msgs::msg::Lane lane;
-  if (!pose_ready_ || map.blue_cones.empty() || map.yellow_cones.empty()) {
+  if (!pose_ready_ || map.red_cones.empty() || map.blue_cones.empty()) {
     return lane;
   }
 
@@ -1023,8 +1023,8 @@ autoware_msgs::msg::Lane BoundaryDetectorNode::computePairedCenterline(
     double forward;
     double lateral;
     double cost;
+    std::size_t red_index;
     std::size_t blue_index;
-    std::size_t yellow_index;
     double x;
     double y;
     double tangent_x;
@@ -1043,46 +1043,46 @@ autoware_msgs::msg::Lane BoundaryDetectorNode::computePairedCenterline(
 
   std::vector<Candidate> pair_candidates;
 
-  for (std::size_t blue_index = 0; blue_index < map.blue_cones.size(); ++blue_index) {
-    const auto & blue = map.blue_cones[blue_index];
-    if (!in_window(blue)) continue;
+  for (std::size_t red_index = 0; red_index < map.red_cones.size(); ++red_index) {
+    const auto & red = map.red_cones[red_index];
+    if (!in_window(red)) continue;
 
-    const auto blue_point = Point2d(blue.position.x, blue.position.y);
-    const double blue_forward = forwardProjection(current_pose_, yaw, blue_point);
-    const double blue_lateral = lateralProjection(current_pose_, yaw, blue_point);
+    const auto red_point = Point2d(red.position.x, red.position.y);
+    const double red_forward = forwardProjection(current_pose_, yaw, red_point);
+    const double red_lateral = lateralProjection(current_pose_, yaw, red_point);
 
-    for (std::size_t yellow_index = 0; yellow_index < map.yellow_cones.size(); ++yellow_index) {
-      const auto & yellow = map.yellow_cones[yellow_index];
-      if (!in_window(yellow)) continue;
+    for (std::size_t blue_index = 0; blue_index < map.blue_cones.size(); ++blue_index) {
+      const auto & blue = map.blue_cones[blue_index];
+      if (!in_window(blue)) continue;
 
-      const auto yellow_point = Point2d(yellow.position.x, yellow.position.y);
-      const double yellow_forward = forwardProjection(current_pose_, yaw, yellow_point);
-      const double yellow_lateral = lateralProjection(current_pose_, yaw, yellow_point);
-      const double lateral_span = blue_lateral - yellow_lateral;
+      const auto blue_point = Point2d(blue.position.x, blue.position.y);
+      const double blue_forward = forwardProjection(current_pose_, yaw, blue_point);
+      const double blue_lateral = lateralProjection(current_pose_, yaw, blue_point);
+      const double lateral_span = red_lateral - blue_lateral;
       if (std::abs(lateral_span) > 7.0) continue;
 
       const double width = planeDistance(
-        blue.position.x, blue.position.y,
-        yellow.position.x, yellow.position.y);
+        red.position.x, red.position.y,
+        blue.position.x, blue.position.y);
       if (width < 2.0 || width > 7.0) continue;
 
-      const double forward_gap = std::abs(yellow_forward - blue_forward);
+      const double forward_gap = std::abs(blue_forward - red_forward);
       if (forward_gap > 6.0) continue;
 
-      const double cx = 0.5 * (blue.position.x + yellow.position.x);
-      const double cy = 0.5 * (blue.position.y + yellow.position.y);
+      const double cx = 0.5 * (red.position.x + blue.position.x);
+      const double cy = 0.5 * (red.position.y + blue.position.y);
       const Point2d center(cx, cy);
       const double center_forward = forwardProjection(current_pose_, yaw, center);
       if (center_forward < -1.0) continue;
 
       const double center_lateral = lateralProjection(current_pose_, yaw, center);
 
-      // Blue is the left boundary and yellow is the right boundary. Their
+      // Red is the left boundary and blue is the right boundary. Their
       // cross-track vector gives a local tangent without using any simulator
       // reference line. Choose the tangent direction closest to the car's
       // current heading.
-      const double left_x = (blue.position.x - yellow.position.x) / width;
-      const double left_y = (blue.position.y - yellow.position.y) / width;
+      const double left_x = (red.position.x - blue.position.x) / width;
+      const double left_y = (red.position.y - blue.position.y) / width;
       double tangent_x = left_y;
       double tangent_y = -left_x;
       if (tangent_x * std::cos(yaw) + tangent_y * std::sin(yaw) < 0.0) {
@@ -1096,7 +1096,7 @@ autoware_msgs::msg::Lane BoundaryDetectorNode::computePairedCenterline(
         2.0 * forward_gap + std::abs(center_lateral) + std::abs(width - 4.0) +
         side_penalty + 2.0 * (1.0 - heading_alignment);
       pair_candidates.push_back({
-        center_forward, center_lateral, cost, blue_index, yellow_index, cx, cy,
+        center_forward, center_lateral, cost, red_index, blue_index, cx, cy,
         tangent_x, tangent_y});
     }
   }
@@ -1106,13 +1106,13 @@ autoware_msgs::msg::Lane BoundaryDetectorNode::computePairedCenterline(
       return lhs.cost < rhs.cost;
     });
 
+  std::vector<bool> used_red(map.red_cones.size(), false);
   std::vector<bool> used_blue(map.blue_cones.size(), false);
-  std::vector<bool> used_yellow(map.yellow_cones.size(), false);
   std::vector<Candidate> candidates;
   for (const auto & candidate : pair_candidates) {
-    if (used_blue[candidate.blue_index] || used_yellow[candidate.yellow_index]) continue;
+    if (used_red[candidate.red_index] || used_blue[candidate.blue_index]) continue;
+    used_red[candidate.red_index] = true;
     used_blue[candidate.blue_index] = true;
-    used_yellow[candidate.yellow_index] = true;
     candidates.push_back(candidate);
   }
 

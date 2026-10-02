@@ -75,8 +75,8 @@ private:
   rclcpp::Time lap_started_at_;
   rclcpp::Time last_pose_received_at_;
 
+  int min_red_cones_{12};
   int min_blue_cones_{12};
-  int min_yellow_cones_{12};
   double min_map_average_confidence_{0.40};
   double min_map_color_balance_{0.35};
   double min_localization_confidence_{0.45};

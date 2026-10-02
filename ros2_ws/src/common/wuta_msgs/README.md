@@ -13,7 +13,7 @@ WUTA-FSD ROS2 自定义消息定义包。
 | `color` | `uint8` | 颜色（见常量） |
 | `confidence` | `float32` | 检测置信度 [0.0, 1.0] |
 
-颜色常量：`COLOR_UNKNOWN=0`, `COLOR_BLUE=1`, `COLOR_YELLOW=2`, `COLOR_ORANGE=3`
+颜色常量：`COLOR_RED=0`, `COLOR_YELLOW=1`, `COLOR_BLUE=2`, `COLOR_ORANGE=3`, `COLOR_UNKNOWN=4`（与模型编号一致）
 
 ---
 
@@ -36,8 +36,9 @@ WUTA-FSD ROS2 自定义消息定义包。
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | `header` | `std_msgs/Header` | frame_id = "map" |
-| `blue_cones` | `Cone[]` | 左边界（蓝色） |
-| `yellow_cones` | `Cone[]` | 右边界（黄色） |
+| `red_cones` | `Cone[]` | 左边界（红色） |
+| `blue_cones` | `Cone[]` | 右边界（蓝色） |
+| `yellow_cones` | `Cone[]` | 黄色标记锥，独立于边界 |
 | `orange_cones` | `Cone[]` | 起终点（橙色） |
 | `unknown_cones` | `Cone[]` | 未分类 |
 | `is_closed` | `bool` | true = 第一圈完成，地图闭合 |

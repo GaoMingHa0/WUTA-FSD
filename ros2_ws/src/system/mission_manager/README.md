@@ -61,7 +61,7 @@ IDLE ──(传感器就绪)──→ READY ──(/system/inspection_trigger)�
 
 ## Trackdrive 门槛与圈次
 
-`MAPPING_DONE → RACE` 需要地图闭合、蓝黄锥数量/置信度/颜色平衡合格、定位 ready 且新鲜、
+`MAPPING_DONE → RACE` 需要地图闭合、红蓝锥数量/置信度/颜色平衡合格、定位 ready 且新鲜、
 定位置信度合格、冻结全局中心线 ready，以及第一圈已经完成。默认保留 KISS-ICP + EKF；
 仅在 NDT 地图保存和初始化链路已集成时启用 `use_ndt_race_localization`。
 

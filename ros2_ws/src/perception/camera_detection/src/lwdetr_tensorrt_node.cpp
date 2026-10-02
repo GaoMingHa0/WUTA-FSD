@@ -7,6 +7,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <std_msgs/msg/string.hpp>
+#include <wuta_msgs/msg/cone.hpp>
 #include <wuta_msgs/msg/camera_cone_detection.hpp>
 #include <wuta_msgs/msg/camera_cone_detection_array.hpp>
 
@@ -61,7 +62,7 @@ float sigmoid(float value) {
 
 struct Detection {
     std::array<float, 4> box;
-    std::array<float, 4> probabilities;
+    std::array<float, 5> probabilities;
     float confidence;
     int class_id;
 };
@@ -78,8 +79,8 @@ public:
 class LwDetrEngine {
 public:
     LwDetrEngine(const std::string &path, int device_id, int expected_width,
-                 int expected_height, int red_color)
-        : device_id_(device_id), red_color_(red_color) {
+                 int expected_height)
+        : device_id_(device_id) {
         cuda_check(cudaSetDevice(device_id_), "Select CUDA device");
         std::ifstream file(path, std::ios::binary | std::ios::ate);
         if (!file) throw std::runtime_error("Cannot open LW-DETR engine: " + path);
@@ -262,10 +263,10 @@ public:
                 }
             }
             if (suppressed) continue;
-            std::array<float, 4> probabilities{0, 0, 0, 0};
-            const int color = candidate.class_id == 0 ? red_color_ : candidate.class_id == 1 ? 2 : 1;
-            probabilities[0] = 1.0F - candidate.score;
-            if (color != 0) probabilities[color] = candidate.score;
+            std::array<float, 5> probabilities{0, 0, 0, 0, 0};
+            const int color = candidate.class_id;  // 0:red, 1:yellow, 2:blue, as trained
+            probabilities[wuta_msgs::msg::Cone::COLOR_UNKNOWN] = 1.0F - candidate.score;
+            probabilities[color] = candidate.score;
             selected.push_back({rect, probabilities, candidate.score, candidate.class_id});
         }
         return selected;
@@ -299,7 +300,6 @@ private:
     int boxes_index_{-1};
     int logits_index_{-1};
     int device_id_;
-    int red_color_;
     int width_{};
     int height_{};
     float *host_input_{};
@@ -331,10 +331,10 @@ cv::Mat image_bgr(const sensor_msgs::msg::Image &message) {
 cv::Mat annotated_image(const cv::Mat &source, const std::vector<Detection> &detections,
                         double milliseconds) {
     cv::Mat result = source.clone();
-    const std::array<cv::Scalar, 4> colors{
-        cv::Scalar(180, 180, 180), cv::Scalar(255, 80, 0),
-        cv::Scalar(0, 255, 255), cv::Scalar(0, 140, 255)};
-    const std::array<std::string, 4> names{"unknown", "blue", "yellow", "orange"};
+    const std::array<cv::Scalar, 5> colors{
+        cv::Scalar(0, 0, 255), cv::Scalar(0, 255, 255), cv::Scalar(255, 80, 0),
+        cv::Scalar(0, 140, 255), cv::Scalar(180, 180, 180)};
+    const std::array<std::string, 5> names{"red", "yellow", "blue", "orange", "unknown"};
     cv::rectangle(result, cv::Rect(0, 0, result.cols, std::min(result.rows, 35)),
                   cv::Scalar(0, 0, 0), cv::FILLED);
     std::ostringstream status;
@@ -373,12 +373,11 @@ public:
         confidence_ = declare_parameter<double>("confidence_threshold", 0.5);
         iou_ = declare_parameter<double>("nms_iou_threshold", 0.45);
         const int gpu_id = declare_parameter<int>("gpu_device_id", 0);
-        const int red_color = declare_parameter<int>("red_color", 3);
         const int expected_width = declare_parameter<int>("model_input_width", 0);
         const int expected_height = declare_parameter<int>("model_input_height", 0);
         const int threads = declare_parameter<int>("inference_threads", 4);
         const auto device = declare_parameter<std::string>("device", "cuda");
-        if (device != "cuda" || gpu_id < 0 || (red_color != 0 && red_color != 3) ||
+        if (device != "cuda" || gpu_id < 0 ||
             !std::isfinite(confidence_) || confidence_ <= 0 || confidence_ >= 1 ||
             !std::isfinite(iou_) || iou_ <= 0 || iou_ >= 1 || threads < 1 ||
             expected_width < 0 || expected_height < 0 ||
@@ -387,7 +386,7 @@ public:
         }
         cv::setNumThreads(threads);
         engine_ = std::make_unique<LwDetrEngine>(model_path, gpu_id, expected_width,
-                                                  expected_height, red_color);
+                                                  expected_height);
         results_ = create_publisher<wuta_msgs::msg::CameraConeDetectionArray>(output_topic, 10);
         annotated_ = create_publisher<sensor_msgs::msg::Image>(
             annotated_topic, rclcpp::SensorDataQoS());
@@ -441,8 +440,8 @@ private:
                     detection.detection_id = static_cast<std::uint32_t>(i);
                     for (int j = 0; j < 4; ++j) {
                         detection.bbox_xyxy[j] = detections[i].box[j];
-                        detection.color_probabilities[j] = detections[i].probabilities[j];
                     }
+                    detection.color_probabilities = detections[i].probabilities;
                     detection.confidence = detections[i].confidence;
                     detection.position_valid = false;
                     result.detections.push_back(std::move(detection));
