@@ -10,3 +10,9 @@ can_interface:
     # 本节点仅在字节变化时转发一次，mission_manager 晚启动/重启会错过 → 周期重发兜底。
     # 离开任务档（Byte1=1 有人驾驶/未知）自动停发。<=0 关闭。
     mode_repeat_period_sec: 1.0
+    # ---- RES 遥控器（0x1E4）：发车放行与急停 ----
+    # 484 = 0x1E4，标准帧 / 500k / 协议文档 DLC=3（实测桥日志为 8 → 只读 Byte1，不校验 DLC）
+    # Byte1：0x11 遥控器上线 / 0x13 发车按钮被按下 / 0x10 按下急停
+    # 发车是严格边沿：0x13 变化沿发布一次 /system/start_command，**不重放、不锁存**。
+    # mission_manager 侧同样只认「选完模式之后」按下的 GO（模式变化会清掉旧的 GO）。
+    res_frame_id: 0x1E4

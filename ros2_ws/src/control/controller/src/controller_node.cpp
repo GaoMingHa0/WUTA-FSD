@@ -74,6 +74,8 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
 
   // --- 车检模式（INSPECTION）参数 ---
   inspection_speed_ = declare_parameter("inspection_speed", inspection_speed_);
+  inspection_throttle_max_ = declare_parameter(
+    "inspection_throttle_max", inspection_throttle_max_);
   inspection_steer_amp_ = declare_parameter("inspection_steer_amp", inspection_steer_amp_);
   inspection_steer_freq_ = declare_parameter("inspection_steer_freq", inspection_steer_freq_);
   inspection_duration_ = declare_parameter("inspection_duration", inspection_duration_);
@@ -214,7 +216,11 @@ void ControllerNode::onMissionState(const MissionState::SharedPtr msg)
     msg->state == MissionState::MAPPING_DONE ||
     msg->state == MissionState::RACE);
 
-  if (!enabled_) {
+  // 零指令只在真的没有别的发布者时才发。车检是例外：它由 runInspection() 以 50Hz
+  // 独占发布正弦转向 + PID 开度，若这里再按「未使能」插一脚，10Hz 零指令会和它抢
+  // 同一个 /control/command（vcan0 实测：13% 的帧横向被拉回中位，纵向在满驱动与
+  // 满制动之间跳），而且两条路径共用同一套 PID 状态、互相当成对方的导数。
+  if (!enabled_ && state_ != MissionState::INSPECTION) {
     twist_filter_->reset();
     last_valid_trackdrive_cmd_ready_ = false;
     trackdrive_start_speed_started_ = false;
@@ -225,6 +231,12 @@ void ControllerNode::onMissionState(const MissionState::SharedPtr msg)
   // 车检模式：进入 INSPECTION 启动演示，离开时复位
   if (state_ == MissionState::INSPECTION &&
       prev_state != MissionState::INSPECTION) {
+    // 清掉上一模式残留的控制状态：否则 PID 误差从 0 突变到 +1，导数项会让第一拍
+    // 直接顶到限幅。
+    twist_filter_->reset();
+    pid_integral_ = 0.0;
+    pid_prev_err_ = 0.0;
+    pid_last_time_ = rclcpp::Time();
     inspection_start_time_ = now();
     inspection_done_published_ = false;
     RCLCPP_INFO(
@@ -487,13 +499,23 @@ void ControllerNode::runInspection()
   cmd.header.frame_id = "base_link";
   cmd.speed = filtered.velocity;
   cmd.angle = filtered.steering_angle;
-  cmd.throttle_brake = computeThrottleBrake(filtered.velocity);  // 车检纵向开度（PID 稳速）
+  // 车检纵向开度：目标是 inspection_speed，但车举升、轮胎拆掉时速度反馈恒为 0，
+  // PID 误差恒 +1、输出必然顶到限幅，实际下发的就是限幅值。故
+  // inspection_throttle_max 既是上限、也是「转速不能太快」的唯一旋钮（先低后调）。
+  cmd.throttle_brake = std::clamp(
+    computeThrottleBrake(filtered.velocity),
+    -inspection_throttle_max_, inspection_throttle_max_);
   cmd_pub_->publish(cmd);
 }
 
 void ControllerNode::finishInspection()
 {
   inspection_done_published_ = true;
+  // 先清 PID 再发回零：车检期间误差恒 +1，残留的 prev_err 会让回零第一拍的导数项
+  // 顶到满制动（实测 0x210 上 2 帧 raw=10，约 40ms）。
+  pid_integral_ = 0.0;
+  pid_prev_err_ = 0.0;
+  pid_last_time_ = rclcpp::Time();
   publishZeroCommand();
 
   std_msgs::msg::Bool complete;

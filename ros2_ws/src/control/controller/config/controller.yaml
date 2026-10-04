@@ -42,7 +42,8 @@ controller_node:
     max_steering_rate_deg_s: 180.0
 
     # 车检模式（INSPECTION）：慢速转驱动 + 正弦波转转向
-    inspection_speed: 1.0      # m/s 慢速驱动速度
+    inspection_speed: 1.0      # m/s 慢速驱动速度（PID 目标；车举升时无反馈，实际由下面限幅决定）
+    inspection_throttle_max: 0.15  # 车检纵向开度上限 [-1,1]：驱动系统转速的唯一旋钮，先低后调
     inspection_steer_amp: 15.0 # deg 正弦波转向幅值
     inspection_steer_freq: 0.4 # Hz 正弦波频率
     inspection_duration: 27.0  # s 车检时长，完成后发布 mission_complete

@@ -92,6 +92,7 @@ private:
 
   // 车检模式（INSPECTION）参数与状态
   double inspection_speed_{1.0};      // 慢速驱动速度 m/s
+  double inspection_throttle_max_{0.15}; // 车检纵向开度上限（转速旋钮）
   double inspection_steer_amp_{15.0}; // 正弦波转向幅值 deg
   double inspection_steer_freq_{0.4}; // 正弦波频率 Hz
   double inspection_duration_{10.0};  // 演示时长 s

@@ -30,6 +30,11 @@ std::string missionModeName(uint8_t vcu_mission_mode)
     default: return {};
   }
 }
+
+// 0x1E4 Byte1 RES（遥控器）状态定义
+constexpr uint8_t kResEmergency   = 0x10;  // 按下急停
+constexpr uint8_t kResRemoteOnline = 0x11;  // 遥控器上线
+constexpr uint8_t kResStartButton = 0x13;  // 发车按钮被按下
 }  // namespace
 
 CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
@@ -41,6 +46,7 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
   declare_parameter<bool>("can_loopback", false);
   poll_interval_sec_ = declare_parameter<double>("poll_interval_sec", 0.02);
   max_steer_deg_ = declare_parameter<double>("max_steer_deg", max_steer_deg_);
+  res_frame_id_ = declare_parameter<int>("res_frame_id", res_frame_id_);
 
   // 打开 CAN 接口；失败时静默降级，节点继续运行（收不到/发不出由上层兜底）
   const bool opened = can_.open(can_device_);
@@ -78,6 +84,13 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
   // 接收方向解析结果发布（VCU→工控机帧）：新协议只解析测试模式
   mission_mode_cmd_pub_ = create_publisher<std_msgs::msg::String>(
     "/system/mission_mode_cmd", 10);
+  // RES 状态解析结果：GO 放行（严格边沿：仅 0x13 变化沿发布一次，不重放不锁存）
+  start_command_pub_ = create_publisher<std_msgs::msg::Bool>(
+    "/system/start_command", 10);
+  // 急停总线：与 mission_manager 自检失败同一话题。锁存（transient_local），
+  // 晚启动且请求 transient_local 的订阅者能立即拿到已置位的急停态。
+  emergency_pub_ = create_publisher<std_msgs::msg::Bool>(
+    "/system/emergency", rclcpp::QoS(1).reliable().transient_local());
   // 预留，目前暂时不由VCU发轮边速度
   // velocity_pub_ = create_publisher<geometry_msgs::msg::TwistStamped>(
   //   "/chcnav/velocity", 50);
@@ -96,8 +109,13 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
       std::bind(&CANInterfaceNode::repeatMissionMode, this));
   }
 
+  // GO **不重放/不锁存**（无 go_repeat_timer_）。曾按 res_go_hold_sec 窗口重放：
+  // 一次按键 + 之后任意一次选模式即发车，还能授权给窗口内新起的 mission_manager
+  // 实例（vcan0 实测确认会让未按 GO 的用例发车），故移除。重启实例需重按 GO。
+
   RCLCPP_INFO(get_logger(), "CAN Interface initialized (tx/rx separated).");
-  RCLCPP_INFO(get_logger(), "Tx frame 0x210 active; Rx frame 0x501 active.");
+  RCLCPP_INFO(get_logger(), "Tx frame 0x210 active; Rx frame 0x501 (mode) + 0x%X (RES).",
+    static_cast<unsigned>(res_frame_id_));
 }
 
 void CANInterfaceNode::onMissionState(const wuta_msgs::msg::MissionState::SharedPtr msg)
@@ -133,7 +151,12 @@ void CANInterfaceNode::pollReceiver()
 {
   CanFrame frame;
   while (can_.receive(frame)) {
-    parseVcuFrame(frame);  // 解析 VCU→工控机单帧（0x501）
+    // 接收方向按 ID 分发：0x501 = VCU 任务模式；0x1E4 = RES 遥控器状态
+    if (frame.can_id == 0x501) {
+      parseVcuFrame(frame);
+    } else if (frame.can_id == static_cast<uint32_t>(res_frame_id_)) {
+      parseResFrame(frame);
+    }
   }
 }
 
@@ -204,6 +227,67 @@ void CANInterfaceNode::repeatMissionMode()
   std_msgs::msg::String msg;
   msg.data = mode;
   mission_mode_cmd_pub_->publish(msg);
+}
+
+void CANInterfaceNode::parseResFrame(const CanFrame & frame)
+{
+  // RES→工控机单帧 0x1E4（标准帧 / 500k / 协议文档 DLC=3）。
+  // 实测（2026-10-03 zlgcan_bridge 抓包，log/20261003_203934/vcu2fsd/0x1E4.log）：
+  //   33.3Hz 周期电平广播（中位 30ms，P10/P90 = 26/34ms），桥侧 DLC 记为 8；
+  //   Byte1=0x11 遥控器上线（长电平）、0x13 发车按钮（0.15~0.51s 瞬时脉冲）、
+  //   0x10 急停（持续电平）、0x00 遥控器未上线。
+  // 故只读 Byte1 且不校验 DLC（>=1 即可），协议文档与实际抓包都能兼容。
+  if (frame.dlc < 1) return;
+  const uint8_t res_state = frame.data[0];
+  const bool changed = (res_state != last_res_state_);
+
+  switch (res_state) {
+    case kResStartButton:
+      // 发车：**只在变化沿发布一次**（严格边沿，不重放不锁存）。
+      // 0x13 是 0.15~0.51s 的短脉冲，但远端 mission_manager 是常驻订阅者，
+      // 一定收得到；漏收只可能是它当时没在跑——那种情况要求重按 GO，不能自动放行。
+      if (changed) {
+        publishStartCommand(true);
+        RCLCPP_INFO(get_logger(), "RES start button pressed -> start command.");
+      }
+      break;
+    case kResEmergency:
+      // 急停：锁存发布（controller 收到后不可恢复，持续输出全零）。
+      if (changed) {
+        publishEmergency(true);
+        RCLCPP_ERROR(get_logger(), "RES EMERGENCY pressed!");
+      }
+      break;
+    case kResRemoteOnline:
+      // 遥控器上线：纯状态，只记日志（实测 33Hz 持续电平）
+      if (changed) {
+        RCLCPP_INFO(get_logger(), "RES remote online.");
+      }
+      break;
+    default:
+      // 0x00（遥控器未上线）等未定义值：不触发任何动作
+      if (changed) {
+        RCLCPP_WARN(get_logger(), "Unknown RES state 0x%02X on 0x%X.",
+          res_state, static_cast<unsigned>(frame.can_id));
+      }
+      break;
+  }
+
+  last_res_state_ = res_state;
+}
+
+void CANInterfaceNode::publishStartCommand(bool start)
+{
+  std_msgs::msg::Bool msg;
+  msg.data = start;
+  start_command_pub_->publish(msg);
+}
+
+void CANInterfaceNode::publishEmergency(bool emergency)
+{
+  std_msgs::msg::Bool msg;
+  msg.data = emergency;
+  emergency_pub_->publish(msg);
 }
 
 }  // namespace can_interface

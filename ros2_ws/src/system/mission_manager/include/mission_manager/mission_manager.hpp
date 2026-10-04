@@ -35,7 +35,9 @@ private:
 
   // Normal mission callbacks
   void onConeMap(const wuta_msgs::msg::ConeMap::SharedPtr msg);
+  void onEmergency(const std_msgs::msg::Bool::SharedPtr msg);
   void onMissionModeCmd(const std_msgs::msg::String::SharedPtr msg);
+  void onStartCommand(const std_msgs::msg::Bool::SharedPtr msg);
   void onMissionComplete(const std_msgs::msg::Bool::SharedPtr msg);
   void onMapReady(const std_msgs::msg::Bool::SharedPtr msg);
   void onGlobalCenterlineReady(const std_msgs::msg::Bool::SharedPtr msg);
@@ -64,7 +66,8 @@ private:
   bool map_quality_ok_{false};
   bool global_centerline_ready_{false};
   bool ndt_map_ready_{false};
-  bool start_requested_{false};   // 选模式即启动：非车检模式下由 onMissionModeCmd 置位
+  bool mode_selected_{false};     // 已由 AMI 选过任务模式（0x501 模式字节到达过）
+  bool start_requested_{false};   // RES GO 放行（0x1E4 Byte1=0x13 → /system/start_command）
 
   // Trackdrive lap counter. The first active localization pose defines the
   // finite start/finish line; no simulator truth is consumed here.
@@ -110,14 +113,16 @@ private:
   rclcpp::Publisher<wuta_msgs::msg::MissionState>::SharedPtr state_pub_;
   rclcpp::Publisher<std_msgs::msg::UInt32>::SharedPtr lap_count_pub_;
   rclcpp::Publisher<wuta_msgs::msg::DevicesInspection>::SharedPtr devices_inspection_pub_;
-  // 急停总线：自检失败时发布，controller 据此归零（新协议已无 VCU 侧 CAN 急停来源）
+  // 急停总线：自检失败与本节点收到的 RES 急停共用；controller 据此归零
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr emergency_pub_;
 
   // Subscribers
   rclcpp::Subscription<wuta_msgs::msg::ConeMap>::SharedPtr cone_map_sub_;
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr emergency_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr lidar_status_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr localization_status_sub_;
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr mission_mode_sub_;
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr start_command_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr mission_complete_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr map_ready_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr global_centerline_ready_sub_;

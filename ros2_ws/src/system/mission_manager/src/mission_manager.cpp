@@ -64,9 +64,21 @@ MissionManager::MissionManager(const rclcpp::NodeOptions & options)
     "/mapping/cone_map", 10,
     std::bind(&MissionManager::onConeMap, this, std::placeholders::_1));
 
+  // 急停：latched 订阅（transient_local）——can_interface 收到 RES 急停（0x1E4 Byte1=0x10）
+  // 后锁存发布，本节点晚启动/重启也要能立即拿到已置位的急停态（volatile 收不到历史）。
+  // 注意本节点自检失败时也会向同一话题发布，会收到自己发的消息；EMERGENCY 幂等，无害。
+  emergency_sub_ = create_subscription<std_msgs::msg::Bool>(
+    "/system/emergency", latched_qos,
+    std::bind(&MissionManager::onEmergency, this, std::placeholders::_1));
+
   mission_mode_sub_ = create_subscription<std_msgs::msg::String>(
     "/system/mission_mode_cmd", 10,
     std::bind(&MissionManager::onMissionModeCmd, this, std::placeholders::_1));
+
+  // RES 发车放行：AMI 选完模式后仍需 0x1E4 Byte1=0x13 才启动（见 advanceWhenReady）
+  start_command_sub_ = create_subscription<std_msgs::msg::Bool>(
+    "/system/start_command", 10,
+    std::bind(&MissionManager::onStartCommand, this, std::placeholders::_1));
 
   mission_complete_sub_ = create_subscription<std_msgs::msg::Bool>(
     "/system/mission_complete", 10,
@@ -148,7 +160,28 @@ void MissionManager::advanceWhenReady()
   if (lidar_ready_ && localization_ready_ && current_state_ == State::IDLE) {
     transitionTo(State::READY);
   }
-  if (start_requested_ && current_state_ == State::READY) {
+
+  // 启动条件 = 已选模式（0x501）+ 已收到 RES GO 放行（0x1E4 Byte1=0x13），
+  // 且 GO 必须是本次档位选择之后按下的（见 onMissionModeCmd 对 start_requested_ 的清除）。
+  // mode_selected_ 必不可少：mission_mode_ 有默认值（MISSION_TRACKDRIVE），
+  // 若只看 GO，一个早到的 GO 会把状态推成 EXPLORE(trackdrive)。
+  if (!start_requested_ || !mode_selected_) return;
+
+  // 车检：台架演示，选完模式按下 GO 即进 INSPECTION（IDLE 也放行，保持旧行为）
+  if (mission_mode_ == State::MISSION_INSPECTION &&
+      (current_state_ == State::IDLE || current_state_ == State::READY))
+  {
+    start_requested_ = false;  // 用后即清，避免 GO 重放再次触发
+    RCLCPP_INFO(get_logger(), "Inspection triggered by RES start command.");
+    transitionTo(State::INSPECTION);
+    return;
+  }
+
+  if (current_state_ == State::READY) {
+    start_requested_ = false;  // 用后即清，避免 GO 重放再次触发
+    RCLCPP_INFO(
+      get_logger(), "RES start command accepted (mission_mode=%u).",
+      static_cast<unsigned>(mission_mode_));
     transitionTo(State::EXPLORE);
   }
 }
@@ -447,6 +480,23 @@ void MissionManager::publishLapCount()
   lap_count_pub_->publish(msg);
 }
 
+void MissionManager::onEmergency(const std_msgs::msg::Bool::SharedPtr msg)
+{
+  // 仅负责 mission_state 状态切换；刹车动作（控制输出归零）由 controller_node 负责
+  if (msg->data) {
+    // 急停是安全事件而非程序错误，按 WARN 记录（可见但不误报为故障）
+    RCLCPP_WARN(get_logger(), "EMERGENCY triggered!");
+    transitionTo(State::EMERGENCY);
+  }
+}
+
+void MissionManager::onStartCommand(const std_msgs::msg::Bool::SharedPtr msg)
+{
+  if (!msg->data) return;
+  start_requested_ = true;
+  advanceWhenReady();
+}
+
 void MissionManager::onMissionModeCmd(const std_msgs::msg::String::SharedPtr msg)
 {
   if (current_state_ != State::IDLE && current_state_ != State::READY) {
@@ -469,21 +519,16 @@ void MissionManager::onMissionModeCmd(const std_msgs::msg::String::SharedPtr msg
   // can_interface 会周期性保活重发当前档位（默认 1Hz），仅在档位真正变化时记录
   if (mission_mode_ != prev_mission_mode) {
     RCLCPP_INFO(get_logger(), "Mission mode set to: %s", msg->data.c_str());
+    // 档位变化 = 重新开始一次发车授权：丢弃此前按下的 GO。否则 start_requested_
+    // 会无限期挂着，之后任何时候选模式都会直接发车（vcan0 实测：先按 GO、6.8s
+    // 后再选模式同样进 EXPLORE）。保活重发的同值档位不清除。
+    start_requested_ = false;
   }
+  // 选模式 ≠ 启动：仍需 RES GO 放行（0x1E4 Byte1=0x13 → /system/start_command）。
+  // 末尾仍补一次 advanceWhenReady：同一回调内条件可能已齐备。
+  mode_selected_ = true;
   publishState();
-
-  // 选模式即启动（新协议 0x501 只剩模式字节，原 RES Go/CAN 放行已取消）：
-  //   车检（mode 6）→ 直入 INSPECTION 演示；
-  //   其余模式 → 等同原 Go 放行 READY → EXPLORE（未就绪时由 advanceWhenReady 兜底）。
-  if (mission_mode_ == State::MISSION_INSPECTION) {
-    if (current_state_ == State::IDLE || current_state_ == State::READY) {
-      RCLCPP_INFO(get_logger(), "Inspection triggered by mission mode.");
-      transitionTo(State::INSPECTION);
-    }
-  } else {
-    start_requested_ = true;
-    advanceWhenReady();
-  }
+  advanceWhenReady();
 }
 
 void MissionManager::onMissionComplete(const std_msgs::msg::Bool::SharedPtr msg)

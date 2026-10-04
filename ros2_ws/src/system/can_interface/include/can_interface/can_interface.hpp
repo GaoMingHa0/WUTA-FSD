@@ -42,10 +42,18 @@ private:
   // 模式保活：周期重发当前档位，防晚启动/重启的 mission_manager 错过单发模式
   void repeatMissionMode();
 
+  // ---- 报文解析（RES→工控机单帧 0x1E4：Byte1=遥控器状态） ----
+  // 0x11 遥控器上线 / 0x13 发车按钮被按下 / 0x10 按下急停
+  // 发车严格边沿：0x13 变化沿发布一次 /system/start_command，不做窗口重放
+  void parseResFrame(const CanFrame & frame);  // 状态 → start_command / emergency
+  void publishStartCommand(bool start);
+  void publishEmergency(bool emergency);
+
   // 配置
   std::string can_device_;
   double poll_interval_sec_{0.02};  // 接收轮询周期，默认 50Hz
   double max_steer_deg_{25.0};      // Signal2 满量程转向角（deg），与 controller 一致
+  int res_frame_id_{484};           // RES 报文 ID（484 = 0x1E4，标准帧 / 500k / DLC 3）
 
   // 0x210 帧缓存（Signal3/4 由状态回调更新，随下帧一起发出）
   double throttle_brake_{0.0};   // 纵向开度 [-1,1]（controller 速度 PID 输出）
@@ -57,6 +65,9 @@ private:
   uint8_t last_vcu_mission_mode_{0xFF};   // 最近一次 VCU 任务模式（Byte1）
   double mode_repeat_period_sec_{1.0};    // mission_mode_cmd 保活重发周期（<=0 关闭）
 
+  // 0x1E4 帧缓存（电平信号：按当前值处理，仅变化沿触发动作/日志）
+  uint8_t last_res_state_{0xFF};          // 最近一次 RES 状态（Byte1）
+
   // 设备层
   CanSocket can_;
 
@@ -65,6 +76,8 @@ private:
   rclcpp::Subscription<wuta_msgs::msg::DevicesInspection>::SharedPtr devices_inspection_sub_;
   rclcpp::Subscription<autoware_msgs::msg::Command>::SharedPtr control_command_sub_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr mission_mode_cmd_pub_;
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr start_command_pub_;  // RES GO 放行
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr emergency_pub_;      // RES 急停（锁存）
   rclcpp::TimerBase::SharedPtr receive_timer_;
   rclcpp::TimerBase::SharedPtr keepalive_timer_;  // 无控制指令时的保活帧
   rclcpp::TimerBase::SharedPtr mode_repeat_timer_;  // 模式保活重发（晚启动的订阅者）
