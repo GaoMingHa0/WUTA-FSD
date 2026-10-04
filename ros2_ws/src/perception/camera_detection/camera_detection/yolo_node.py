@@ -24,7 +24,7 @@ class YoloNode(Node):
                     'device': 'cuda', 'gpu_device_id': 0,
                     'model_input_width': 0, 'model_input_height': 0,
                     'output_topic': '/camera/yolo/cones', 'confidence_threshold': 0.5,
-                    'nms_iou_threshold': 0.45, 'red_color': 3, 'inference_threads': 4}
+                    'nms_iou_threshold': 0.45, 'inference_threads': 4}
         self.cfg = {k: self.declare_parameter(k, v).value for k, v in defaults.items()}
         for name in ('confidence_threshold', 'nms_iou_threshold'):
             if not 0 < self.cfg[name] < 1:
@@ -35,7 +35,7 @@ class YoloNode(Node):
         if any(value < 0 for value in dimensions) or ((dimensions[0] == 0) != (dimensions[1] == 0)):
             raise ValueError('model_input_width and model_input_height must both be zero or positive')
         input_size = dimensions if dimensions[0] > 0 else None
-        self.model = YoloModel(self.cfg['model_path'], self.cfg['red_color'], self.cfg['inference_threads'],
+        self.model = YoloModel(self.cfg['model_path'], self.cfg['inference_threads'],
                                self.cfg['device'], self.cfg['gpu_device_id'], input_size=input_size)
         self.get_logger().info('Loaded model classes: ' + str(self.model.names))
         self.get_logger().info('Detector device: ' + str(getattr(self.model, 'device', 'cuda')) +

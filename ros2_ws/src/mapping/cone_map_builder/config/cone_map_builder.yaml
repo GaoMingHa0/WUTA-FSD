@@ -18,8 +18,8 @@ cone_map_builder:
     start_skip_distance: 30.0   # m — accumulated travel required before closure
     loop_closure_heading_tolerance_deg: 60.0 # require start-direction agreement
 
-    # Color heuristic: preserve upstream blue/yellow/orange colors, and only
-    # assign blue=left/yellow=right when a detection arrives as UNKNOWN.
+    # Color heuristic: preserve upstream red/blue/yellow/orange colors, and only
+    # assign red=left/blue=right when a detection arrives as UNKNOWN.
     # Set false once camera/detection_fusion provides complete colors.
     assign_colors: true
 

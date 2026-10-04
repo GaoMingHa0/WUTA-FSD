@@ -110,3 +110,9 @@ PYTHONPATH=. python3 -m pytest test -q
 
 Tests cover unique/ambiguous matches, wrong-depth adjacent sections, covariance
 validation, optical transform axes, and weak-stereo position weighting.
+
+
+2026-10-02 颜色接口：模型原始编号直接传递，RED=0 / YELLOW=1 / BLUE=2 / ORANGE=3 /
+UNKNOWN=4；相机颜色概率长度 5。红色为左边界、蓝色为右边界；`red_color` 已移除。
+使用 `./start_hardware_fusion.sh --debug-red --rviz` 检查模型红类及当前红锥 XYZ。
+`--debug-orange` 只检查实际橙色类别，不再将红锥当橙锥。旧消息消费者需重新构建并重启。

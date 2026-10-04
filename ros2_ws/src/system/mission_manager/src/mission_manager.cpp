@@ -14,8 +14,8 @@ MissionManager::MissionManager(const rclcpp::NodeOptions & options)
 : Node("mission_manager", options)
 {
   // 任务模式由上游 /system/mission_mode_cmd 派发（见 onMissionModeCmd），此处无参数默认值
+  min_red_cones_ = declare_parameter("min_red_cones", min_red_cones_);
   min_blue_cones_ = declare_parameter("min_blue_cones", min_blue_cones_);
-  min_yellow_cones_ = declare_parameter("min_yellow_cones", min_yellow_cones_);
   min_map_average_confidence_ = declare_parameter(
     "min_map_average_confidence", min_map_average_confidence_);
   min_map_color_balance_ = declare_parameter(
@@ -276,8 +276,8 @@ void MissionManager::onConeMap(const wuta_msgs::msg::ConeMap::SharedPtr msg)
   if (current_state_ == State::EXPLORE) {
     RCLCPP_INFO(
       get_logger(),
-      "Cone map closed. blue=%zu yellow=%zu quality=%s",
-      msg->blue_cones.size(), msg->yellow_cones.size(),
+      "Cone map closed. red=%zu blue=%zu quality=%s",
+      msg->red_cones.size(), msg->blue_cones.size(),
       map_quality_ok_ ? "PASS" : "FAIL");
     transitionTo(State::MAPPING_DONE);
   }
@@ -309,16 +309,16 @@ bool MissionManager::coneMapQualityPasses(
   const wuta_msgs::msg::ConeMap & map) const
 {
   if (!map.is_closed ||
-      map.blue_cones.size() < static_cast<std::size_t>(std::max(0, min_blue_cones_)) ||
-      map.yellow_cones.size() < static_cast<std::size_t>(std::max(0, min_yellow_cones_)))
+      map.red_cones.size() < static_cast<std::size_t>(std::max(0, min_red_cones_)) ||
+      map.blue_cones.size() < static_cast<std::size_t>(std::max(0, min_blue_cones_)))
   {
     return false;
   }
 
   const double larger_side = static_cast<double>(
-    std::max(map.blue_cones.size(), map.yellow_cones.size()));
+    std::max(map.red_cones.size(), map.blue_cones.size()));
   const double smaller_side = static_cast<double>(
-    std::min(map.blue_cones.size(), map.yellow_cones.size()));
+    std::min(map.red_cones.size(), map.blue_cones.size()));
   const double color_balance = larger_side <= 0.0 ? 0.0 : smaller_side / larger_side;
 
   double confidence_sum = 0.0;
@@ -329,8 +329,8 @@ bool MissionManager::coneMapQualityPasses(
         ++confidence_count;
       }
     };
+  accumulate(map.red_cones);
   accumulate(map.blue_cones);
-  accumulate(map.yellow_cones);
   const double average_confidence = confidence_count == 0
     ? 0.0
     : confidence_sum / static_cast<double>(confidence_count);

@@ -28,6 +28,7 @@ struct TrackedCone
   double x, y, z;
   uint8_t color;
   int hit_count{1};       // Number of times detected (confidence proxy)
+  int red_votes{0};
   int blue_votes{0};
   int yellow_votes{0};
   int orange_votes{0};
@@ -102,7 +103,7 @@ private:
   double loop_closure_distance_{3.0};  // m — distance to start to trigger loop closure
   int min_cones_for_closure_{10};      // Minimum cones before loop closure is considered
   int mapping_laps_{1};                // Formal laps required before freezing the map
-  bool assign_colors_{true};           // Assign blue/yellow only for UNKNOWN observations
+  bool assign_colors_{true};           // Assign red-left/blue-right only for UNKNOWN observations
   double tf_lookup_timeout_sec_{0.1};  // Wait for EKF TF at the sensor stamp
   bool use_latest_tf_fallback_{false};  // Unsafe compatibility fallback; disabled by default
   double pending_detection_timeout_sec_{0.5};  // Keep a scan while its exact TF arrives

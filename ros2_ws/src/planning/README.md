@@ -42,21 +42,21 @@ planning/
 
 ## boundary_detector
 
-### 算法：在线蓝黄锥配对 + 局部几何配对 + Delaunay 兜底
+### 算法：在线红蓝锥配对 + 局部几何配对 + Delaunay 兜底
 
 1. 从 `/mapping/cone_map` 和 `/localization/pose` 读取当前建图结果与车辆位姿；Trackdrive 不读取赛道 YAML 或完整参考中心线
-2. 提取当前 `lookahead_distance` 范围内、位于车辆前方窗口的蓝/黄锥桶
+2. 提取当前 `lookahead_distance` 范围内、位于车辆前方窗口的红/蓝锥桶
 3. 按车辆航向投影，过滤左右关系错误、赛道宽度异常、前向间隔过大的锥桶组合
-4. 对可用蓝/黄锥桶做唯一配对，取两锥中点作为中心线候选点
-5. 使用车辆当前航向、候选点间距离、蓝/黄锥横向向量推导出的局部赛道切向进行连续性排序，避免在相邻赛段较近时跳到错误分支
-6. If color-based pairing is short for local_pairing_min_streak consecutive cycles, local-frame left/right geometric pairing may be used as a fallback. The default is 3 cycles, so fallback does not replace normal blue/yellow pairing too early.
+4. 对可用红/蓝锥桶做唯一配对，取两锥中点作为中心线候选点
+5. 使用车辆当前航向、候选点间距离、红/蓝锥横向向量推导出的局部赛道切向进行连续性排序，避免在相邻赛段较近时跳到错误分支
+6. If color-based pairing is short for local_pairing_min_streak consecutive cycles, local-frame left/right geometric pairing may be used as a fallback. The default is 3 cycles, so fallback does not replace normal red/blue pairing too early.
 7. If colors are severely imbalanced, local-frame pairing is allowed immediately; if that still fails, Delaunay fallback is used only when it produces at least `delaunay_min_waypoints` centerline points. The default is 3 because the current online cone map often exposes only a short local fallback; path_generator caps these short centerlines to low speed.
 8. 兜底路径会按当前车辆航向过滤明显位于车后的中点，并在必要时翻转局部路径顺序，降低中心线反向导致掉头的概率
 9. 输出为 `autoware_msgs/Lane`
 
 > **后续演进：相机颜色融合。** 紧凑赛道中相邻赛段的几何距离可能小于 LiDAR-only
 > Delaunay 兜底的可判别尺度，因而仍可能选择错误分支。实车应接入相机锥桶分类，将稳定的
-> 蓝/黄语义颜色融合到现有 `ConeArray`/`ConeMap` 数据链路；规划即可优先进行显式左右边界配对。
+> 红/蓝语义颜色融合到现有 `ConeArray`/`ConeMap` 数据链路；规划即可优先进行显式左右边界配对。
 > 该相机检测与融合节点尚未实现，Delaunay 继续仅作为颜色不足时的保守兜底。
 
 **只在 TRACKDRIVE 模式下运行**，SKIDPAD 和 ACCELERATION 直接在 path_generator 内生成。
@@ -113,9 +113,9 @@ planning/
 
 | 参数 | 默认值 | 说明 |
 |------|--------|------|
-| `boundary_detector.lookahead_distance` | 15.0 m | 高速循迹在线蓝/黄锥配对和 Delaunay 兜底的局部取锥范围；大于控制器 14 m 高速前视，同时减少紧凑图上跨分支误配 |
+| `boundary_detector.lookahead_distance` | 15.0 m | 高速循迹在线红/蓝锥配对和 Delaunay 兜底的局部取锥范围；大于控制器 14 m 高速前视，同时减少紧凑图上跨分支误配 |
 | `boundary_detector.local_pairing_min_streak` | 3 | 颜色配对连续不足多少个周期后，允许车辆局部坐标系左右锥几何配对兜底；仿真中优先避免颜色误判后长时间断路 |
-| `boundary_detector.local_pairing_color_imbalance_ratio` | 0.20 | 蓝/黄较少一侧低于该比例时，认为颜色严重失衡并立即启用局部左右配对兜底 |
+| `boundary_detector.local_pairing_color_imbalance_ratio` | 0.20 | 红/蓝较少一侧低于该比例时，认为颜色严重失衡并立即启用局部左右配对兜底 |
 | `boundary_detector.delaunay_min_waypoints` | 3 | Delaunay fallback must produce at least this many centerline points; 3-point fallback is allowed but path_generator caps short centerlines to low speed |
 | `trackdrive.explore.max_velocity` | 7.0 m/s | 第1圈（探索圈）循迹速度 |
 | `trackdrive.resample_spacing` | 1.0 m | 高速循迹局部中心线重采样间距，用于给 Pure Pursuit 提供连续前向目标 |

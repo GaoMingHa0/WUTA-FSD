@@ -1,8 +1,8 @@
 mission_manager:
   ros__parameters:
     # MAPPING_DONE -> RACE gates.
+    min_red_cones: 12
     min_blue_cones: 12
-    min_yellow_cones: 12
     min_map_average_confidence: 0.40
     min_map_color_balance: 0.35
     min_localization_confidence: 0.45

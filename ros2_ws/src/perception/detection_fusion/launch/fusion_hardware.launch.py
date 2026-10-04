@@ -6,7 +6,7 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
 from launch.conditions import IfCondition, UnlessCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
 
 from detection_fusion.calibration import load_calibration
@@ -27,15 +27,14 @@ def setup(context):
     if detector_backend == 'cpp' and (model.suffix.lower() != '.engine' or
                                       not model.stem.lower().startswith('lwdetr')):
         raise ValueError('C++ detector requires a LW-DETR TensorRT engine')
-    if value('debug_orange') == 'true' and value('fusion_backend') != 'cpp':
-        raise ValueError('debug_orange requires fusion_backend:=cpp')
+    if value('debug_red') == 'true' and value('debug_orange') == 'true':
+        raise ValueError('Select only one of debug_red/debug_orange')
+    if (value('debug_red') == 'true' or value('debug_orange') == 'true') and value('fusion_backend') != 'cpp':
+        raise ValueError('Cone debug modes require fusion_backend:=cpp')
     camera_frame, lidar_frame, translation, quaternion = load_calibration(calibration)
     if lidar_frame != 'rslidar':
         raise ValueError('The supplied M1 config publishes rslidar; update it before using another frame')
     share = Path(get_package_share_directory('detection_fusion'))
-    red_color = int(value('red_color'))
-    if red_color not in (0, 3):
-        raise ValueError('red_color must be 0 (UNKNOWN) or 3 (ORANGE)')
     confidence = float(value('confidence_threshold'))
     threads = int(value('inference_threads'))
     wait = float(value('fusion_wait_sec'))
@@ -62,7 +61,7 @@ def setup(context):
              name='camera_lidar_extrinsics', arguments=tf_arguments, output='screen'),
         Node(package='camera_detection', executable=(
             'lwdetr_tensorrt_node' if detector_backend == 'cpp' else 'yolov8_node'),
-             parameters=[{'model_path': str(model), 'red_color': red_color,
+             parameters=[{'model_path': str(model),
                 'image_topic': value('image_topic'), 'confidence_threshold': confidence,
                 'inference_threads': threads,
                 'model_input_width': int(value('model_input_width')),
@@ -114,6 +113,7 @@ def setup(context):
                 'guided_max_width': float(value('guided_max_width')),
                 'guided_min_height': float(value('guided_min_height')),
                 'guided_max_height': float(value('guided_max_height')),
+                'debug_red': value('debug_red') == 'true',
                 'debug_orange': value('debug_orange') == 'true',
                 'debug_sync_slop_sec': float(value('debug_sync_slop_sec')),
                 'debug_pixel_margin': float(value('debug_pixel_margin'))}],
@@ -124,7 +124,9 @@ def setup(context):
                  'semantic_color_confirmation_hits': 3}],
              remappings=[('/perception/lidar/cones', '/perception/fused/cones'),
                          ('/localization/pose', value('localization_pose_topic'))],
-             condition=UnlessCondition(LaunchConfiguration('debug_orange')), output='screen'),
+             condition=UnlessCondition(PythonExpression([
+                 '"', LaunchConfiguration('debug_red'), '" == "true" or "',
+                 LaunchConfiguration('debug_orange'), '" == "true"'])), output='screen'),
         Node(package='rviz2', executable='rviz2', arguments=['-d', value('rviz_config')],
              condition=IfCondition(LaunchConfiguration('launch_rviz')), output='screen'),
     ]
@@ -143,7 +145,6 @@ def generate_launch_description():
             choices=['cpp', 'python'],
             description='C++ late fusion or original Python fusion node'),
         DeclareLaunchArgument('calibration_path', description='camera-from-lidar YAML path'),
-        DeclareLaunchArgument('red_color', default_value='3', description='0 UNKNOWN, 3 ORANGE'),
         DeclareLaunchArgument('start_drivers', default_value='true', choices=['true', 'false']),
         DeclareLaunchArgument('launch_rviz', default_value='false', choices=['true', 'false']),
         DeclareLaunchArgument('rviz_config', default_value=str(Path(
@@ -164,6 +165,8 @@ def generate_launch_description():
         DeclareLaunchArgument('lidar_max_cone_height', default_value='0.6'),
         DeclareLaunchArgument('lidar_max_detection_range', default_value='20.0'),
         DeclareLaunchArgument('profile_lidar', default_value='false', choices=['true', 'false']),
+        DeclareLaunchArgument('debug_red', default_value='false', choices=['true', 'false'],
+            description='Publish low-latency red cone position from raw cloud and camera box'),
         DeclareLaunchArgument('debug_orange', default_value='false', choices=['true', 'false'],
             description='Publish low-latency orange cone position from raw cloud and camera box'),
         DeclareLaunchArgument('depth_topic', default_value='/zed/zed_node/depth/depth_registered'),

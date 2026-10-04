@@ -150,7 +150,7 @@ class DetectionFusion(Node):
         for raw in lidar.cones:
             if np.all(np.isfinite([raw.position.x, raw.position.y, raw.position.z])):
                 cone = deepcopy(raw)
-                cone.color = 0
+                cone.color = Cone.COLOR_UNKNOWN
                 output.cones.append(cone)
         matches = []
         colored = 0
@@ -198,7 +198,7 @@ class DetectionFusion(Node):
                     if centre is not None:
                         cone = Cone()
                         cone.position.x, cone.position.y, cone.position.z = map(float, centre)
-                        cone.color = 0
+                        cone.color = Cone.COLOR_UNKNOWN
                         cone.confidence = detections[j].confidence
                         output.cones.append(cone)
                         matches.append((len(output.cones)-1, j))
@@ -209,7 +209,7 @@ class DetectionFusion(Node):
                 if np.all(np.isfinite(probs)) and np.all(probs >= 0) and probs.sum() > 0:
                     probs = probs/probs.sum()
                     color = int(np.argmax(probs))
-                    if color > 0 and probs[color] >= self.cfg['min_color_probability']:
+                    if color != Cone.COLOR_UNKNOWN and probs[color] >= self.cfg['min_color_probability']:
                         output.cones[i].color = color
                         colored += 1
                 _, point, cov = observations[j]

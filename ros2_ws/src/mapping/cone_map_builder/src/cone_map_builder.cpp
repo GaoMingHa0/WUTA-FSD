@@ -373,8 +373,8 @@ uint8_t ConeMapBuilder::classifyConeObservation(const wuta_msgs::msg::Cone & con
   // Traditional LiDAR detection has no color.  Use the LiDAR/body-aligned
   // lateral sign only as a fallback for those UNKNOWN observations.
   return cone.position.y >= 0.0
-    ? wuta_msgs::msg::Cone::COLOR_BLUE
-    : wuta_msgs::msg::Cone::COLOR_YELLOW;
+    ? wuta_msgs::msg::Cone::COLOR_RED
+    : wuta_msgs::msg::Cone::COLOR_BLUE;
 }
 
 void ConeMapBuilder::updateColorEstimate(
@@ -407,6 +407,9 @@ void ConeMapBuilder::updateColorEstimate(
 void ConeMapBuilder::addColorVote(TrackedCone & tracked, uint8_t color) const
 {
   switch (color) {
+    case wuta_msgs::msg::Cone::COLOR_RED:
+      ++tracked.red_votes;
+      break;
     case wuta_msgs::msg::Cone::COLOR_BLUE:
       ++tracked.blue_votes;
       break;
@@ -425,18 +428,19 @@ void ConeMapBuilder::addColorVote(TrackedCone & tracked, uint8_t color) const
 uint8_t ConeMapBuilder::majorityColor(const TrackedCone & tracked) const
 {
   const int best_votes = std::max(
-    {tracked.blue_votes, tracked.yellow_votes, tracked.orange_votes});
+    {tracked.red_votes, tracked.blue_votes, tracked.yellow_votes, tracked.orange_votes});
   if (best_votes < semantic_color_confirmation_hits_) {
     return wuta_msgs::msg::Cone::COLOR_UNKNOWN;
   }
 
+  const bool red_best = tracked.red_votes == best_votes;
   const bool blue_best = tracked.blue_votes == best_votes;
   const bool yellow_best = tracked.yellow_votes == best_votes;
   const bool orange_best = tracked.orange_votes == best_votes;
   const int tied_best_count =
-    static_cast<int>(blue_best) + static_cast<int>(yellow_best) + static_cast<int>(orange_best);
+    static_cast<int>(red_best) + static_cast<int>(blue_best) + static_cast<int>(yellow_best) + static_cast<int>(orange_best);
   if (allow_semantic_color_correction_) {
-    const int total = tracked.blue_votes + tracked.yellow_votes + tracked.orange_votes;
+    const int total = tracked.red_votes + tracked.blue_votes + tracked.yellow_votes + tracked.orange_votes;
     if (tied_best_count > 1 || best_votes < 0.7 * total) {
       return wuta_msgs::msg::Cone::COLOR_UNKNOWN;
     }
@@ -445,6 +449,7 @@ uint8_t ConeMapBuilder::majorityColor(const TrackedCone & tracked) const
     return tracked.color;
   }
 
+  if (red_best) return wuta_msgs::msg::Cone::COLOR_RED;
   if (blue_best) return wuta_msgs::msg::Cone::COLOR_BLUE;
   if (yellow_best) return wuta_msgs::msg::Cone::COLOR_YELLOW;
   return wuta_msgs::msg::Cone::COLOR_ORANGE;
@@ -560,6 +565,7 @@ size_t ConeMapBuilder::consolidateMap()
         first.z =
           (first.z * first.hit_count + second.z * second.hit_count) / combined_hits;
         first.hit_count = combined_hits;
+        first.red_votes += second.red_votes;
         first.blue_votes += second.blue_votes;
         first.yellow_votes += second.yellow_votes;
         first.orange_votes += second.orange_votes;
@@ -664,6 +670,7 @@ void ConeMapBuilder::publishMap()
     cone.confidence = std::min(1.0f, tracked.hit_count / 5.0f);
 
     switch (tracked.color) {
+      case wuta_msgs::msg::Cone::COLOR_RED:     map_msg.red_cones.push_back(cone);     break;
       case wuta_msgs::msg::Cone::COLOR_BLUE:    map_msg.blue_cones.push_back(cone);    break;
       case wuta_msgs::msg::Cone::COLOR_YELLOW:  map_msg.yellow_cones.push_back(cone);  break;
       case wuta_msgs::msg::Cone::COLOR_ORANGE:  map_msg.orange_cones.push_back(cone);  break;
@@ -687,6 +694,7 @@ void ConeMapBuilder::publishVisualization()
 
   const auto color_rgba = [](uint8_t color, float & r, float & g, float & b) {
     switch (color) {
+      case wuta_msgs::msg::Cone::COLOR_RED:    r=1; g=0; b=0;     break;
       case wuta_msgs::msg::Cone::COLOR_BLUE:   r=0; g=0.4; b=1;   break;
       case wuta_msgs::msg::Cone::COLOR_YELLOW: r=1; g=0.9; b=0;   break;
       case wuta_msgs::msg::Cone::COLOR_ORANGE: r=1; g=0.5; b=0;   break;

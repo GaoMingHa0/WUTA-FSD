@@ -36,7 +36,7 @@ private:
   // Run Delaunay + path search, return centerline waypoints
   autoware_msgs::msg::Lane computeCenterline(const std::vector<Point2d> & points);
 
-  // Online Trackdrive path: pair forward blue/yellow cones in the local driving direction.
+  // Online Trackdrive path: pair forward red/blue cones in the local driving direction.
   autoware_msgs::msg::Lane computePairedCenterline(const wuta_msgs::msg::ConeMap & map) const;
   autoware_msgs::msg::Lane computeLocalFrameCenterline(const wuta_msgs::msg::ConeMap & map) const;
   autoware_msgs::msg::Lane computeGlobalCenterline(
