@@ -32,26 +32,16 @@
 |**CAN报文ID**|0x501|||
 |**报文长度DLC**|8 Byte|||
 ||值|含义|备注|
-|Byte1|0|静默|等待ASMS激活且Message2\>1|
-||1|有人：等待高压||
-||2|有人：等待控制器就绪||
-||3|有人：等待有人开始驾驶||
-||4|有人：有人驾驶状态||
-||5|有人：有人状态错误||
-||6|无人：等待高压|AS\_OFF|
-||7|无人：等待控制器就绪|AS\_OFF|
-||8|无人：启动冷却|AS\_READY|
-||9|无人：无人系统待命|AS\_READY|
-||10|无人：无人驾驶状态|AS\_DRIVING|
-||11|无人：任务完成|AS\_FINISHED|
-||12|无人：EMERGENCY|AS\_EMERGENCY|
-|Byte2|1|操控性测试||
+|Byte1|1|操控性测试||
 ||2|直线加速测试||
 ||3|高速循迹测试||
 ||4|八字绕环测试||
 ||5|EBS测试||
 ||6|车检测试||
-|Byte3\-8|空报文|空||
+|Byte2\-8|空报文|空||
+
+> **协议变更**：取消原 Byte1「VCU 状态」定义（0~12 状态码表作废），原 Byte2「测试模式」提升到 Byte1。
+> RES Go / RES 急停不再经 0x501 下发；上位机改为「选模式即启动」（选中任务模式即进 EXPLORE，车检 mode 6 直入 INSPECTION）。
 
 ![Image](https://internal-api-drive-stream.feishu.cn/space/api/box/stream/download/authcode/?code=OTJhN2Q3YTJiYzg0NjQyMGZlYTg0MGRhM2Y0MDkzODRfYmM2NzBhY2FjMzhhYzgyYmM2NGUyYjk1YmVmODYxYjNfSUQ6NzY3NDYwOTc4NjU1MzQ2OTkzMF8xNzg3MTMwNjA3OjE3ODcyMTcwMDdfVjM)
 

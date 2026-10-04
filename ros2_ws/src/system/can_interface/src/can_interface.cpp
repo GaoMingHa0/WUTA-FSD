@@ -15,6 +15,21 @@ uint16_t scaleControl(double x)
     : 32767.0 + x * 32757.0;
   return static_cast<uint16_t>(std::clamp(value, 10.0, 65525.0));
 }
+
+// 0x501 Byte1 测试模式 → mission_mode_cmd 字符串；空串表示不转发。
+//   1 = 操控性测试（有人驾驶，与无人算法无关）→ 不转发
+//   0 / 7+ = 未定义 → 不转发（调用方按需告警）
+std::string missionModeName(uint8_t vcu_mission_mode)
+{
+  switch (vcu_mission_mode) {
+    case 2:  return "acceleration";
+    case 3:  return "trackdrive";
+    case 4:  return "skidpad";
+    case 5:  return "ebs_test";
+    case 6:  return "inspection";
+    default: return {};
+  }
+}
 }  // namespace
 
 CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
@@ -55,28 +70,31 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
     std::chrono::milliseconds(100),
     std::bind(&CANInterfaceNode::sendControlFrame, this));
 
-  // 信号保活：VCU 处于驾驶态/EMERGENCY 期间以 1Hz 重复发布对应命令，
-  // 防止 mission_manager / controller 晚启动时错过单发 GO 或急停信号
-  go_heartbeat_timer_ = create_wall_timer(
-    std::chrono::seconds(1),
-    std::bind(&CANInterfaceNode::repeatVcuSignals, this));
-
   // 接收路径：定时器轮询（非阻塞）
   receive_timer_ = create_wall_timer(
     std::chrono::milliseconds(static_cast<int64_t>(poll_interval_sec_ * 1000.0)),
     std::bind(&CANInterfaceNode::pollReceiver, this));
 
-  // 接收方向解析结果发布（VCU→工控机帧）
+  // 接收方向解析结果发布（VCU→工控机帧）：新协议只解析测试模式
   mission_mode_cmd_pub_ = create_publisher<std_msgs::msg::String>(
     "/system/mission_mode_cmd", 10);
-  start_command_pub_ = create_publisher<std_msgs::msg::Bool>(
-    "/system/start_command", 10);
-  // 急停总线：latched（transient_local），晚启动的订阅者也能立即拿到当前急停态
-  emergency_pub_ = create_publisher<std_msgs::msg::Bool>(
-    "/system/emergency", rclcpp::QoS(1).reliable().transient_local());
   // 预留，目前暂时不由VCU发轮边速度
   // velocity_pub_ = create_publisher<geometry_msgs::msg::TwistStamped>(
   //   "/chcnav/velocity", 50);
+
+  // 模式保活：模式是「电平」信号（VCU 持续 10Hz 重发同一档位），而上面只在字节
+  // 「变化」时转发一次。mission_manager 晚启动/重启时那一次发布早已过去，会一直
+  // 停在 IDLE（L4 每个用例重启 mission_manager 必然踩到）。故按上游同款语义周期性
+  // 重发当前档位；离开任务档（Byte1=1 有人驾驶 / 未知）自动停发，不重复失效档位。
+  // mode_repeat_period_sec <= 0 关闭保活。
+  mode_repeat_period_sec_ = declare_parameter<double>(
+    "mode_repeat_period_sec", mode_repeat_period_sec_);
+  if (mode_repeat_period_sec_ > 0.0) {
+    mode_repeat_timer_ = create_wall_timer(
+      std::chrono::milliseconds(
+        static_cast<int64_t>(mode_repeat_period_sec_ * 1000.0)),
+      std::bind(&CANInterfaceNode::repeatMissionMode, this));
+  }
 
   RCLCPP_INFO(get_logger(), "CAN Interface initialized (tx/rx separated).");
   RCLCPP_INFO(get_logger(), "Tx frame 0x210 active; Rx frame 0x501 active.");
@@ -151,82 +169,41 @@ CanFrame CANInterfaceNode::packControlFrame(
   return frame;
 }
 
-void CANInterfaceNode::repeatVcuSignals()
-{
-  // VCU 处于无人驾驶态(10)：重复请求出发；离开该状态自动停止，防止工控机收不到消息
-  if (last_vcu_state_ == 10) {
-    std_msgs::msg::Bool start_cmd;
-    start_cmd.data = true;
-    start_command_pub_->publish(start_cmd);
-    RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 5000,
-      "Repeat start command (VCU state 10).");
-  }
-  // VCU 处于 EMERGENCY(12)：重复急停信号；离开该状态自动停止，防止工控机收不到消息
-  if (last_vcu_state_ == 12) {
-    std_msgs::msg::Bool emergency;
-    emergency.data = true;
-    emergency_pub_->publish(emergency);
-    RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000,
-      "Repeat EMERGENCY (VCU state 12).");
-  }
-}
-
 void CANInterfaceNode::parseVcuFrame(const CanFrame & frame)
 {
   // 只处理 VCU→工控机 0x501 帧
   if (frame.can_id != 0x501) return;
 
-  const uint8_t vcu_state = frame.data[0];  // Byte1：VCU 状态
-  const uint8_t vcu_mission_mode = frame.data[1];  // Byte2：VCU派发的任务模式
+  const uint8_t vcu_mission_mode = frame.data[0];  // Byte1：VCU派发的任务模式
 
-  // ---- Byte1 状态 → start_command / emergency（最新值覆盖，仅变化时发布） ----
-  if (vcu_state != last_vcu_state_) {
-    std_msgs::msg::Bool start_cmd;
-    std_msgs::msg::Bool emergency;
-    switch (vcu_state) {
-      case 10:  // 无人驾驶状态 AS_DRIVING → 请求任务出发
-        start_cmd.data = true;
-        RCLCPP_INFO(get_logger(), "VCU state 10 (AS_DRIVING): start command.");
-        break;
-      case 12:  // 无人 EMERGENCY
-        emergency.data = true;
-        RCLCPP_WARN(get_logger(), "VCU state 12 (EMERGENCY)!");
-        break;
-      default:  // 静默/有人/无人待命等：不启动、不触发急停
-        RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 2000,
-          "VCU state %u.", vcu_state);
-        break;
-    }
-    start_command_pub_->publish(start_cmd);
-    emergency_pub_->publish(emergency);
-    last_vcu_state_ = vcu_state;
-  }
-
-  // ---- Byte2 测试模式 → mission_mode_cmd（仅变化时发布） ----
+  // ---- Byte1 测试模式 → mission_mode_cmd（变化时立即发布；同值重发由保活定时器兜底） ----
   if (vcu_mission_mode != last_vcu_mission_mode_) {
-    std::string mode;
-    switch (vcu_mission_mode) {
-      case 2:  mode = "acceleration"; break;
-      case 3:  mode = "trackdrive";   break;
-      case 4:  mode = "skidpad";      break;
-      case 5:  mode = "ebs_test";     break;
-      case 6:  mode = "inspection";   break;
-      case 1:  // 操控性测试：有人驾驶，与无人算法无关，不做处理
-        RCLCPP_INFO(get_logger(), "Driving by human,FSD is ignored.");
-        break;
-      default:
-        RCLCPP_WARN(get_logger(), "Unknown VCU mission mode %u.", vcu_mission_mode);
-        break;
-    }
+    const std::string mode = missionModeName(vcu_mission_mode);
     if (!mode.empty()) {
       std_msgs::msg::String msg;
       msg.data = mode;
       mission_mode_cmd_pub_->publish(msg);
       RCLCPP_INFO(get_logger(), "VCU mission mode %u -> mission mode '%s'.",
         vcu_mission_mode, mode.c_str());
+    } else if (vcu_mission_mode == 1) {
+      // 操控性测试：有人驾驶，与无人算法无关，不做处理
+      RCLCPP_INFO(get_logger(), "Driving by human,FSD is ignored.");
+    } else {
+      RCLCPP_WARN(get_logger(), "Unknown VCU mission mode %u.", vcu_mission_mode);
     }
     last_vcu_mission_mode_ = vcu_mission_mode;
   }
+}
+
+void CANInterfaceNode::repeatMissionMode()
+{
+  // 周期重发当前档位，供晚启动/重启的 mission_manager 追上（模式是电平信号）。
+  // 当前档位不是任务档（有人驾驶/未知/尚未收到）时停发，避免重复已失效的档位。
+  const std::string mode = missionModeName(last_vcu_mission_mode_);
+  if (mode.empty()) return;
+  std_msgs::msg::String msg;
+  msg.data = mode;
+  mission_mode_cmd_pub_->publish(msg);
 }
 
 }  // namespace can_interface

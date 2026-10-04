@@ -64,17 +64,9 @@ MissionManager::MissionManager(const rclcpp::NodeOptions & options)
     "/mapping/cone_map", 10,
     std::bind(&MissionManager::onConeMap, this, std::placeholders::_1));
 
-  emergency_sub_ = create_subscription<std_msgs::msg::Bool>(
-    "/system/emergency", 10,
-    std::bind(&MissionManager::onEmergency, this, std::placeholders::_1));
-
   mission_mode_sub_ = create_subscription<std_msgs::msg::String>(
     "/system/mission_mode_cmd", 10,
     std::bind(&MissionManager::onMissionModeCmd, this, std::placeholders::_1));
-
-  start_command_sub_ = create_subscription<std_msgs::msg::Bool>(
-    "/system/start_command", 10,
-    std::bind(&MissionManager::onStartCommand, this, std::placeholders::_1));
 
   mission_complete_sub_ = create_subscription<std_msgs::msg::Bool>(
     "/system/mission_complete", 10,
@@ -455,22 +447,16 @@ void MissionManager::publishLapCount()
   lap_count_pub_->publish(msg);
 }
 
-void MissionManager::onEmergency(const std_msgs::msg::Bool::SharedPtr msg)
-{
-  // 仅负责 mission_state 状态切换；刹车动作（控制输出归零）由 controller_node 负责
-  if (msg->data) {
-    // 急停是安全事件而非程序错误，按 WARN 记录（可见但不误报为故障）
-    RCLCPP_WARN(get_logger(), "EMERGENCY triggered!");
-    transitionTo(State::EMERGENCY);
-  }
-}
-
 void MissionManager::onMissionModeCmd(const std_msgs::msg::String::SharedPtr msg)
 {
   if (current_state_ != State::IDLE && current_state_ != State::READY) {
-    RCLCPP_WARN(get_logger(), "Cannot change mission mode in state %d", current_state_);
+    // 节流：can_interface 会对当前档位做保活重发（默认 1Hz），非 IDLE/READY 期间
+    // 每次重发都会走到这里，不节流会按 1Hz 刷屏。
+    RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000,
+      "Cannot change mission mode in state %d", current_state_);
     return;
   }
+  const uint8_t prev_mission_mode = mission_mode_;
   if (msg->data == "trackdrive")    mission_mode_ = State::MISSION_TRACKDRIVE;
   else if (msg->data == "skidpad")  mission_mode_ = State::MISSION_SKIDPAD;
   else if (msg->data == "acceleration") mission_mode_ = State::MISSION_ACCELERATION;
@@ -480,22 +466,24 @@ void MissionManager::onMissionModeCmd(const std_msgs::msg::String::SharedPtr msg
     RCLCPP_WARN(get_logger(), "Unknown mission mode: %s", msg->data.c_str());
     return;
   }
-  RCLCPP_INFO(get_logger(), "Mission mode set to: %s", msg->data.c_str());
+  // can_interface 会周期性保活重发当前档位（默认 1Hz），仅在档位真正变化时记录
+  if (mission_mode_ != prev_mission_mode) {
+    RCLCPP_INFO(get_logger(), "Mission mode set to: %s", msg->data.c_str());
+  }
   publishState();
 
-  // 车检：选择 inspection 任务即进入车检演示（台架测试）
-  if (mission_mode_ == State::MISSION_INSPECTION &&
-      (current_state_ == State::IDLE || current_state_ == State::READY)) {
-    RCLCPP_INFO(get_logger(), "Inspection triggered by mission mode.");
-    transitionTo(State::INSPECTION);
+  // 选模式即启动（新协议 0x501 只剩模式字节，原 RES Go/CAN 放行已取消）：
+  //   车检（mode 6）→ 直入 INSPECTION 演示；
+  //   其余模式 → 等同原 Go 放行 READY → EXPLORE（未就绪时由 advanceWhenReady 兜底）。
+  if (mission_mode_ == State::MISSION_INSPECTION) {
+    if (current_state_ == State::IDLE || current_state_ == State::READY) {
+      RCLCPP_INFO(get_logger(), "Inspection triggered by mission mode.");
+      transitionTo(State::INSPECTION);
+    }
+  } else {
+    start_requested_ = true;
+    advanceWhenReady();
   }
-}
-
-void MissionManager::onStartCommand(const std_msgs::msg::Bool::SharedPtr msg)
-{
-  if (!msg->data) return;
-  start_requested_ = true;
-  advanceWhenReady();
 }
 
 void MissionManager::onMissionComplete(const std_msgs::msg::Bool::SharedPtr msg)

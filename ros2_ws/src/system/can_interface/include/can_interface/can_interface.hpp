@@ -37,10 +37,10 @@ private:
   CanFrame packControlFrame(double throttle_brake, double steer_deg,
     bool online, bool finished) const;
 
-  // ---- 报文解析（VCU→工控机单帧 0x501：Byte1=VCU状态、Byte2=测试模式） ----
-  void parseVcuFrame(const CanFrame & frame);  // 状态→start/emergency，模式→mission_mode_cmd
-  // 保活：VCU 处于驾驶态/EMERGENCY 期间周期性重复发布，防启动乱序丢信号
-  void repeatVcuSignals();
+  // ---- 报文解析（VCU→工控机单帧 0x501：Byte1=测试模式） ----
+  void parseVcuFrame(const CanFrame & frame);  // 测试模式 → mission_mode_cmd
+  // 模式保活：周期重发当前档位，防晚启动/重启的 mission_manager 错过单发模式
+  void repeatMissionMode();
 
   // 配置
   std::string can_device_;
@@ -53,9 +53,9 @@ private:
   bool can_online_{false};       // Signal3：设备自检通过
   bool can_finished_{false};     // Signal4：任务 FINISH
 
-  // 0x501 帧缓存（仅状态/模式变化时发布，去重）
-  uint8_t last_vcu_state_{0xFF};   // 最近一次 VCU 状态（Byte1）
-  uint8_t last_vcu_mission_mode_{0xFF};   // 最近一次 VCU 任务模式（Byte2）
+  // 0x501 帧缓存（仅模式变化时发布，去重）
+  uint8_t last_vcu_mission_mode_{0xFF};   // 最近一次 VCU 任务模式（Byte1）
+  double mode_repeat_period_sec_{1.0};    // mission_mode_cmd 保活重发周期（<=0 关闭）
 
   // 设备层
   CanSocket can_;
@@ -65,11 +65,9 @@ private:
   rclcpp::Subscription<wuta_msgs::msg::DevicesInspection>::SharedPtr devices_inspection_sub_;
   rclcpp::Subscription<autoware_msgs::msg::Command>::SharedPtr control_command_sub_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr mission_mode_cmd_pub_;
-  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr start_command_pub_;
-  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr emergency_pub_;
   rclcpp::TimerBase::SharedPtr receive_timer_;
   rclcpp::TimerBase::SharedPtr keepalive_timer_;  // 无控制指令时的保活帧
-  rclcpp::TimerBase::SharedPtr go_heartbeat_timer_;  // 1Hz 信号保活（GO/EMERGENCY 防丢）
+  rclcpp::TimerBase::SharedPtr mode_repeat_timer_;  // 模式保活重发（晚启动的订阅者）
 };
 
 }  // namespace can_interface

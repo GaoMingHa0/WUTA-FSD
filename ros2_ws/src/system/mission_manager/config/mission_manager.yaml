@@ -21,6 +21,7 @@ mission_manager:
     use_ndt_race_localization: false
 
     # 传感器持续监控（开机自检 + 比赛中断线均判故障，故障上报 VCU 并切 EMERGENCY）
+    # true代表开启自检，false代表关闭自检
     check_lidar: true
     check_imu: true
     check_camera: true

@@ -8,32 +8,23 @@
 - 驱动任务状态机：IDLE → READY → EXPLORE → MAPPING_DONE → RACE → FINISH
 - 触发定位模式切换（KISS-ICP ↔ NDT）
 - 根据定位位姿穿越起终线统计 Trackdrive 正式圈次
-- 响应急停信号
+- 传感器自检失败时切 EMERGENCY 并发布急停
 
 ## 状态机
 
 ```
-IDLE ──(传感器就绪)──→ READY ──(mode_cmd="inspection")──→ INSPECTION ──(演示完成)──→ FINISH
-                          │
-               (`/system/start_command=true`)
-                          │
-                          ▼
-                       EXPLORE
-                                                      │
-                                              (地图闭合 is_closed=true)
-                                                      │
-                                               MAPPING_DONE
-                                                      │
-                           (地图质量、定位、全局中心线、首圈均合格)
-                                                      │
-                                                    RACE
-                                                      │
-                                         (/system/lap_count 达到 3)
-                                                      │
-                                                   FINISH
+IDLE ──(传感器就绪)──→ READY ──(mode_cmd=任务模式)──→ EXPLORE ──(地图闭合 is_closed=true)──→ MAPPING_DONE
+                          │                                                                │
+                          └(mode_cmd="inspection")─→ INSPECTION ──(演示完成)──→ FINISH     │
+                                                                   (地图质量、定位、全局中心线、首圈均合格)
+                                                                                           ▼
+                                                                                         RACE ──(/system/lap_count 达到 3)──→ FINISH
 
-任意状态 ──(/system/emergency=true)──→ EMERGENCY
+传感器自检失败 ──→ EMERGENCY（并发布 /system/emergency 通知 controller 归零）
 ```
+
+> 新协议：0x501 只剩「测试模式」字节，原 RES Go / 急停不再经 CAN 下发，
+> 故取消 `/system/start_command` 放行——**选模式即启动**：选任务模式即进 EXPLORE。
 
 ## Topics
 
@@ -45,11 +36,9 @@ IDLE ──(传感器就绪)──→ READY ──(mode_cmd="inspection")──�
 | 订阅 | `/planning/global_centerline_ready` | `std_msgs/Bool` | 冻结全局中心线已通过验收 |
 | 订阅 | `/system/localization_confidence` | `std_msgs/Float32` | 定位质量门槛 |
 | 订阅 | `/localization/pose` | `geometry_msgs/PoseStamped` | 定位新鲜度和正式过线计圈 |
-| 订阅 | `/system/emergency` | `std_msgs/Bool` | 急停信号（仅切状态到 EMERGENCY；控制输出归零由 controller 负责） |
 | 订阅 | `/system/lidar_ready` | `std_msgs/Bool` | LiDAR 就绪 |
 | 订阅 | `/system/localization_ready` | `std_msgs/Bool` | 定位就绪 |
-| 订阅 | `/system/mission_mode_cmd` | `std_msgs/String` | 设置任务模式（trackdrive/skidpad/acceleration/inspection/ebs_test） |
-| 订阅 | `/system/start_command` | `std_msgs/Bool` | `true` 请求出发；在两项就绪后从 READY 进入 EXPLORE |
+| 订阅 | `/system/mission_mode_cmd` | `std_msgs/String` | 设置任务模式（trackdrive/skidpad/acceleration/inspection/ebs_test）；**选模式即启动** |
 | 订阅 | `/system/mission_complete` | `std_msgs/Bool` | 控制器完成停车后进入 FINISH（含车检演示完成 → FINISH） |
 | 订阅 | `/ndt/map_ready` | `std_msgs/Bool` | 仅在 `use_ndt_race_localization=true` 时作为 RACE 门槛 |
 | 发布 | `/system/devices_inspection` | `DevicesInspection` | 开机传感器自检结果（失败时发布，通知 can_interface） |
