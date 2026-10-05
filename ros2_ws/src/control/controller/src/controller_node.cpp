@@ -74,11 +74,40 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
 
   // --- 车检模式（INSPECTION）参数 ---
   inspection_speed_ = declare_parameter("inspection_speed", inspection_speed_);
-  inspection_throttle_max_ = declare_parameter(
-    "inspection_throttle_max", inspection_throttle_max_);
+  // 车检恒定纵向开度：车举升/拆胎时唯一的反馈（华测车速）恒为 0，速度环不可观测，
+  // 故车检不走 PID，只发这一个常量。钳到 [0,1]：车检只允许驱动方向，不允许制动。
+  inspection_throttle_ = std::clamp(
+    declare_parameter<double>("inspection_throttle", inspection_throttle_), 0.0, 1.0);
+  if (inspection_throttle_ <= 0.0) {
+    RCLCPP_WARN(get_logger(),
+      "inspection_throttle=%.3f 会让驱动系统不转；规则 2.8.3 要求其旋转，请调大。",
+      inspection_throttle_);
+  }
   inspection_steer_amp_ = declare_parameter("inspection_steer_amp", inspection_steer_amp_);
+  // 转向周期（s）优先：比频率直观（写 6.0 而不是 0.1666667）；>0 时覆盖 freq
+  inspection_steer_period_ = declare_parameter(
+    "inspection_steer_period", inspection_steer_period_);
   inspection_steer_freq_ = declare_parameter("inspection_steer_freq", inspection_steer_freq_);
+  if (inspection_steer_period_ > 0.0) {
+    inspection_steer_freq_ = 1.0 / inspection_steer_period_;
+  }
   inspection_duration_ = declare_parameter("inspection_duration", inspection_duration_);
+  // 收尾相位校验：车检结束那一帧的正弦值必须接近 0——finishInspection() 直接发 angle=0，
+  // 末帧若停在幅值附近就会形成单帧大跳变（实测 27.0s/0.4Hz → 末帧 -14.3°@20ms ≈ 715°/s，
+  // 是 180°/s 限幅的 4 倍）。注意半整数周期同样过零（sin(2π(n+0.5))=0），
+  // 所以判据看"末帧角度"，而不是"周期数是否整数"。
+  if (inspection_steer_freq_ > 0.0) {
+    const double cycles = inspection_duration_ * inspection_steer_freq_;
+    const double end_phase = cycles - std::floor(cycles);
+    const double end_angle = std::abs(
+      inspection_steer_amp_ * std::sin(2.0 * M_PI * end_phase));
+    if (end_angle > 5.0) {
+      RCLCPP_WARN(get_logger(),
+        "车检收尾停在 %.2f 个周期处（相位 %.2f），末帧转向 %.1f° > 5°：回中会有单帧跳变；"
+        "请让 inspection_duration 与转向周期成 0.5 的整数倍关系。",
+        cycles, end_phase, end_angle);
+    }
+  }
 
   // --- 速度 PID（纵向开度）---
   pid_speed_kp_ = declare_parameter("pid_speed_kp", pid_speed_kp_);
@@ -155,13 +184,13 @@ void ControllerNode::onVelocity(const geometry_msgs::msg::TwistStamped::SharedPt
 double ControllerNode::computeSpeedPid(double target_speed)
 {
   const rclcpp::Time t = now();
+  const double err = target_speed - vehicle_state_.velocity;
   if (pid_last_time_.nanoseconds() == 0) {
     pid_last_time_ = t;
-    pid_prev_err_ = 0.0;
+    pid_prev_err_ = err;
     return 0.0;  // 首拍只初始化，不输出
   }
   const double dt = std::max(0.001, (t - pid_last_time_).seconds());
-  const double err = target_speed - vehicle_state_.velocity;
 
   // 停车消积分：目标 0 且车速已接近停稳时清零积分，防止巡航期残留
   // 的正积分在停车后输出驱动开度导致溜车。
@@ -239,11 +268,13 @@ void ControllerNode::onMissionState(const MissionState::SharedPtr msg)
     pid_last_time_ = rclcpp::Time();
     inspection_start_time_ = now();
     inspection_done_published_ = false;
+    const double steer_period = inspection_steer_freq_ > 0.0
+      ? 1.0 / inspection_steer_freq_ : 0.0;
     RCLCPP_INFO(
       get_logger(),
-      "Inspection started: speed=%.2f m/s steer=%.1f deg @%.2f Hz for %.1f s",
-      inspection_speed_, inspection_steer_amp_,
-      inspection_steer_freq_, inspection_duration_);
+      "Inspection started: throttle=%.2f (constant, no PID) steer=%.1f deg @%.2fs (%.3f Hz) for %.1f s",
+      inspection_throttle_, inspection_steer_amp_,
+      steer_period, inspection_steer_freq_, inspection_duration_);
   } else if (state_ != MissionState::INSPECTION &&
              prev_state == MissionState::INSPECTION) {
     inspection_done_published_ = false;
@@ -489,7 +520,7 @@ void ControllerNode::runInspection()
     return;
   }
 
-  // 慢速转驱动 + 正弦波转转向，经安全滤波后输出
+  // 正弦波转转向：仍经 TwistFilter 做速率限制（与正常赛项同一套滤波）
   const double steer_deg = inspection_steer_amp_ *
     std::sin(2.0 * M_PI * inspection_steer_freq_ * t);
   const auto filtered = twist_filter_->filter(steer_deg, inspection_speed_);
@@ -497,22 +528,20 @@ void ControllerNode::runInspection()
   autoware_msgs::msg::Command cmd;
   cmd.header.stamp = now();
   cmd.header.frame_id = "base_link";
-  cmd.speed = filtered.velocity;
+  cmd.speed = filtered.velocity;          // 仅记录：车举升无车速反馈，不代表实际转速
   cmd.angle = filtered.steering_angle;
-  // 车检纵向开度：目标是 inspection_speed，但车举升、轮胎拆掉时速度反馈恒为 0，
-  // PID 误差恒 +1、输出必然顶到限幅，实际下发的就是限幅值。故
-  // inspection_throttle_max 既是上限、也是「转速不能太快」的唯一旋钮（先低后调）。
-  cmd.throttle_brake = std::clamp(
-    computeThrottleBrake(filtered.velocity),
-    -inspection_throttle_max_, inspection_throttle_max_);
+  // 车检纵向：**恒定开度，不走 PID**。车举升/拆胎后唯一的反馈（华测车速）恒为 0，
+  // 误差恒 +1 → 积分必然顶到限幅：速度环在此场景没有可观测的被控量。直接发常量反而
+  // 确定、可复现；「转速快慢」只由 inspection_throttle 一个旋钮决定（先低后调）。
+  cmd.throttle_brake = inspection_throttle_;
   cmd_pub_->publish(cmd);
 }
 
 void ControllerNode::finishInspection()
 {
   inspection_done_published_ = true;
-  // 先清 PID 再发回零：车检期间误差恒 +1，残留的 prev_err 会让回零第一拍的导数项
-  // 顶到满制动（实测 0x210 上 2 帧 raw=10，约 40ms）。
+  // 车检期间已不跑 PID，仍清一次状态：保证回零第一拍从零开始，也不把任何残留误差
+  // 带进后续赛项（旧的 PID 方案收尾实测有 2 帧 raw=10 满制动，约 40ms）。
   pid_integral_ = 0.0;
   pid_prev_err_ = 0.0;
   pid_last_time_ = rclcpp::Time();

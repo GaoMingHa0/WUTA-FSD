@@ -72,7 +72,7 @@ WUTA-FSD/
 │       ├── control/
 │       │   └── controller/          # Pure Pursuit横纵向控制
 │       └── system/
-│           ├── can_interface/       # CAN 链路节点（0x210 保活发送 / 0x501 状态解析，SocketCAN）
+│           ├── can_interface/       # CAN 链路节点（0x210 保活发送 / 0x301 上线心跳 / 0x501 状态解析，SocketCAN）
 │           └── mission_manager/     # 任务状态机
 └── ros/                     # 原ROS1代码（见master分支）
 ```

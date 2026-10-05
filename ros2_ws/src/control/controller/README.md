@@ -156,8 +156,11 @@ skidpad 5 m/s；acceleration 15 m/s；EBS 12 m/s。
 - 路径变化：`onWaypoints` 逐点比较路径，变化时复位 Pure Pursuit 进度与 `mission_complete_`
 - 完成判定：`SKIDPAD` / `ACCELERATION` / `EBS_TEST` 在「进度到最后一个点 + 距终点 ≤
   `finish_position_tolerance` + 车速 ≤ `finish_speed_threshold`」时发布 `mission_complete`
-- 车检：进入 `INSPECTION` 后以 `inspection_speed` 慢速行驶并叠加 `inspection_steer_amp` @
-  `inspection_steer_freq` 的正弦转向，到达 `inspection_duration` 后发零命令并回报完成
+- 车检：进入 `INSPECTION` 后以**恒定开度** `inspection_throttle` 驱动（**不走 PID**：
+  车举升/拆胎时唯一的反馈——华测车速——恒为 0，速度环不可观测），并叠加
+  `inspection_steer_amp` @ `inspection_steer_period` 的正弦转向，到达 `inspection_duration`
+  后发零命令并回报完成。`inspection_duration` 应与转向周期成 **0.5 的整数倍**关系
+  （半整数周期同样过零 → 收尾回中无跳变），否则启动时会打印告警。
 
 ## 关键参数
 
@@ -186,10 +189,12 @@ skidpad 5 m/s；acceleration 15 m/s；EBS 12 m/s。
 | `max_steering_rate_deg_s` | 180°/s | 每个控制周期限制转向变化量，抑制定位噪声和目标点离散化导致的指令抖动 |
 | `finish_position_tolerance` | 0.75 m | Skidpad/Acceleration 零速终点进度与任务完成的位置阈值（同时作为 Pure Pursuit 的终点进度阈值） |
 | `finish_speed_threshold` | 0.2 m/s | Skidpad/Acceleration 终点完成速度阈值 |
-| `inspection_speed` | 1.0 m/s | 车检模式慢速驱动速度 |
-| `inspection_steer_amp` | 15.0° | 车检模式正弦转向幅值 |
-| `inspection_steer_freq` | 0.4 Hz | 车检模式正弦转向频率 |
-| `inspection_duration` | 10.0 s | 车检演示时长，完成后发布 `mission_complete` |
+| `inspection_speed` | 1.0 m/s | 车检名义车速：仅用于 TwistFilter 与日志，**不决定纵向开度** |
+| `inspection_throttle` | 0.16 | 车检**恒定**纵向开度 [0,1]：不走 PID，驱动系统转速的唯一旋钮（先低后调）。实测 0.15 不转、0.20 太快（5s 冲到 16847 且未稳） |
+| `inspection_steer_amp` | 5.77° | 车检模式正弦转向幅值（**前轮** deg；= 方向盘 ±30° ÷ 转向比 5.2） |
+| `inspection_steer_period` | 9.0 s | 车检模式正弦转向周期（**优先**；周期比频率直观） |
+| `inspection_steer_freq` | 0.25 Hz | 兼容旧参数：仅当 `inspection_steer_period <= 0` 时生效 |
+| `inspection_duration` | 27.0 s | 车检时长（= 9.0s × 3 个整周期；赛规 2.8.3 要求 25~30s），完成后发布 `mission_complete` |
 | `pid_speed_kp` | 1.0 | 速度 PID 比例增益 |
 | `pid_speed_ki` | 0.05 | 速度 PID 积分增益 |
 | `pid_speed_kd` | 0.1 | 速度 PID 微分增益 |

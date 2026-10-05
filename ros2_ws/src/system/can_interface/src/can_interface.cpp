@@ -6,14 +6,31 @@ namespace can_interface
 
 namespace
 {
-// 16bit 定标：控制量 x∈[-1,1] → 10~65525，32767 为中心（0 控制）
+// Signal1 纵向定标（未变）：控制量 x∈[-1,1] → 10~65525，32767 为中心（0 控制）
 // 驱动/右：32767 + x*32758；制动/左：32767 + x*32757；钳位 [10, 65525]
-uint16_t scaleControl(double x)
+uint16_t scaleLongitudinal(double x)
 {
   const double value = x >= 0.0
     ? 32767.0 + x * 32758.0
     : 32767.0 + x * 32757.0;
   return static_cast<uint16_t>(std::clamp(value, 10.0, 65525.0));
+}
+
+// Signal2 横向定标（新规格）：0~65535，32762 为中心（回正）
+//   0~32762   ：越靠近 0 越向左 → 0 = 满左
+//   32762~65535：越大越向右   → 65535 = 满右
+//   steer_deg 正 = 左（autoware 约定），满量程 ±max_steer_deg
+//   两侧跨度不同：左半段 32762（32762→0），右半段 32773（32762→65535）
+constexpr double kLateralCenter = 32762.0;
+constexpr double kLateralLeftSpan = kLateralCenter;                  // 32762 → 0
+constexpr double kLateralRightSpan = 65535.0 - kLateralCenter;       // 32762 → 65535
+
+uint16_t scaleLateral(double steer_deg, double max_steer_deg)
+{
+  const double x = max_steer_deg > 0.0 ? steer_deg / max_steer_deg : 0.0;
+  const double span = x >= 0.0 ? kLateralLeftSpan : kLateralRightSpan;
+  const double value = kLateralCenter - x * span;
+  return static_cast<uint16_t>(std::clamp(value, 0.0, 65535.0));
 }
 
 // 0x501 Byte1 测试模式 → mission_mode_cmd 字符串；空串表示不转发。
@@ -35,6 +52,10 @@ std::string missionModeName(uint8_t vcu_mission_mode)
 constexpr uint8_t kResEmergency   = 0x10;  // 按下急停
 constexpr uint8_t kResRemoteOnline = 0x11;  // 遥控器上线
 constexpr uint8_t kResStartButton = 0x13;  // 发车按钮被按下
+
+// 0x301 上线心跳定义（工控机→VCU，标准帧 / DLC=1）
+constexpr uint8_t kHeartbeatOnline  = 0x01;  // 心跳正常/在线
+constexpr uint8_t kHeartbeatOffline = 0x00;  // 异常/离线
 }  // namespace
 
 CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
@@ -47,6 +68,9 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
   poll_interval_sec_ = declare_parameter<double>("poll_interval_sec", 0.02);
   max_steer_deg_ = declare_parameter<double>("max_steer_deg", max_steer_deg_);
   res_frame_id_ = declare_parameter<int>("res_frame_id", res_frame_id_);
+  heartbeat_frame_id_ = declare_parameter<int>("heartbeat_frame_id", heartbeat_frame_id_);
+  heartbeat_period_sec_ = declare_parameter<double>(
+    "heartbeat_period_sec", heartbeat_period_sec_);
 
   // 打开 CAN 接口；失败时静默降级，节点继续运行（收不到/发不出由上层兜底）
   const bool opened = can_.open(can_device_);
@@ -72,9 +96,20 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
     std::bind(&CANInterfaceNode::onControlCommand, this, std::placeholders::_1));
 
   // 保活发送：无控制指令时也以 10Hz 持续上报（Signal3/4 状态随帧携带）
+  // tx_armed_ 未置位（首份自检结论未到）时 sendControlFrame() 直接返回：本定时器同样静默
   keepalive_timer_ = create_wall_timer(
     std::chrono::milliseconds(100),
     std::bind(&CANInterfaceNode::sendControlFrame, this));
+
+  // 上线心跳：0x301 / DLC=1 / 20Hz（50ms）。**不并入 0x210 的 tx_armed_ 门控**：
+  // 本帧从节点启动即发，首份 /system/devices_inspection 到达前 Data[0]=0x00，
+  // 之后随自检结论翻转（0x01=在线 / 0x00=异常）。period<=0 关闭。
+  if (heartbeat_period_sec_ > 0.0) {
+    heartbeat_timer_ = create_wall_timer(
+      std::chrono::milliseconds(static_cast<int64_t>(
+        std::max(0.001, heartbeat_period_sec_) * 1000.0)),
+      std::bind(&CANInterfaceNode::sendHeartbeatFrame, this));
+  }
 
   // 接收路径：定时器轮询（非阻塞）
   receive_timer_ = create_wall_timer(
@@ -114,8 +149,13 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
   // 实例（vcan0 实测确认会让未按 GO 的用例发车），故移除。重启实例需重按 GO。
 
   RCLCPP_INFO(get_logger(), "CAN Interface initialized (tx/rx separated).");
-  RCLCPP_INFO(get_logger(), "Tx frame 0x210 active; Rx frame 0x501 (mode) + 0x%X (RES).",
+  RCLCPP_INFO(get_logger(),
+    "Tx frame 0x210 gated until first /system/devices_inspection; "
+    "Rx frame 0x501 (mode) + 0x%X (RES).",
     static_cast<unsigned>(res_frame_id_));
+  RCLCPP_INFO(get_logger(),
+    "Tx heartbeat 0x%X: dlc=1, %.0f ms (20Hz), ungated from startup.",
+    static_cast<unsigned>(heartbeat_frame_id_), heartbeat_period_sec_ * 1000.0);
 }
 
 void CANInterfaceNode::onMissionState(const wuta_msgs::msg::MissionState::SharedPtr msg)
@@ -130,6 +170,13 @@ void CANInterfaceNode::onDevicesInspection(
 {
   // Signal3：设备自检通过 → 上线=1；失败 → 0（mission_manager 已切 EMERGENCY）
   can_online_ = msg->ok;
+  if (!tx_armed_) {
+    // 首份自检结论到达才开闸（ok=true/false 都开）：真故障同样经此送达 VCU
+    tx_armed_ = true;
+    RCLCPP_INFO(get_logger(),
+      "First devices inspection verdict received (ok=%d); 0x210 transmission enabled.",
+      msg->ok);
+  }
   if (msg->ok) {
     RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 2000,
       "Devices inspection: ok=%d online=%d", msg->ok, can_online_);
@@ -162,6 +209,8 @@ void CANInterfaceNode::pollReceiver()
 
 void CANInterfaceNode::sendControlFrame()
 {
+  // 门控：首份自检结论到达前不上总线——开机默认 Signal3=0 会被 VCU 当作自检故障
+  if (!tx_armed_) return;
   const CanFrame frame = packControlFrame(
     throttle_brake_, cmd_angle_, can_online_, can_finished_);
   if (!can_.send(frame)) {
@@ -178,9 +227,9 @@ CanFrame CANInterfaceNode::packControlFrame(
   frame.dlc = 8;
 
   // 纯转发：急停归零由 controller 完成，本节点不做任何判定
-  const uint16_t s1 = scaleControl(throttle_brake);    // 纵向：驱动/制动
-  // 横向：angle 正=左（autoware 约定），协议 Signal2 小值=左，故取反映射
-  const uint16_t s2 = scaleControl(-steer_deg / max_steer_deg_);
+  const uint16_t s1 = scaleLongitudinal(throttle_brake);   // 纵向：驱动/制动
+  // 横向：angle 正=左（autoware 约定）→ Signal2 小值（0 = 满左），中心 32762
+  const uint16_t s2 = scaleLateral(steer_deg, max_steer_deg_);
   frame.data[0] = static_cast<uint8_t>(s1 & 0xFF);
   frame.data[1] = static_cast<uint8_t>((s1 >> 8) & 0xFF);
   frame.data[2] = static_cast<uint8_t>(s2 & 0xFF);
@@ -190,6 +239,27 @@ CanFrame CANInterfaceNode::packControlFrame(
   frame.data[6] = 0x00;                      // Signal5 空
   frame.data[7] = 0x00;
   return frame;
+}
+
+void CANInterfaceNode::sendHeartbeatFrame()
+{
+  const CanFrame frame = packHeartbeatFrame();
+  if (!can_.send(frame)) {
+    // 降级模式（can_.open 失败）或总线异常下会持续失败：节流告警，不刷屏
+    RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000,
+      "Failed to send heartbeat frame 0x301 on CAN bus.");
+  }
+}
+
+CanFrame CANInterfaceNode::packHeartbeatFrame() const
+{
+  CanFrame frame;
+  frame.can_id = static_cast<uint32_t>(heartbeat_frame_id_);  // 0x301，标准帧
+  frame.dlc = 1;                                              // DLC=1，只发 1 字节
+  // 与 0x210 Signal3 同源：/system/devices_inspection.ok
+  // （首份结论未到达时 can_online_ 保持 false → 0x00）
+  frame.data[0] = can_online_ ? kHeartbeatOnline : kHeartbeatOffline;
+  return frame;  // 其余字节不参与 DLC，保持 0
 }
 
 void CANInterfaceNode::parseVcuFrame(const CanFrame & frame)

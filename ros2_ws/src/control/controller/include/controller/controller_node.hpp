@@ -91,11 +91,12 @@ private:
   bool last_valid_trackdrive_cmd_ready_{false};
 
   // 车检模式（INSPECTION）参数与状态
-  double inspection_speed_{1.0};      // 慢速驱动速度 m/s
-  double inspection_throttle_max_{0.15}; // 车检纵向开度上限（转速旋钮）
-  double inspection_steer_amp_{15.0}; // 正弦波转向幅值 deg
-  double inspection_steer_freq_{0.4}; // 正弦波频率 Hz
-  double inspection_duration_{10.0};  // 演示时长 s
+  double inspection_speed_{1.0};      // 车检名义车速 m/s：仅用于 TwistFilter 与日志，不决定开度
+  double inspection_throttle_{0.16};  // 车检恒定纵向开度 [0,1]：唯一转速旋钮，不走 PID
+  double inspection_steer_amp_{5.7692}; // 正弦波转向幅值 deg（前轮；= 方向盘 ±30° ÷ 转向比 5.2）
+  double inspection_steer_period_{9.0}; // 正弦波周期 s（>0 时优先，覆盖下面的 freq）
+  double inspection_steer_freq_{0.25};  // 正弦波频率 Hz（兼容旧参数；仅 period<=0 时生效）
+  double inspection_duration_{27.0};  // 车检时长 s（= 6.0s × 4.5 个周期，半整数同样过零）
   rclcpp::Time inspection_start_time_;
   bool inspection_done_published_{false};
 
