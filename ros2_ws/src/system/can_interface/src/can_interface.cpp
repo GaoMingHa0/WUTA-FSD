@@ -6,24 +6,29 @@ namespace can_interface
 
 namespace
 {
-// Signal1 纵向定标（未变）：控制量 x∈[-1,1] → 10~65525，32767 为中心（0 控制）
-// 驱动/右：32767 + x*32758；制动/左：32767 + x*32757；钳位 [10, 65525]
+// Signal1 纵向定标（26 赛季正式协议：0~65535，32767 为中心 = 0 控制）
+//   0~32767    ：越靠近 0 制动力越大 → 0 = 满制动
+//   32767~65535：越大驱动力越大     → 65535 = 满驱动
+//   两侧跨度不同：制动半段 32767（32767→0），驱动半段 32768（32767→65535）
+constexpr double kLongitudinalCenter = 32767.0;
+constexpr double kLongitudinalBrakeSpan = kLongitudinalCenter;            // 32767 → 0
+constexpr double kLongitudinalDriveSpan = 65535.0 - kLongitudinalCenter;  // 32767 → 65535
+
 uint16_t scaleLongitudinal(double x)
 {
-  const double value = x >= 0.0
-    ? 32767.0 + x * 32758.0
-    : 32767.0 + x * 32757.0;
-  return static_cast<uint16_t>(std::clamp(value, 10.0, 65525.0));
+  const double span = x >= 0.0 ? kLongitudinalDriveSpan : kLongitudinalBrakeSpan;
+  const double value = kLongitudinalCenter + x * span;
+  return static_cast<uint16_t>(std::clamp(value, 0.0, 65535.0));
 }
 
-// Signal2 横向定标（新规格）：0~65535，32762 为中心（回正）
-//   0~32762   ：越靠近 0 越向左 → 0 = 满左
-//   32762~65535：越大越向右   → 65535 = 满右
+// Signal2 横向定标（26 赛季正式协议：0~65535，32767 为中心 = 回正）
+//   0~32767   ：越靠近 0 越向左 → 0 = 满左
+//   32767~65535：越大越向右   → 65535 = 满右
 //   steer_deg 正 = 左（autoware 约定），满量程 ±max_steer_deg
-//   两侧跨度不同：左半段 32762（32762→0），右半段 32773（32762→65535）
-constexpr double kLateralCenter = 32762.0;
-constexpr double kLateralLeftSpan = kLateralCenter;                  // 32762 → 0
-constexpr double kLateralRightSpan = 65535.0 - kLateralCenter;       // 32762 → 65535
+//   两侧跨度不同：左半段 32767（32767→0），右半段 32768（32767→65535）
+constexpr double kLateralCenter = 32767.0;
+constexpr double kLateralLeftSpan = kLateralCenter;                  // 32767 → 0
+constexpr double kLateralRightSpan = 65535.0 - kLateralCenter;       // 32767 → 65535
 
 uint16_t scaleLateral(double steer_deg, double max_steer_deg)
 {
@@ -228,7 +233,7 @@ CanFrame CANInterfaceNode::packControlFrame(
 
   // 纯转发：急停归零由 controller 完成，本节点不做任何判定
   const uint16_t s1 = scaleLongitudinal(throttle_brake);   // 纵向：驱动/制动
-  // 横向：angle 正=左（autoware 约定）→ Signal2 小值（0 = 满左），中心 32762
+  // 横向：angle 正=左（autoware 约定）→ Signal2 小值（0 = 满左），中心 32767
   const uint16_t s2 = scaleLateral(steer_deg, max_steer_deg_);
   frame.data[0] = static_cast<uint8_t>(s1 & 0xFF);
   frame.data[1] = static_cast<uint8_t>((s1 >> 8) & 0xFF);
