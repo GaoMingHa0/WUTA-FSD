@@ -235,10 +235,15 @@ CanFrame CANInterfaceNode::packControlFrame(
   const uint16_t s1 = scaleLongitudinal(throttle_brake);   // 纵向：驱动/制动
   // 横向：angle 正=左（autoware 约定）→ Signal2 小值（0 = 满左），中心 32767
   const uint16_t s2 = scaleLateral(steer_deg, max_steer_deg_);
-  frame.data[0] = static_cast<uint8_t>(s1 & 0xFF);
-  frame.data[1] = static_cast<uint8_t>((s1 >> 8) & 0xFF);
-  frame.data[2] = static_cast<uint8_t>(s2 & 0xFF);
-  frame.data[3] = static_cast<uint8_t>((s2 >> 8) & 0xFF);
+  // Signal1 / Signal2 字节序：**大端（Motorola，高字节在前）**
+  //   [0]=S1 高字节 [1]=S1 低字节 [2]=S2 高字节 [3]=S2 低字节
+  //   例：纵向 +16% 驱动 38009=0x9479 → 94 79；横向中位 32767=0x7FFF → 7F FF
+  //   改回小端时须同步改 hil_test/config/protocol.yaml 的 signals.*.little_endian
+  //   与 plot_motor_image.py（否则 L1 post 的 0x210 透传用例会失败）
+  frame.data[0] = static_cast<uint8_t>((s1 >> 8) & 0xFF);
+  frame.data[1] = static_cast<uint8_t>(s1 & 0xFF);
+  frame.data[2] = static_cast<uint8_t>((s2 >> 8) & 0xFF);
+  frame.data[3] = static_cast<uint8_t>(s2 & 0xFF);
   frame.data[4] = online ? 0x01 : 0x00;      // Signal3 工控机上线
   frame.data[5] = finished ? 0x01 : 0x00;    // Signal4 任务已完成
   frame.data[6] = 0x00;                      // Signal5 空

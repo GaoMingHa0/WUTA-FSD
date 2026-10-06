@@ -40,7 +40,7 @@ controller_node:
 
     # 车检模式（INSPECTION）：恒速慢转驱动 + 正弦波转转向
     inspection_speed: 1.0      # 名义车速 m/s：仅用于 TwistFilter 与日志，不决定纵向开度
-    inspection_throttle: 0.16  # 车检恒定纵向开度 [0,1]：**不走 PID**，驱动系统转速的唯一旋钮（先低后调）
+    inspection_throttle: 0.05  # 车检恒定纵向开度 [0,1]：不走 PID，驱动系统转速的唯一旋钮（先低后调）
                                # 实测：0.15 → 不转(0x181 无活动)；0.20 → 5s 冲到 16847 且未稳(太快)；0.16 待台架确认能否起转
     inspection_steer_amp: 5.7692 # deg **前轮**正弦幅值（= 方向盘 ±30° ÷ 转向比 5.2；见 can_interface max_steer_deg）
     inspection_steer_period: 9.0 # s 正弦波周期

@@ -21,6 +21,14 @@
 |Signal4|无人任务已完成|1：无人任务已完成<br>0：无人任务未完成|Byte6|项目FINISH后发送|
 |Signal5|空报文|空|Byte7\-Byte8||
 
+> **字节序**：Signal1 / Signal2 为 **Motorola 大端（高字节在前）**——`Byte1`=Signal1 高字节、
+> `Byte2`=低字节；`Byte3`=Signal2 高字节、`Byte4`=低字节。
+> 例：纵向 `+16%` 驱动 `38009 = 0x9479` → `94 79`；纵向中位/零控制 `32767 = 0x7FFF` → `7F FF`；
+> 横向回正同为 `7F FF`。
+> 代码侧：`can_interface.cpp` 的 `packControlFrame()`；测试/解码侧：
+> `hil_test/config/protocol.yaml` 的 `tx_210.signals.*.little_endian: false`。
+> （2026-10-06 之前本节点按小端发送，旧 CAN 日志需按小端解析。）
+
 |**工控机（IPC）心跳报文**||||
 |---|---|---|---|
 |**CAN报文ID**|0x301|||
