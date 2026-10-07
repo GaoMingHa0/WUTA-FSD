@@ -23,16 +23,9 @@ ControlCommand PurePursuit::compute(
   ControlCommand cmd;
   if (waypoints.empty()) return cmd;
 
-  // 速度航向角 = 车头朝向 + 侧偏角 β = yaw + atan2(vy, vx)。
-  // 低速时侧偏角噪声大，|v|<0.5 视为直线行驶。用速度方向做 pure pursuit
-  // 几何，消除侧偏导致的实际路径持续内偏。
-  double course = state.yaw;
-  const double speed = std::hypot(state.vx, state.vy);
-  if (speed > 0.5) {
-    course = state.yaw + std::atan2(state.vy, state.vx);
-  }
+  const double course = velocityCourse(state, cfg_.course_speed_threshold);
 
-  // 1. Compute lookahead distance — velocity-proportional, clamped
+  // 1. 前视距离：外部覆盖优先，否则按车速动态计算并限幅
   lookahead_dist_ = lookahead_override > 0.0
     ? lookahead_override
     : std::clamp(
@@ -40,10 +33,7 @@ ControlCommand PurePursuit::compute(
         cfg_.min_lookahead,
         cfg_.max_lookahead);
 
-  // 2. Advance monotonically along the path, then look ahead from that point.
-  // This is essential for self-intersecting/overlapping paths such as skidpad:
-  // selecting the last geometrically-close waypoint would jump to a later lap.
-  // Trackdrive local paths may also be re-ordered, so targets behind the car are rejected.
+  // 2. 单调推进进度点，再从该点起向前选目标点
   progress_idx_ = std::max(
     progress_idx_, findNearestForwardIndex(state, waypoints, course));
   target_idx_ = findTargetIndex(state, waypoints, lookahead_dist_, course);
@@ -60,25 +50,20 @@ ControlCommand PurePursuit::compute(
   const double tx = target.pose.pose.position.x;
   const double ty = target.pose.pose.position.y;
 
-  // 3. Distance to target
+  // 3. 目标点距离
   const double dist = planeDist(tx, ty, state.x, state.y);
   if (dist < 1e-6) return cmd;
 
-  // 4. Lateral offset in vehicle body frame (x_body = how far left/right target is)
+  // 4. 目标点在车体横向的偏移（左正）
   const double x_body = lateralOffset(tx, ty, state.x, state.y, course);
 
-  // 5. Curvature: kappa = 2·x_body / dist²
-  // Keep the pure-pursuit relationship continuous around x_body = 0.  The
-  // former small-error amplification introduced a 10x jump at its threshold,
-  // which appeared as severe steering chatter in the driven trajectory.
+  // 5. 曲率 kappa = 2·x_body / dist²
   const double kappa = (2.0 * x_body) / (dist * dist);
 
-  // 6. Steering angle (Ackermann bicycle model): δ = atan(L × kappa)
+  // 6. 前轮转角 δ = atan(L × kappa)
   cmd.steering_angle = std::atan(params_.wheel_base * kappa) * 180.0 / M_PI;
 
-  // 7. Velocity follows the current path progress rather than the geometric
-  // lookahead point.  This lets the planned skidpad exit brake at the stop
-  // line instead of commanding zero speed one lookahead distance too early.
+  // 7. 目标速度取进度点速度
   cmd.velocity = waypoints[progress_idx_].twist.twist.linear.x;
 
   cmd.valid = true;
@@ -90,10 +75,7 @@ int PurePursuit::findTargetIndex(
   const std::vector<autoware_msgs::msg::Waypoint> & waypoints,
   double ld, double course) const
 {
-  // First point at or beyond the lookahead distance after current progress,
-  // but only if it is in front of the vehicle.  A locally re-planned
-  // Trackdrive lane can occasionally arrive in the reverse order; following a
-  // behind-car target makes the vehicle turn around and circle.
+  // 从进度点起找首个「在车前且距离 ≥ ld」的点；没有则取最远的前向点
   int furthest_forward_idx = -1;
   double furthest_forward = 0.0;
   for (int i = progress_idx_; i < static_cast<int>(waypoints.size()); ++i) {
@@ -122,9 +104,7 @@ int PurePursuit::findNearestForwardIndex(
 {
   int nearest = std::min(progress_idx_, static_cast<int>(waypoints.size()) - 1);
   double nearest_distance = std::numeric_limits<double>::max();
-  // Only inspect the locally reachable part of the route. A figure-8 has
-  // overlapping crossings and an exit line that can be geometrically closer
-  // than the active circle; a global search would skip directly to that exit.
+  // 只搜索进度点起 max_progress_advance 个点，避免自交路径跳到后续圈
   const int last_candidate = std::min(
     static_cast<int>(waypoints.size()) - 1,
     nearest + std::max(1, cfg_.max_progress_advance));
@@ -138,9 +118,7 @@ int PurePursuit::findNearestForwardIndex(
       std::abs(waypoints[i].twist.twist.linear.x) < 1e-6;
     if (is_zero_speed_terminal) {
       if (distance > std::max(0.0, cfg_.terminal_progress_distance)) {
-        // Keep commanding the final positive-speed waypoint until the vehicle
-        // is close enough to stop. This prevents pose noise from selecting the
-        // zero-speed endpoint several metres early on ordered stopping paths.
+        // 未进入终点容差前，跳过零速终点，保持倒数正速度点
         continue;
       }
       if (distance < nearest_distance) {
@@ -153,9 +131,8 @@ int PurePursuit::findNearestForwardIndex(
       waypoints[i].pose.pose.position.x,
       waypoints[i].pose.pose.position.y,
       state.x, state.y, course);
-    if (forward < -0.5) continue;
-    // Keep the first index for ties: repeated crossing points must resolve to
-    // the current lap, not an identical point in a future lap.
+    if (forward < -cfg_.forward_margin) continue;
+    // 并列时保留靠前的索引，避免自交点解析到后续圈
     if (distance < nearest_distance) {
       nearest_distance = distance;
       nearest = i;
@@ -170,8 +147,6 @@ double PurePursuit::lateralOffset(
 {
   const double dx = target_x - car_x;
   const double dy = target_y - car_y;
-  // Body frame x = lateral (left positive), y = longitudinal (forward positive)
-  // x_body = -dx·sin(course) + dy·cos(course)
   return -dx * std::sin(course_angle) + dy * std::cos(course_angle);
 }
 
@@ -181,7 +156,6 @@ double PurePursuit::longitudinalOffset(
 {
   const double dx = target_x - car_x;
   const double dy = target_y - car_y;
-  // Body frame y = longitudinal, positive in front of the vehicle.
   return dx * std::cos(course_angle) + dy * std::sin(course_angle);
 }
 

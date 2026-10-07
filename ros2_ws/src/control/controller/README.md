@@ -6,6 +6,22 @@ Pure Pursuit 横向控制 + 速度跟踪纵向控制节点。算法来自 HRT-D 
 除正常赛项控制外，还包含 TwistFilter 安全滤波、速度 PID（目标速度 → 油门/刹车开度）
 以及车检（INSPECTION）演示模式。
 
+## 参数命名空间
+
+参数按点分命名空间分类，直线、EBS、八字、高速循迹四个赛项各自拥有一套独立的
+`pure_pursuit` / `pid` 调参，`inspection` 独立成流程，`vehicle` / `control` 全局共用。
+调参只需修改 `config/controller.yaml`，无需改动源码。
+
+```
+vehicle.*        轴距、最大转向角
+control.*        控制频率、转向速率限制、速度滤波系数
+acceleration.*   直线加速：pure_pursuit + pid + finish
+ebs.*            EBS 测试：pure_pursuit + pid + finish
+skidpad.*        八字绕环：pure_pursuit + pid + finish
+trackdrive.*     高速循迹：pure_pursuit + pid + 起步/丢目标
+inspection.*     车检：恒定开度 + 正弦转向
+```
+
 ## 算法
 
 ### 横向控制：Pure Pursuit
@@ -14,11 +30,12 @@ Pure Pursuit 横向控制 + 速度跟踪纵向控制节点。算法来自 HRT-D 
 输入: 当前位姿(x, y, yaw)，车速(vx, vy)，参考路径 waypoints
 
 1. 速度航向角
-   course = yaw                                  (|v| ≤ 0.5 m/s)
-   course = yaw + atan2(vy, vx)                  (|v| > 0.5 m/s，含侧偏角 β)
+   course = yaw                                  (|v| ≤ course_speed_threshold)
+   course = yaw + atan2(vy, vx)                  (|v| > course_speed_threshold，含侧偏角 β)
 
 2. 前视距离
-   LD = override > 0 ? override : clamp(|v| × ld_ratio, min_lookahead, max_lookahead)
+   LD = override > 0 ? override
+      : clamp(|v| × lookahead_ratio, min_lookahead, max_lookahead)
 
 3. 推进进度点（单调）
    progress_idx = max(progress_idx, findNearestForwardIndex(...))
@@ -40,29 +57,28 @@ Pure Pursuit 横向控制 + 速度跟踪纵向控制节点。算法来自 HRT-D 
    cmd.velocity = waypoints[progress_idx].twist.twist.linear.x
 ```
 
-曲率公式对 `x_body = 0` 附近保持连续，不做小误差放大，避免阈值跳变引起转向抖动。
+`lookahead_ratio` / `min_lookahead` / `max_lookahead` / `max_progress_advance` /
+`terminal_progress_distance` / `course_speed_threshold` / `forward_margin` 均取自当前赛项的
+`pure_pursuit` 命名空间。曲率公式对 `x_body = 0` 附近保持连续，不做小误差放大。
 
 目标点与进度点的选择都带「前向保护」：只接受车体前方的点（`longitudinalOffset > 0`），
 所以局部路径瞬时反向时不会追向车后的点。
 
 ### 赛项专用前视距离
 
-Acceleration 保持通用动态前视：`LD = |velocity| × ld_ratio`，并限制在
-`[min_lookahead, max_lookahead]`。
-
 | 赛项 | 前视距离 |
 |------|----------|
-| `MISSION_ACCELERATION` 及其它 | `clamp(\|v\| × ld_ratio, 2.0, 20.0)` |
-| `MISSION_TRACKDRIVE` | 曲率自适应，`[trackdrive_min_lookahead, trackdrive_lookahead]` = [3.0, 5.0] |
-| `MISSION_SKIDPAD` | 固定 `skidpad_lookahead` = 2.5 m |
+| `acceleration` / `ebs` | `clamp(\|v\| × lookahead_ratio, min_lookahead, max_lookahead)` |
+| `trackdrive` | 曲率自适应，`[min_lookahead, max_lookahead]` = [3.0, 5.0] |
+| `skidpad` | 固定 `lookahead` = 2.5 m |
 
-**Trackdrive**：在局部中心线前方 `trackdrive_curvature_preview_distance`（12 m）内估计曲率。
-对每三点组合算离散曲率 `|Δheading| / 平均弧长`，取「75 分位数」与「0.6 × 最大值」的较大者：
-前者抑制路径噪声，后者保留弯道入口预判。曲率从 `trackdrive_straight_curvature`（0.03 1/m）
-到 `trackdrive_corner_curvature`（0.16 1/m）线性映射到前视距离从上限缩短到下限，并用
-`trackdrive_lookahead_rate_limit`（3.0 m/s）限制变化率，避免地图刷新造成目标点和转向突变。
-该计算不使用规划器的目标速度，因此不同正式圈的速度档位不会直接改变横向控制。
-`trackdrive_dynamic_lookahead=false` 或路径点少于 3 个时退回固定 `trackdrive_lookahead`。
+**Trackdrive**：在局部中心线前方 `curvature_preview_distance`（12 m）内估计曲率。
+对每三点组合算离散曲率 `|Δheading| / 平均弧长`，取「`curvature_percentile` 分位数」与
+「`curvature_peak_factor` × 最大值」的较大者：前者抑制路径噪声，后者保留弯道入口预判。
+曲率从 `straight_curvature`（0.03 1/m）到 `corner_curvature`（0.16 1/m）线性映射到前视距离
+从上限缩短到下限，并用 `lookahead_rate_limit`（3.0 m/s）限制变化率，避免地图刷新造成目标点和
+转向突变。该计算不使用规划器的目标速度，因此不同正式圈的速度档位不会直接改变横向控制。
+`dynamic_lookahead=false` 或路径点少于 3 个时退回固定 `max_lookahead`。
 
 **Skidpad**：目标速度 5 m/s 时通用前视会接近 9.125 m 圆半径。在入口、右/左圆切换和第四圈
 出口处，目标点会跨越交叉点的曲率突变，导致车辆切向圆内侧或在出口过早卸载转向。2.5 m 前视
@@ -73,13 +89,13 @@ Acceleration 保持通用动态前视：`LD = |velocity| × ld_ratio`，并限�
 - 默认速度取自当前单调进度点 waypoint 的 `twist.linear.x`，由 `path_generator` 在各模式写入
 - Trackdrive 改用**前视目标点**的速度：每次在线局部中心线刷新都会把进度点重置到车辆原点
   附近的「曲率为 0、速度为最大」的点，用前视点速度才能在入弯前采用弯道曲率限速
-- Trackdrive 从首个有效前向目标开始，在 `trackdrive_start_speed_duration`（4 s）内将速度目标
-  固定为 `trackdrive_start_speed`（3 m/s）；该阶段让初始锥筒地图和在线中心线稳定，结束后
-  自动恢复前视点的曲率速度剖面（`trackdrive_start_speed_duration=0` 可关闭）
-- Trackdrive 短暂没有有效前向目标时，在 `trackdrive_target_loss_hold_time`（0.5 s）内沿用上一条
-  有效命令，并把速度压到 `trackdrive_target_loss_hold_speed`（2 m/s）；超时后停车
-- Skidpad/Acceleration 的零速终点只有在车辆进入 `finish_position_tolerance`（0.75 m）后才允许
-  成为单调进度点；此前保持倒数正速度点，避免定位噪声让车辆在终点前数米停车
+- Trackdrive 从首个有效前向目标开始，在 `start_speed_duration`（4 s）内将速度目标固定为
+  `start_speed`（3 m/s）；该阶段让初始锥筒地图和在线中心线稳定，结束后自动恢复前视点的曲率
+  速度剖面（`start_speed_duration=0` 可关闭）
+- Trackdrive 短暂没有有效前向目标时，在 `target_loss_hold_time`（0.5 s）内沿用上一条有效命令，
+  并把速度压到 `target_loss_hold_speed`（2 m/s）；超时后停车
+- Skidpad/Acceleration/EBS 的零速终点只有在车辆进入 `finish.position_tolerance`（0.75 m）后
+  才允许成为单调进度点；此前保持倒数正速度点，避免定位噪声让车辆在终点前数米停车
 - TwistFilter 做速度平滑，避免急加速/急减速
 - 平滑后的目标速度再经速度 PID 转成 `throttle_brake` 随命令下发
 
@@ -92,10 +108,10 @@ skidpad 5 m/s；acceleration 15 m/s；EBS 12 m/s。
 
 | 场景 | 速度滤波 | 说明 |
 |------|----------|------|
-| 加速 | `0.9×last + 0.1×input` | 缓慢加速，防轮滑 |
-| 减速 | `0.3×last + 0.7×input` | 快速响应，保安全 |
-| 转向 | hard clamp ±max_steer_angle | 超限直接截断 |
-| 转向变化率 | 每周期最大 `max_steering_rate_deg_s / control_rate_hz`（50 Hz 下 3.6°/周期） | 抑制定位噪声和目标点离散化导致的抖动 |
+| 加速 | `(1-accel_alpha)×last + accel_alpha×input` | 缓慢加速，防轮滑 |
+| 减速 | `(1-decel_alpha)×last + decel_alpha×input` | 快速响应，保安全 |
+| 转向 | hard clamp ±vehicle.max_steer_angle | 超限直接截断 |
+| 转向变化率 | 每周期最大 `control.max_steering_rate_deg_s / control.rate_hz`（50 Hz 下 3.6°/周期） | 抑制定位噪声和目标点离散化导致的抖动 |
 
 急停不经过滤波平滑：`emergency_` 置位时节点直接发布全零命令。
 
@@ -104,10 +120,11 @@ skidpad 5 m/s；acceleration 15 m/s；EBS 12 m/s。
 [controller_node.cpp](src/controller_node.cpp) `computeSpeedPid()`
 
 - 输入：平滑后的目标速度与 `/chcnav/velocity` 实测车速之差
-- 输出：`throttle_brake ∈ [-1, 1]`，随 `/control/command` 一起发布
+- 输出：`throttle_brake ∈ [-output_limit, output_limit]`，随 `/control/command` 一起发布
+- 每个赛项的 PID 增益独立，取自该赛项 `pid` 命名空间；切换赛项时生效
 - 首拍只初始化时间，不输出
-- 积分项与输出同量纲，钳位到 `[-1, 1]` 防饱和
-- 目标速度 ≤ 0 且实测车速 < 0.5 m/s 时清零积分，防止停车后残留驱动开度溜车
+- 积分项与输出同量纲，分别钳位到 `integral_limit` / `output_limit`
+- 目标速度 ≤ `pid.stop_clear_eps` 且实测车速 < `pid.stop_clear_speed` 时清零积分，防止溜车
 - 急停或速度反馈未就绪时清 PID 状态并输出 0（保守，不驱动）
 
 ## 数据流
@@ -155,49 +172,81 @@ skidpad 5 m/s；acceleration 15 m/s；EBS 12 m/s。
   与 mission_manager（传感器自检失败）共同发布——controller 是唯一的归零执行者
 - 路径变化：`onWaypoints` 逐点比较路径，变化时复位 Pure Pursuit 进度与 `mission_complete_`
 - 完成判定：`SKIDPAD` / `ACCELERATION` / `EBS_TEST` 在「进度到最后一个点 + 距终点 ≤
-  `finish_position_tolerance` + 车速 ≤ `finish_speed_threshold`」时发布 `mission_complete`
-- 车检：进入 `INSPECTION` 后以**恒定开度** `inspection_throttle` 驱动（**不走 PID**：
+  该赛项 `finish.position_tolerance` + 车速 ≤ 该赛项 `finish.speed_threshold`」时发布 `mission_complete`
+- 车检：进入 `INSPECTION` 后以**恒定开度** `inspection.throttle` 驱动（**不走 PID**：
   车举升/拆胎时唯一的反馈——华测车速——恒为 0，速度环不可观测），并叠加
-  `inspection_steer_amp` @ `inspection_steer_period` 的正弦转向，到达 `inspection_duration`
-  后发零命令并回报完成。`inspection_duration` 应与转向周期成 **0.5 的整数倍**关系
-  （半整数周期同样过零 → 收尾回中无跳变），否则启动时会打印告警。
+  `inspection.steer_amplitude` @ `inspection.steer_period` 的正弦转向，到达 `inspection.duration`
+  后发零命令并回报完成。频率由周期与时长自动配成整数个半周期，保证收尾回中无跳变
 
 ## 关键参数
 
+### 全局
+
 | 参数 | 默认值 | 说明 |
 |------|--------|------|
-| `wheel_base` | 1.53 m | 轴距 |
-| `lf` | 0.8 m | 质心到前轴距离（当前算法未参与解算） |
-| `max_steer_angle` | 25° | 最大转向角 |
-| `ld_ratio` | 2.0 | Acceleration 的动态前视距离系数 |
-| `min_lookahead` | 2.0 m | 动态前视距离下限（低速） |
-| `max_lookahead` | 20.0 m | 动态前视距离上限（高速） |
-| `max_progress_advance` | 4 | 单次控制循环允许推进的最大路径点数；防止 Skidpad 跳至出口 |
-| `skidpad_lookahead` | 2.5 m | 仅 `MISSION_SKIDPAD` 使用的固定前视距离 |
-| `trackdrive_dynamic_lookahead` | true | 启用 Trackdrive 基于前方中心线曲率的受限动态前视；关闭时退回固定前视 |
-| `trackdrive_lookahead` | 5.0 m | Trackdrive 直线/低曲率时的前视上限；不随规划目标速度变化 |
-| `trackdrive_min_lookahead` | 3.0 m | Trackdrive 高曲率时的前视下限 |
-| `trackdrive_curvature_preview_distance` | 12.0 m | 提前检查的局部中心线长度，使进入弯道前已缩短前视 |
-| `trackdrive_straight_curvature` | 0.03 1/m | 超过该曲率后开始从上限缩短前视 |
-| `trackdrive_corner_curvature` | 0.16 1/m | 到达该曲率时采用最小前视 |
-| `trackdrive_lookahead_rate_limit` | 3.0 m/s | 前视距离的最大变化率，避免路径刷新导致突变 |
-| `trackdrive_target_loss_hold_time` | 0.5 s | Trackdrive 短暂没有前向目标时，保留上一有效命令的最长时间 |
-| `trackdrive_target_loss_hold_speed` | 2.0 m/s | 保留命令期间的速度上限；超时后控制器停车 |
-| `trackdrive_start_speed` | 3.0 m/s | 仅 Trackdrive 起步稳定阶段的固定速度目标 |
-| `trackdrive_start_speed_duration` | 4.0 s | 从第一个有效前向目标起算的固定速度时长；设为 `0` 可关闭 |
-| `control_rate_hz` | 50 Hz | 控制频率 |
-| `max_steering_rate_deg_s` | 180°/s | 每个控制周期限制转向变化量，抑制定位噪声和目标点离散化导致的指令抖动 |
-| `finish_position_tolerance` | 0.75 m | Skidpad/Acceleration 零速终点进度与任务完成的位置阈值（同时作为 Pure Pursuit 的终点进度阈值） |
-| `finish_speed_threshold` | 0.2 m/s | Skidpad/Acceleration 终点完成速度阈值 |
-| `inspection_speed` | 1.0 m/s | 车检名义车速：仅用于 TwistFilter 与日志，**不决定纵向开度** |
-| `inspection_throttle` | 0.16 | 车检**恒定**纵向开度 [0,1]：不走 PID，驱动系统转速的唯一旋钮（先低后调）。实测 0.15 不转、0.20 太快（5s 冲到 16847 且未稳） |
-| `inspection_steer_amp` | 5.77° | 车检模式正弦转向幅值（**前轮** deg；= 方向盘 ±30° ÷ 转向比 5.2） |
-| `inspection_steer_period` | 9.0 s | 车检模式正弦转向周期（**优先**；周期比频率直观） |
-| `inspection_steer_freq` | 0.25 Hz | 兼容旧参数：仅当 `inspection_steer_period <= 0` 时生效 |
-| `inspection_duration` | 27.0 s | 车检时长（= 9.0s × 3 个整周期；赛规 2.8.3 要求 25~30s），完成后发布 `mission_complete` |
-| `pid_speed_kp` | 1.0 | 速度 PID 比例增益 |
-| `pid_speed_ki` | 0.05 | 速度 PID 积分增益 |
-| `pid_speed_kd` | 0.1 | 速度 PID 微分增益 |
+| `vehicle.wheel_base` | 1.614 m | 轴距 |
+| `vehicle.max_steer_angle` | 28° | 前轮最大转角（外轮设计值） |
+| `control.rate_hz` | 50 Hz | 控制频率 |
+| `control.max_steering_rate_deg_s` | 180°/s | 每周期转向变化量上限，抑制指令抖动 |
+| `control.accel_alpha` | 0.1 | 加速平滑系数 |
+| `control.decel_alpha` | 0.7 | 减速响应系数 |
+
+### 赛项：acceleration / ebs
+
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| `*.pure_pursuit.lookahead_ratio` | 2.0 | 动态前视 = 车速 × 系数 |
+| `*.pure_pursuit.min_lookahead` | 2.0 m | 前视下限 |
+| `*.pure_pursuit.max_lookahead` | 20.0 m | 前视上限 |
+| `*.pure_pursuit.max_progress_advance` | 4 | 单周期最大进度推进点数 |
+| `*.pure_pursuit.terminal_progress_distance` | 0.75 m | 终点进度点触发距离 |
+| `*.pure_pursuit.course_speed_threshold` | 0.5 m/s | 速度航向角切换门限 |
+| `*.pure_pursuit.forward_margin` | 0.5 m | 目标点前向接纳门限 |
+| `*.pid.kp / ki / kd` | 1.0 / 0.05 / 0.1 | 速度 PID 增益 |
+| `*.pid.stop_clear_eps` | 0.05 m/s | 目标速度消积分阈值 |
+| `*.pid.stop_clear_speed` | 0.5 m/s | 消积分车速门限 |
+| `*.pid.output_limit` | 1.0 | 开度输出钳位 |
+| `*.pid.integral_limit` | 1.0 | 积分项钳位 |
+| `*.finish.position_tolerance` | 0.75 m | 终点位置容差 |
+| `*.finish.speed_threshold` | 0.2 m/s | 终点速度阈值 |
+
+### 赛项：skidpad
+
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| `skidpad.pure_pursuit.lookahead` | 2.5 m | 固定前视距离 |
+| `skidpad.pure_pursuit.*`（其余同上） | — | 进度、门限项同 acceleration |
+| `skidpad.pid.*` | 同 acceleration | 独立 PID 增益 |
+| `skidpad.finish.*` | 0.75 m / 0.2 m/s | 终点判定 |
+
+### 赛项：trackdrive
+
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| `trackdrive.pure_pursuit.min_lookahead` | 3.0 m | 高曲率前视下限 |
+| `trackdrive.pure_pursuit.max_lookahead` | 5.0 m | 直线/低曲率前视上限 |
+| `trackdrive.pure_pursuit.dynamic_lookahead` | true | 启用曲率自适应前视；关闭退回固定前视 |
+| `trackdrive.pure_pursuit.curvature_preview_distance` | 12.0 m | 前方曲率检查长度 |
+| `trackdrive.pure_pursuit.straight_curvature` | 0.03 1/m | 超过该曲率开始缩短前视 |
+| `trackdrive.pure_pursuit.corner_curvature` | 0.16 1/m | 到达该曲率采用最小前视 |
+| `trackdrive.pure_pursuit.lookahead_rate_limit` | 3.0 m/s | 前视距离最大变化率 |
+| `trackdrive.pure_pursuit.curvature_percentile` | 0.75 | 曲率抗噪分位 |
+| `trackdrive.pure_pursuit.curvature_peak_factor` | 0.6 | 峰值曲率权重 |
+| `trackdrive.pure_pursuit.*`（进度、门限项） | — | 同 acceleration |
+| `trackdrive.pid.*` | 同 acceleration | 独立 PID 增益 |
+| `trackdrive.target_loss_hold_time` | 0.5 s | 无前向目标时保留上一命令的最长时间 |
+| `trackdrive.target_loss_hold_speed` | 2.0 m/s | 保留命令期间速度上限；超时后停车 |
+| `trackdrive.start_speed` | 3.0 m/s | 起步稳定阶段固定速度目标 |
+| `trackdrive.start_speed_duration` | 4.0 s | 起步固定速度时长；设为 `0` 关闭 |
+
+### 赛项：inspection
+
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| `inspection.throttle` | 0.05 | 车检**恒定**纵向开度 [0,1]：不走 PID，驱动转速的唯一旋钮 |
+| `inspection.steer_amplitude` | 6.0° | 前轮正弦转向幅值（= 方向盘 ±30° ÷ 转向比 5） |
+| `inspection.steer_period` | 9.0 s | 正弦转向周期 |
+| `inspection.duration` | 27.0 s | 车检时长（= 9.0s × 3 个整周期；赛规 2.8.3 要求 25~30s） |
 
 ## 线程模型
 

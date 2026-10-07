@@ -1,60 +1,113 @@
 controller_node:
   ros__parameters:
-    # 车辆参数
-    wheel_base: 1.53        # m —— 轴距（后轴到前轴）
-    lf: 0.8                 # m —— 质心到前轴距离（当前算法未使用）
-    max_steer_angle: 25.0   # deg —— 前轮最大转角（Pure Pursuit 硬限幅；对应方向盘 ±130°，转向比 5.2）
+    # ---------- 车辆 ----------
+    vehicle:
+      wheel_base: 1.614           # m，轴距
+      max_steer_angle: 28.0       # deg，前轮最大转角。注意：需与 can_interface 中 max_steer_angle 保持一致
 
-    # Pure Pursuit 前视距离
-    ld_ratio: 2.0           # 前视距离 = 车速 × 该系数
-    min_lookahead: 2.0      # m —— 低速时的前视下限
-    max_lookahead: 20.0     # m —— 高速时的前视上限
-    max_progress_advance: 4 # 每个 50Hz 控制周期最多推进的路径点数：防止八字绕环进度跳变
-    # 八字绕环（9.125 m 圆）专用的固定前视距离：通用的 10 m 前视会在交叉点抄近路、
-    # 跳过曲率变化。闭环动态仿真标定：前视取小则圆入口/切换处切内更少
-    # （2.5 m 时锥桶余量约 0.39 m，4.5 m 时仅 0.24 m）。
-    skidpad_lookahead: 2.5  # m
-    # 高速循迹按“前方路径曲率”而不是目标车速来调前视：直线段保持长前视，
-    # 进急弯前平滑缩短；trackdrive_lookahead 仍是上限。
-    trackdrive_dynamic_lookahead: true
-    trackdrive_lookahead: 5.0  # m —— 直线段的前视上限
-    trackdrive_min_lookahead: 3.0  # m —— 急弯时的前视下限
-    trackdrive_curvature_preview_distance: 12.0  # m —— 提前检查的前方中心线长度
-    trackdrive_straight_curvature: 0.03  # 1/m —— 曲率超过该值开始缩短前视
-    trackdrive_corner_curvature: 0.16   # 1/m —— 曲率达到该值即采用最小前视
-    trackdrive_lookahead_rate_limit: 3.0  # m/s —— 前视距离的最大变化率，防突变
-    # 循迹局部建图偶发会给出不可用/反向的中心线：短时间内保持上一有效指令并限速，
-    # 而不是因单帧异常就停车；超时仍无有效目标则停车。
-    trackdrive_target_loss_hold_time: 0.5  # s —— 保持时长
-    trackdrive_target_loss_hold_speed: 2.0 # m/s —— 保持期间的速度上限
-    # 起步稳定阶段把循迹目标车速固定为 3 m/s，等首次在线地图与局部中心线收敛；
-    # 计时从第一个有效目标点算起。
-    trackdrive_start_speed: 3.0           # m/s
-    trackdrive_start_speed_duration: 4.0  # s —— 设为 0 可关闭
+    # ---------- 控制回路与安全滤波（所有赛项共用）----------
+    control:
+      rate_hz: 50                       # Hz，控制回路频率
+      max_steering_rate_deg_s: 180.0    # deg/s，转向变化率上限；越小越平滑
+      accel_alpha: 0.1                  # 加速平滑系数(0~1)；越大加速越跟手
+      decel_alpha: 0.7                  # 减速响应系数(0~1)；越大减速越跟手
 
-    # 控制回路
-    control_rate_hz: 50
-    # 转向指令的单周期最大变化量：抑制定位噪声引起的抖动，
-    # 同时保留足够的响应速度以满足八字绕环入弯。
-    max_steering_rate_deg_s: 180.0
+    # ---------- 赛项：直线加速 ----------
+    acceleration:
+      pure_pursuit:
+        lookahead_ratio: 2.0              # 前视 = 车速 × 该系数
+        min_lookahead: 2.0                # m，低速前视下限
+        max_lookahead: 20.0               # m，高速前视上限
+        max_progress_advance: 4           # 单周期最多推进的路径点数
+        terminal_progress_distance: 0.75  # m，终点进度点触发距离
+        course_speed_threshold: 0.5       # m/s，低于此速用 yaw 作航向
+        forward_margin: 0.5               # m，目标点前向接纳门限
+      pid:
+        kp: 1.0                           # 比例增益
+        ki: 0.05                          # 积分增益
+        kd: 0.1                           # 微分增益
+        stop_clear_eps: 0.05              # m/s，目标速度低于此值开始消积分
+        stop_clear_speed: 0.5             # m/s，车速低于此值才允许消积分
+        output_limit: 1.0                 # 开度输出钳位
+        integral_limit: 1.0               # 积分项钳位
+      finish:
+        position_tolerance: 0.75          # m，距终点位置容差
+        speed_threshold: 0.2              # m/s，判定停稳的车速阈值
 
-    # 车检模式（INSPECTION）：恒速慢转驱动 + 正弦波转转向
-    inspection_speed: 1.0      # 名义车速 m/s：仅用于 TwistFilter 与日志，不决定纵向开度
-    inspection_throttle: 0.05  # 车检恒定纵向开度 [0,1]：不走 PID，驱动系统转速的唯一旋钮（先低后调）
-                               # 实测：0.15 → 不转(0x181 无活动)；0.20 → 5s 冲到 16847 且未稳(太快)；0.16 待台架确认能否起转
-    inspection_steer_amp: 5.7692 # deg **前轮**正弦幅值（= 方向盘 ±30° ÷ 转向比 5.2；见 can_interface max_steer_deg）
-    inspection_steer_period: 9.0 # s 正弦波周期
-    inspection_steer_freq: 0.25 # Hz 兼容旧参数：仅当 inspection_steer_period <= 0 时生效
-    inspection_duration: 27.0  # s 车检时长
+    # ---------- 赛项：EBS 测试 ----------
+    ebs:
+      pure_pursuit:
+        lookahead_ratio: 2.0              # 前视 = 车速 × 该系数
+        min_lookahead: 2.0                # m，低速前视下限
+        max_lookahead: 20.0               # m，高速前视上限
+        max_progress_advance: 4           # 单周期最多推进的路径点数
+        terminal_progress_distance: 0.75  # m，终点进度点触发距离
+        course_speed_threshold: 0.5       # m/s，低于此速用 yaw 作航向
+        forward_margin: 0.5               # m，目标点前向接纳门限
+      pid:
+        kp: 1.0                           # 比例增益
+        ki: 0.05                          # 积分增益
+        kd: 0.1                           # 微分增益
+        stop_clear_eps: 0.05              # m/s，目标速度低于此值开始消积分
+        stop_clear_speed: 0.5             # m/s，车速低于此值才允许消积分
+        output_limit: 1.0                 # 开度输出钳位
+        integral_limit: 1.0               # 积分项钳位
+      finish:
+        position_tolerance: 0.75          # m，距终点位置容差
+        speed_threshold: 0.2              # m/s，判定停稳的车速阈值
 
-    # 速度 PID：目标速度 → 油门/刹车开度（随 /control/command 发布，[-1,1]）
-    pid_speed_kp: 1.0     # 比例
-    pid_speed_ki: 0.05    # 积分
-    pid_speed_kd: 0.1     # 微分
-    # 停车消积分阈值 [m/s]：目标速度（经 TwistFilter 平滑）低于该值且车速
-    # 接近停稳时清零积分，避免停车后残留驱动开度
-    pid_stop_clear_eps: 0.05
+    # ---------- 赛项：八字绕环 ----------
+    skidpad:
+      pure_pursuit:
+        lookahead: 2.5                    # m，固定前视距离
+        max_progress_advance: 4           # 单周期最多推进的路径点数
+        terminal_progress_distance: 0.75  # m，终点进度点触发距离
+        course_speed_threshold: 0.5       # m/s，低于此速用 yaw 作航向
+        forward_margin: 0.5               # m，目标点前向接纳门限
+      pid:
+        kp: 1.0                           # 比例增益
+        ki: 0.05                          # 积分增益
+        kd: 0.1                           # 微分增益
+        stop_clear_eps: 0.05              # m/s，目标速度低于此值开始消积分
+        stop_clear_speed: 0.5             # m/s，车速低于此值才允许消积分
+        output_limit: 1.0                 # 开度输出钳位
+        integral_limit: 1.0               # 积分项钳位
+      finish:
+        position_tolerance: 0.75          # m，距终点位置容差
+        speed_threshold: 0.2              # m/s，判定停稳的车速阈值
 
-    # 八字绕环完成判定：车辆必须停在 25 m 出口终点
-    finish_position_tolerance: 0.75  # m —— 终点位置容差
-    finish_speed_threshold: 0.2      # m/s —— 判定“已停稳”的车速阈值
+    # ---------- 赛项：高速循迹 ----------
+    trackdrive:
+      pure_pursuit:
+        min_lookahead: 3.0                # m，急弯前视下限
+        max_lookahead: 5.0                # m，直线前视上限
+        max_progress_advance: 4           # 单周期最多推进的路径点数
+        terminal_progress_distance: 0.75  # m，终点进度点触发距离
+        course_speed_threshold: 0.5       # m/s，低于此速用 yaw 作航向
+        forward_margin: 0.5               # m，目标点前向接纳门限
+        dynamic_lookahead: true           # 按前方曲率自适应前视
+        curvature_preview_distance: 12.0  # m，前方曲率检查长度
+        straight_curvature: 0.03          # 1/m，超过开始缩短前视
+        corner_curvature: 0.16            # 1/m，达到即用最小前视
+        lookahead_rate_limit: 3.0         # m/s，前视变化率上限
+        curvature_percentile: 0.75        # 曲率抗噪分位(0~1)
+        curvature_peak_factor: 0.6        # 峰值曲率权重(0~1)
+      pid:
+        kp: 1.0                           # 比例增益
+        ki: 0.05                          # 积分增益
+        kd: 0.1                           # 微分增益
+        stop_clear_eps: 0.05              # m/s，目标速度低于此值开始消积分
+        stop_clear_speed: 0.5             # m/s，车速低于此值才允许消积分
+        output_limit: 1.0                 # 开度输出钳位
+        integral_limit: 1.0               # 积分项钳位
+      target_loss_hold_time: 0.5          # s，无前向目标时保持上一指令的时长
+      target_loss_hold_speed: 2.0         # m/s，保持期间的速度上限
+      start_speed: 3.0                    # m/s，起步阶段固定速度
+      start_speed_duration: 4.0           # s，起步阶段时长（0 关闭）
+
+    # ---------- 赛项：车检 ----------
+    inspection:
+      throttle: 0.05            # 恒定纵向开度[0,1]，直接下发，不走 PID
+      steer_amplitude: 6.0      # deg，前轮正弦转向幅值（= 方向盘 ±30° ÷ 转向比 5）
+      steer_period: 9.0         # s，正弦转向周期
+      duration: 27.0            # s，车检时长（与周期自动配成过零收尾）

@@ -11,47 +11,35 @@ namespace controller
 
 struct ControlCommand
 {
-  double steering_angle{0.0};  // degrees, positive = left
+  double steering_angle{0.0};  // deg，左正
   double velocity{0.0};        // m/s
   bool   valid{false};
 };
 
-/**
- * Pure Pursuit lateral + velocity-from-waypoint longitudinal controller.
- * Pure C++ — no ROS dependencies.
- *
- * Algorithm (from HRT-D, stripped of HPL):
- *   1. Compute lookahead distance: LD = velocity × ld_ratio
- *   2. Find target waypoint: first waypoint farther than LD
- *   3. Transform target to vehicle body frame
- *   4. Compute curvature: kappa = 2·x_body / dist²
- *   5. Steering angle: δ = atan(wheelBase × kappa) [deg]
- *   6. Velocity: from target waypoint twist
- */
+// Pure Pursuit 横向控制：按前视距离选目标点，算前轮转角。
 class PurePursuit
 {
 public:
   struct Config
   {
-    double ld_ratio{2.0};         // lookahead = velocity × ratio
-    double min_lookahead{2.0};    // m — clamp at low speed
-    double max_lookahead{20.0};   // m — clamp at high speed
-    int max_progress_advance{4};  // waypoints per control update
-    double terminal_progress_distance{0.75};  // m
+    double ld_ratio{2.0};                     // 前视 = 车速 × 该系数
+    double min_lookahead{2.0};                // m，低速前视下限
+    double max_lookahead{20.0};               // m，高速前视上限
+    int    max_progress_advance{4};           // 单周期最多推进的路径点数
+    double terminal_progress_distance{0.75};  // m，终点进度点触发距离
+    double course_speed_threshold{0.5};       // m/s，低于此速用 yaw 作航向
+    double forward_margin{0.5};               // m，目标点前向接纳门限
   };
 
-  explicit PurePursuit(const VehicleParams & params, const Config & cfg);
+  PurePursuit(const VehicleParams & params, const Config & cfg);
 
-  /**
-   * Compute control command for one cycle.
-   * @param state    Current vehicle state (pose + velocity)
-   * @param waypoints  Reference path (autoware_msgs Lane waypoints)
-   */
+  // 切换赛项时更新参数
+  void setConfig(const Config & cfg) { cfg_ = cfg; }
+
   ControlCommand compute(const VehicleState & state,
                          const std::vector<autoware_msgs::msg::Waypoint> & waypoints,
                          double lookahead_override = 0.0);
 
-  // Accessors for diagnostics
   double lookaheadDistance() const { return lookahead_dist_; }
   int    targetIndex()       const { return target_idx_; }
   int    progressIndex()     const { return progress_idx_; }
@@ -67,11 +55,11 @@ private:
     const std::vector<autoware_msgs::msg::Waypoint> & waypoints,
     double course) const;
 
-  // Transform global point to vehicle body frame, return lateral offset x
+  // 目标点相对车体的横向偏移（左正）
   static double lateralOffset(double target_x, double target_y,
                                double car_x, double car_y, double course_angle);
 
-  // Transform global point to vehicle body frame, return forward offset y
+  // 目标点相对车体的前向偏移（前方为正）
   static double longitudinalOffset(double target_x, double target_y,
                                    double car_x, double car_y, double course_angle);
 

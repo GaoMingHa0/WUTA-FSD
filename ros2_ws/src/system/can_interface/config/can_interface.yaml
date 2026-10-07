@@ -1,26 +1,27 @@
 can_interface:
   ros__parameters:
-    # 绑定 SocketCAN 接口（真实 ZLG 硬件经 zlgcan_bridge 桥接为 can0）
-    can_device: "can0"
-    can_baud_rate: 500000
-    can_loopback: false
-    poll_interval_sec: 0.02  # 接收轮询周期，默认 50Hz
-    max_steer_deg: 25.0      # Signal2 满量程**前轮**转角（deg），与 controller max_steer_angle 一致
-                             # 转向比 5.2：前轮 ±25° ↔ 方向盘/执行器 ±130°（Signal2 的 0/65535 对应 ∓130°）
-    # mission_mode_cmd 保活重发周期（s）：模式是电平信号（VCU 持续重发同一档位），
-    # 本节点仅在字节变化时转发一次，mission_manager 晚启动/重启会错过 → 周期重发兜底。
-    # 离开任务档（Byte1=1 有人驾驶/未知）自动停发。<=0 关闭。
-    mode_repeat_period_sec: 1.0
-    # ---- 上线心跳（0x301，工控机→VCU）----
-    # 标准帧 / 500k / DLC=1，20Hz（50ms）；Data[0]：0x01 在线 / 0x00 异常。
-    # 取值与 0x210 Signal3 同源（/system/devices_inspection.ok），但**不受** 0x210
-    # 的「首份自检结论前不发」门控：本帧启动即发，首份结论前 Data[0]=0x00。
-    # heartbeat_period_sec <= 0 关闭本心跳。
-    heartbeat_frame_id: 0x301
-    heartbeat_period_sec: 0.05
-    # ---- RES 遥控器（0x1E4）：发车放行与急停 ----
-    # 484 = 0x1E4，标准帧 / 500k / 协议文档 DLC=3（实测桥日志为 8 → 只读 Byte1，不校验 DLC）
-    # Byte1：0x11 遥控器上线 / 0x13 发车按钮被按下 / 0x10 按下急停
-    # 发车是严格边沿：0x13 变化沿发布一次 /system/start_command，**不重放、不锁存**。
-    # mission_manager 侧同样只认「选完模式之后」按下的 GO（模式变化会清掉旧的 GO）。
-    res_frame_id: 0x1E4
+    # ---------- 通信接口 ----------
+    can:
+      device: "can0"              # SocketCAN 接口名（真实 ZLG 硬件经 zlgcan_bridge 桥接为 can0）
+      poll_interval_sec: 0.02     # s，接收轮询周期
+
+    # ---------- CAN 报文 ----------
+    # 每帧可配报文 ID；发送帧另可配周期发送间隔（period_sec <= 0 关闭周期发送）
+    frames:
+      control:                    # 工控机→VCU 控制帧
+        id: 0x210
+        period_sec: 0.1           # s，周期发送间隔
+      heartbeat:                  # 工控机→VCU 上线心跳帧
+        id: 0x301
+        period_sec: 0.05          # s，周期发送间隔
+      vcu:                        # VCU→工控机 AMI模式帧
+        id: 0x501
+      res:                        # RES→工控机 发车/急停帧
+        id: 0x1E4
+
+    # ---------- 横向定标 ----------
+    steer:
+      max_steer_angle: 28.0       # deg，Signal2 满量程前轮转角。注意：须与 controller vehicle.max_steer_angle 一致
+
+    # ---------- 模式保活重发 ----------
+    mode_repeat_period_sec: 1.0   # s，mission_mode_cmd 保活（确保FSD收到任务模式）重发周期（<=0 关闭）
