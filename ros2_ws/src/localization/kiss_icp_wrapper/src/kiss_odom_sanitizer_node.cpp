@@ -17,7 +17,7 @@ public:
   {
     input_topic_ = declare_parameter("input_topic", "/kiss/odometry");
     output_topic_ = declare_parameter("output_topic", "/kiss/odometry_sanitized");
-    ins_topic_ = declare_parameter("ins_topic", "/cg410/odometry");
+    ins_topic_ = declare_parameter("ins_topic", "/chcnav/odometry");
     ins_timeout_sec_ = declare_parameter("ins_timeout_sec", 0.25);
     max_linear_speed_ = declare_parameter("max_linear_speed", 20.0);
     max_yaw_rate_ = declare_parameter("max_yaw_rate", 3.0);

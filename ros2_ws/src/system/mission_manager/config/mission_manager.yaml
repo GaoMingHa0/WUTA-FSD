@@ -1,4 +1,4 @@
-mission_manager_node:
+mission_manager:
   ros__parameters:
     # MAPPING_DONE -> RACE gates.
     min_red_cones: 12
@@ -19,3 +19,15 @@ mission_manager_node:
     # Keep the validated EKF localization through race laps by default.
     # Enable only when map_saver and NDT initialization are both integrated.
     use_ndt_race_localization: false
+
+    # 传感器持续监控（开机自检 + 比赛中断线均判故障，故障上报 VCU 并切 EMERGENCY）
+    # true代表开启自检，false代表关闭自检
+    check_lidar: true
+    check_imu: true
+    check_camera: true
+    lidar_topic: /hesai/pandar
+    imu_topic: /chcnav/odometry
+    camera_topic: /zed2i/zed_node/left/image_rect_color
+    sensor_timeout_sec: 2.0
+    selfcheck_interval_sec: 1.0
+    selfcheck_grace_sec: 4.0

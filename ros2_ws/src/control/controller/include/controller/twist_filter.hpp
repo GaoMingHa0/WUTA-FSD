@@ -13,9 +13,6 @@ namespace controller
  *
  * Steering:
  *   - Hard clamp to ±max_steer_angle
- *
- * Emergency:
- *   - If emergency flag set → velocity = 0
  */
 class TwistFilter
 {
@@ -27,11 +24,9 @@ public:
   {
     double steering_angle{0.0};  // degrees, clamped
     double velocity{0.0};        // m/s, smoothed
-    bool   emergency{false};
   };
 
-  FilteredCommand filter(double raw_angle, double raw_velocity,
-                         bool emergency = false);
+  FilteredCommand filter(double raw_angle, double raw_velocity);
 
   void reset() { last_velocity_ = 0.0; last_steering_angle_ = 0.0; }
 

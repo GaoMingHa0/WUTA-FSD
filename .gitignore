@@ -48,6 +48,20 @@ clion-cmake/*
 Ipopt-3.12.7/*
 HRT-D/
 
+# Cache files (all languages / tools)
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.eggs/
+*.egg-info/
+.cache/
+.tmp/
+*.tmp
+install/
+log/
+
 # Hardware perception assets (keep documentation and calibration examples)
 ros2_ws/src/perception/camera_detection/models/*.onnx
 ros2_ws/src/perception/camera_detection/models/*.engine

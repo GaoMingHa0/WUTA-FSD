@@ -108,6 +108,16 @@ PathGeneratorNode::PathGeneratorNode(const rclcpp::NodeOptions & options)
     "acceleration_stopping_distance", acceleration_stopping_distance_);
   acceleration_velocity_  = declare_parameter("acceleration_velocity",  acceleration_velocity_);
 
+  // EBS 测试参数（赛规 7.5），结构复用 acceleration
+  ebs_start_x_ = declare_parameter("ebs_start_x", ebs_start_x_);
+  ebs_start_y_ = declare_parameter("ebs_start_y", ebs_start_y_);
+  ebs_start_yaw_ = declare_parameter("ebs_start_yaw", ebs_start_yaw_);
+  ebs_timing_start_x_ = declare_parameter("ebs_timing_start_x", ebs_timing_start_x_);
+  ebs_length_ = declare_parameter("ebs_length", ebs_length_);
+  ebs_stopping_distance_ = declare_parameter(
+    "ebs_stopping_distance", ebs_stopping_distance_);
+  ebs_velocity_ = declare_parameter("ebs_velocity", ebs_velocity_);
+
   // Subscribers
   mission_sub_ = create_subscription<State>(
     "/system/mission_state", 10,
@@ -286,6 +296,7 @@ void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
   if (mission_changed) {
     skidpad_path_ready_ = false;
     acceleration_path_ready_ = false;
+    ebs_path_ready_ = false;
     last_trackdrive_lane_ready_ = false;
     global_trackdrive_lane_ready_ = false;
     global_progress_ready_ = false;
@@ -317,6 +328,17 @@ void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
     lane.header.frame_id = "map";
     waypoints_pub_->publish(lane);
     publishVisualization(lane, 1.0f, 0.5f, 0.0f);  // orange for acceleration
+  } else if (mission_mode_ == State::MISSION_EBS_TEST) {
+    // 固定路径（同 acceleration），避免跟随定位位姿重生成导致终点漂移
+    if (!ebs_path_ready_) {
+      ebs_path_ = generateEbsTestPath();
+      ebs_path_ready_ = true;
+    }
+    auto lane = ebs_path_;
+    lane.header.stamp    = now();
+    lane.header.frame_id = "map";
+    waypoints_pub_->publish(lane);
+    publishVisualization(lane, 0.8f, 0.8f, 0.0f);  // yellow for EBS
   }
   // TRACKDRIVE: forwarded by onCenterline callback
 }
@@ -813,44 +835,61 @@ autoware_msgs::msg::Lane PathGeneratorNode::generateSkidpadPath() const
   return lane;
 }
 
-autoware_msgs::msg::Lane PathGeneratorNode::generateAccelerationPath() const
+autoware_msgs::msg::Lane PathGeneratorNode::generateStraightRun(
+  double start_x, double start_y, double start_yaw,
+  double timing_start_x, double length, double stopping_distance,
+  double velocity) const
 {
   autoware_msgs::msg::Lane lane;
 
-  const double finish_x = acceleration_timing_start_x_ + acceleration_length_;
-  const double stop_end_x = finish_x + acceleration_stopping_distance_;
-  const double stopping_distance = std::max(1e-6, acceleration_stopping_distance_);
+  const double finish_x = timing_start_x + length;
+  const double stop_end_x = finish_x + std::max(1e-6, stopping_distance);
   const double braking_deceleration =
-    acceleration_velocity_ * acceleration_velocity_ / (2.0 * stopping_distance);
-  const auto append_waypoint = [&lane, this](double x, double velocity) {
+    velocity * velocity / (2.0 * std::max(1e-6, stopping_distance));
+  const auto append_waypoint = [&lane, start_y, start_yaw](double x, double v) {
     autoware_msgs::msg::Waypoint wp;
     wp.pose.pose.position.x = x;
-    wp.pose.pose.position.y = acceleration_start_y_;
+    wp.pose.pose.position.y = start_y;
     wp.pose.pose.position.z = 0.0;
-    wp.pose.pose.orientation.z = std::sin(acceleration_start_yaw_ * 0.5);
-    wp.pose.pose.orientation.w = std::cos(acceleration_start_yaw_ * 0.5);
-    wp.twist.twist.linear.x = velocity;
+    wp.pose.pose.orientation.z = std::sin(start_yaw * 0.5);
+    wp.pose.pose.orientation.w = std::cos(start_yaw * 0.5);
+    wp.twist.twist.linear.x = v;
     lane.waypoints.push_back(wp);
   };
 
-  // Keep full speed through the 75 m timing line. Braking begins only after
-  // that line and follows v²=2aΔx, so the vehicle reaches zero at the marked
-  // end of the 100 m stopping lane in finite time (rather than asymptotically).
-  append_waypoint(acceleration_start_x_, acceleration_velocity_);
-  append_waypoint(acceleration_timing_start_x_, acceleration_velocity_);
-  for (int x = static_cast<int>(std::ceil(acceleration_timing_start_x_)) + 1;
+  // 恒定速度通过计时线，之后按 v²=2aΔx 递减到停车终点（有限时间停车）
+  append_waypoint(start_x, velocity);
+  append_waypoint(timing_start_x, velocity);
+  for (int x = static_cast<int>(std::ceil(timing_start_x)) + 1;
        x <= static_cast<int>(std::ceil(stop_end_x)); ++x) {
     const double waypoint_x = std::min(static_cast<double>(x), stop_end_x);
-    const double velocity = waypoint_x <= finish_x
-      ? acceleration_velocity_
+    const double wp_velocity = waypoint_x <= finish_x
+      ? velocity
       : std::sqrt(2.0 * braking_deceleration * std::max(0.0, stop_end_x - waypoint_x));
-    append_waypoint(waypoint_x, velocity);
+    append_waypoint(waypoint_x, wp_velocity);
   }
 
   RCLCPP_INFO(get_logger(),
-    "Fixed acceleration path generated: start=%.2f m, timing finish=%.2f m, stop=%.2f m (%zu waypoints)",
-    acceleration_start_x_, finish_x, stop_end_x, lane.waypoints.size());
+    "Fixed straight run path generated: start=%.2f m, timing finish=%.2f m, stop=%.2f m (%zu waypoints)",
+    start_x, finish_x, stop_end_x, lane.waypoints.size());
   return lane;
+}
+
+autoware_msgs::msg::Lane PathGeneratorNode::generateAccelerationPath() const
+{
+  return generateStraightRun(
+    acceleration_start_x_, acceleration_start_y_, acceleration_start_yaw_,
+    acceleration_timing_start_x_, acceleration_length_,
+    acceleration_stopping_distance_, acceleration_velocity_);
+}
+
+autoware_msgs::msg::Lane PathGeneratorNode::generateEbsTestPath() const
+{
+  // EBS 测试（赛规 7.5）：起点后 0.3m → 25m 测速点 ≥40km/h(11.11) → RES 急停 → ≤10m 停车
+  return generateStraightRun(
+    ebs_start_x_, ebs_start_y_, ebs_start_yaw_,
+    ebs_timing_start_x_, ebs_length_,
+    ebs_stopping_distance_, ebs_velocity_);
 }
 
 void PathGeneratorNode::publishVisualization(

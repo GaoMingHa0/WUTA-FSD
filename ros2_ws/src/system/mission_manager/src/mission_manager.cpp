@@ -2,6 +2,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <string>
+#include <vector>
 
 namespace mission_manager
 {
@@ -11,12 +13,7 @@ using State = wuta_msgs::msg::MissionState;
 MissionManager::MissionManager(const rclcpp::NodeOptions & options)
 : Node("mission_manager", options)
 {
-  // Default mission mode from parameter
-  const std::string mode_str = declare_parameter<std::string>("mission_mode", "trackdrive");
-  if (mode_str == "skidpad")       mission_mode_ = State::MISSION_SKIDPAD;
-  else if (mode_str == "acceleration") mission_mode_ = State::MISSION_ACCELERATION;
-  else                             mission_mode_ = State::MISSION_TRACKDRIVE;
-
+  // 任务模式由上游 /system/mission_mode_cmd 派发（见 onMissionModeCmd），此处无参数默认值
   min_red_cones_ = declare_parameter("min_red_cones", min_red_cones_);
   min_blue_cones_ = declare_parameter("min_blue_cones", min_blue_cones_);
   min_map_average_confidence_ = declare_parameter(
@@ -40,27 +37,45 @@ MissionManager::MissionManager(const rclcpp::NodeOptions & options)
   use_ndt_race_localization_ = declare_parameter(
     "use_ndt_race_localization", use_ndt_race_localization_);
 
+  // 开机传感器自检（心跳监控）
+  check_lidar_ = declare_parameter("check_lidar", check_lidar_);
+  check_imu_ = declare_parameter("check_imu", check_imu_);
+  check_camera_ = declare_parameter("check_camera", check_camera_);
+  sensor_timeout_sec_ = declare_parameter(
+    "sensor_timeout_sec", sensor_timeout_sec_);
+  selfcheck_interval_sec_ = declare_parameter(
+    "selfcheck_interval_sec", selfcheck_interval_sec_);
+  selfcheck_grace_sec_ = declare_parameter(
+    "selfcheck_grace_sec", selfcheck_grace_sec_);
+  startup_time_ = now();
+
   // Publishers
   state_pub_ = create_publisher<State>("/system/mission_state", 10);
   const auto latched_qos = rclcpp::QoS(1).reliable().transient_local();
   lap_count_pub_ = create_publisher<std_msgs::msg::UInt32>(
     "/system/lap_count", latched_qos);
-  inspection_result_pub_ = create_publisher<std_msgs::msg::String>(
-    "/system/inspection_result", 10);  // 预留，车检结果输出
+  devices_inspection_pub_ = create_publisher<wuta_msgs::msg::DevicesInspection>(
+    "/system/devices_inspection", 10);
+  emergency_pub_ = create_publisher<std_msgs::msg::Bool>(
+    "/system/emergency", latched_qos);
 
   // Subscribers — normal mission
   cone_map_sub_ = create_subscription<wuta_msgs::msg::ConeMap>(
     "/mapping/cone_map", 10,
     std::bind(&MissionManager::onConeMap, this, std::placeholders::_1));
 
+  // 急停：latched 订阅（transient_local）——can_interface 收到 RES 急停（0x1E4 Byte1=0x10）
+  // 后锁存发布，本节点晚启动/重启也要能立即拿到已置位的急停态（volatile 收不到历史）。
+  // 注意本节点自检失败时也会向同一话题发布，会收到自己发的消息；EMERGENCY 幂等，无害。
   emergency_sub_ = create_subscription<std_msgs::msg::Bool>(
-    "/system/emergency", 10,
+    "/system/emergency", latched_qos,
     std::bind(&MissionManager::onEmergency, this, std::placeholders::_1));
 
   mission_mode_sub_ = create_subscription<std_msgs::msg::String>(
     "/system/mission_mode_cmd", 10,
     std::bind(&MissionManager::onMissionModeCmd, this, std::placeholders::_1));
 
+  // RES 发车放行：AMI 选完模式后仍需 0x1E4 Byte1=0x13 才启动（见 advanceWhenReady）
   start_command_sub_ = create_subscription<std_msgs::msg::Bool>(
     "/system/start_command", 10,
     std::bind(&MissionManager::onStartCommand, this, std::placeholders::_1));
@@ -103,20 +118,40 @@ MissionManager::MissionManager(const rclcpp::NodeOptions & options)
     });
 
   // ---------------------------------------------------------------------------
-  // INSPECTION interface — 预留，暂不接其他模块
-  // 发布 true 到此 topic 触发车检流程
+  // 开机传感器自检：订阅设备数据流，心跳超时即判故障
   // ---------------------------------------------------------------------------
-  inspection_trigger_sub_ = create_subscription<std_msgs::msg::Bool>(
-    "/system/inspection_trigger", 10,
-    std::bind(&MissionManager::onInspectionTrigger, this, std::placeholders::_1));
+  lidar_data_sub_ = create_subscription<sensor_msgs::msg::PointCloud2>(
+    declare_parameter("lidar_topic", "/rslidar_points"), 10,
+    [this](const sensor_msgs::msg::PointCloud2::SharedPtr msg) {
+      (void)msg;
+      lidar_last_seen_ = now();
+    });
+  imu_data_sub_ = create_subscription<nav_msgs::msg::Odometry>(
+    declare_parameter("imu_topic", "/chcnav/odometry"), 10,
+    [this](const nav_msgs::msg::Odometry::SharedPtr msg) {
+      (void)msg;
+      imu_last_seen_ = now();
+    });
+  camera_data_sub_ = create_subscription<sensor_msgs::msg::Image>(
+    declare_parameter("camera_topic", "/zed2i/zed_node/left/image_rect_color"), 10,
+    [this](const sensor_msgs::msg::Image::SharedPtr msg) {
+      (void)msg;
+      camera_last_seen_ = now();
+    });
 
   // Periodic state broadcast at 10 Hz
   state_timer_ = create_wall_timer(
     std::chrono::milliseconds(100),
     std::bind(&MissionManager::publishState, this));
 
-  RCLCPP_INFO(get_logger(), "Mission Manager initialized. mode=%s state=IDLE",
-    mode_str.c_str());
+  // 开机自检定时器
+  selfcheck_timer_ = create_wall_timer(
+    std::chrono::milliseconds(
+      static_cast<int64_t>(std::max(0.1, selfcheck_interval_sec_) * 1000.0)),
+    std::bind(&MissionManager::selfCheckTick, this));
+
+  RCLCPP_INFO(get_logger(), "Mission Manager initialized. mode=%u state=IDLE",
+    static_cast<unsigned>(mission_mode_));
   publishLapCount();
 }
 
@@ -125,7 +160,28 @@ void MissionManager::advanceWhenReady()
   if (lidar_ready_ && localization_ready_ && current_state_ == State::IDLE) {
     transitionTo(State::READY);
   }
-  if (start_requested_ && current_state_ == State::READY) {
+
+  // 启动条件 = 已选模式（0x501）+ 已收到 RES GO 放行（0x1E4 Byte1=0x13），
+  // 且 GO 必须是本次档位选择之后按下的（见 onMissionModeCmd 对 start_requested_ 的清除）。
+  // mode_selected_ 必不可少：mission_mode_ 有默认值（MISSION_TRACKDRIVE），
+  // 若只看 GO，一个早到的 GO 会把状态推成 EXPLORE(trackdrive)。
+  if (!start_requested_ || !mode_selected_) return;
+
+  // 车检：台架演示，选完模式按下 GO 即进 INSPECTION（IDLE 也放行，保持旧行为）
+  if (mission_mode_ == State::MISSION_INSPECTION &&
+      (current_state_ == State::IDLE || current_state_ == State::READY))
+  {
+    start_requested_ = false;  // 用后即清，避免 GO 重放再次触发
+    RCLCPP_INFO(get_logger(), "Inspection triggered by RES start command.");
+    transitionTo(State::INSPECTION);
+    return;
+  }
+
+  if (current_state_ == State::READY) {
+    start_requested_ = false;  // 用后即清，避免 GO 重放再次触发
+    RCLCPP_INFO(
+      get_logger(), "RES start command accepted (mission_mode=%u).",
+      static_cast<unsigned>(mission_mode_));
     transitionTo(State::EXPLORE);
   }
 }
@@ -157,6 +213,8 @@ void MissionManager::advanceRaceWhenReady()
 
 void MissionManager::transitionTo(uint8_t new_state)
 {
+  if (new_state == current_state_) return;
+
   const auto state_name = [](uint8_t s) -> std::string {
     switch (s) {
       case State::IDLE:         return "IDLE";
@@ -424,27 +482,12 @@ void MissionManager::publishLapCount()
 
 void MissionManager::onEmergency(const std_msgs::msg::Bool::SharedPtr msg)
 {
+  // 仅负责 mission_state 状态切换；刹车动作（控制输出归零）由 controller_node 负责
   if (msg->data) {
-    RCLCPP_ERROR(get_logger(), "EMERGENCY triggered!");
+    // 急停是安全事件而非程序错误，按 WARN 记录（可见但不误报为故障）
+    RCLCPP_WARN(get_logger(), "EMERGENCY triggered!");
     transitionTo(State::EMERGENCY);
   }
-}
-
-void MissionManager::onMissionModeCmd(const std_msgs::msg::String::SharedPtr msg)
-{
-  if (current_state_ != State::IDLE && current_state_ != State::READY) {
-    RCLCPP_WARN(get_logger(), "Cannot change mission mode in state %d", current_state_);
-    return;
-  }
-  if (msg->data == "trackdrive")    mission_mode_ = State::MISSION_TRACKDRIVE;
-  else if (msg->data == "skidpad")  mission_mode_ = State::MISSION_SKIDPAD;
-  else if (msg->data == "acceleration") mission_mode_ = State::MISSION_ACCELERATION;
-  else {
-    RCLCPP_WARN(get_logger(), "Unknown mission mode: %s", msg->data.c_str());
-    return;
-  }
-  RCLCPP_INFO(get_logger(), "Mission mode set to: %s", msg->data.c_str());
-  publishState();
 }
 
 void MissionManager::onStartCommand(const std_msgs::msg::Bool::SharedPtr msg)
@@ -454,9 +497,49 @@ void MissionManager::onStartCommand(const std_msgs::msg::Bool::SharedPtr msg)
   advanceWhenReady();
 }
 
+void MissionManager::onMissionModeCmd(const std_msgs::msg::String::SharedPtr msg)
+{
+  if (current_state_ != State::IDLE && current_state_ != State::READY) {
+    // 节流：can_interface 会对当前档位做保活重发（默认 1Hz），非 IDLE/READY 期间
+    // 每次重发都会走到这里，不节流会按 1Hz 刷屏。
+    RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000,
+      "Cannot change mission mode in state %d", current_state_);
+    return;
+  }
+  const uint8_t prev_mission_mode = mission_mode_;
+  if (msg->data == "trackdrive")    mission_mode_ = State::MISSION_TRACKDRIVE;
+  else if (msg->data == "skidpad")  mission_mode_ = State::MISSION_SKIDPAD;
+  else if (msg->data == "acceleration") mission_mode_ = State::MISSION_ACCELERATION;
+  else if (msg->data == "inspection")   mission_mode_ = State::MISSION_INSPECTION;
+  else if (msg->data == "ebs_test")     mission_mode_ = State::MISSION_EBS_TEST;
+  else {
+    RCLCPP_WARN(get_logger(), "Unknown mission mode: %s", msg->data.c_str());
+    return;
+  }
+  // can_interface 会周期性保活重发当前档位（默认 1Hz），仅在档位真正变化时记录
+  if (mission_mode_ != prev_mission_mode) {
+    RCLCPP_INFO(get_logger(), "Mission mode set to: %s", msg->data.c_str());
+    // 档位变化 = 重新开始一次发车授权：丢弃此前按下的 GO。否则 start_requested_
+    // 会无限期挂着，之后任何时候选模式都会直接发车（vcan0 实测：先按 GO、6.8s
+    // 后再选模式同样进 EXPLORE）。保活重发的同值档位不清除。
+    start_requested_ = false;
+  }
+  // 选模式 ≠ 启动：仍需 RES GO 放行（0x1E4 Byte1=0x13 → /system/start_command）。
+  // 末尾仍补一次 advanceWhenReady：同一回调内条件可能已齐备。
+  mode_selected_ = true;
+  publishState();
+  advanceWhenReady();
+}
+
 void MissionManager::onMissionComplete(const std_msgs::msg::Bool::SharedPtr msg)
 {
   if (!msg->data) return;
+  // 车检动作演示完成 → FINISH（与正常项目一致，由 controller 回报）
+  if (current_state_ == State::INSPECTION) {
+    RCLCPP_INFO(get_logger(), "Inspection complete, FINISH.");
+    transitionTo(State::FINISH);
+    return;
+  }
   if (mission_mode_ == State::MISSION_TRACKDRIVE) {
     RCLCPP_WARN_THROTTLE(
       get_logger(), *get_clock(), 2000,
@@ -469,26 +552,57 @@ void MissionManager::onMissionComplete(const std_msgs::msg::Bool::SharedPtr msg)
   }
 }
 
-void MissionManager::onInspectionTrigger(const std_msgs::msg::Bool::SharedPtr msg)
+void MissionManager::selfCheckTick()
 {
-  if (!msg->data) return;
+  if (sensor_fault_) return;  // 故障已锁存，保持 EMERGENCY
+  const bool any_checked = check_lidar_ || check_imu_ || check_camera_;
+  if (!any_checked) return;  
+  const double up = (now() - startup_time_).seconds();
 
-  if (current_state_ != State::IDLE && current_state_ != State::READY) {
-    RCLCPP_WARN(get_logger(), "Inspection only available in IDLE/READY state.");
+  // 宽限期内允许陆续上线；过期后：从未上线 或 中途断开 均判故障
+  const auto offline = [&](const rclcpp::Time & last, bool enabled) {
+    if (!enabled) return false;
+    if (last.nanoseconds() == 0) return up > selfcheck_grace_sec_;
+    return (now() - last).seconds() > sensor_timeout_sec_;
+  };
+  const bool lidar_off = offline(lidar_last_seen_, check_lidar_);
+  const bool imu_off   = offline(imu_last_seen_,   check_imu_);
+  const bool cam_off   = offline(camera_last_seen_, check_camera_);
+
+  if (lidar_off || imu_off || cam_off) {
+    sensor_fault_ = true;
+    RCLCPP_ERROR(get_logger(), "Sensor self-check FAILED. EMERGENCY.");
+    transitionTo(State::EMERGENCY);
+    std::vector<std::string> failures;
+    if (lidar_off) failures.push_back("lidar");
+    if (imu_off)   failures.push_back("imu");
+    if (cam_off)   failures.push_back("camera");
+    publishDevicesInspection(false, failures);  // 通知 can_interface → Signal3=0 → VCU 切 EMERGENCY
+    // 急停总线：自检失败与 VCU 侧急停同一通道，controller 收到后归零控制
+    std_msgs::msg::Bool emergency;
+    emergency.data = true;
+    emergency_pub_->publish(emergency);
     return;
   }
 
-  RCLCPP_INFO(get_logger(), "Inspection triggered.");
-  transitionTo(State::INSPECTION);
+  // 全部已上线且在线：持续上报 ok（can_interface → Signal3=1）；宽限期内未全上线则不发布
+  const bool all_seen =
+    (!check_lidar_  || lidar_last_seen_.nanoseconds() != 0) &&
+    (!check_imu_    || imu_last_seen_.nanoseconds() != 0) &&
+    (!check_camera_ || camera_last_seen_.nanoseconds() != 0);
+  if (all_seen) {
+    publishDevicesInspection(true, {});
+  }
+}
 
-  // TODO: 检查各传感器 topic 是否在线（LiDAR、相机、CG-410）
-  // TODO: 检查 TF tree 是否完整
-
-  std_msgs::msg::String result;
-  result.data = "INSPECTION_NOT_IMPLEMENTED";
-  inspection_result_pub_->publish(result);
-
-  transitionTo(State::READY);
+void MissionManager::publishDevicesInspection(
+  bool ok, const std::vector<std::string> & failures)
+{
+  wuta_msgs::msg::DevicesInspection msg;
+  msg.ok = ok;
+  msg.failures = failures;
+  devices_inspection_pub_->publish(msg);
+  RCLCPP_INFO(get_logger(), "Devices inspection published: ok=%d", ok);
 }
 
 }  // namespace mission_manager

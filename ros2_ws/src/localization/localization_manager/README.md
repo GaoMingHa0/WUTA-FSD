@@ -29,7 +29,7 @@ localization/
 ```
 禾赛128线 ──→ kiss_icp_node ──→ sanitizer ──→ 可选平面速度 ──→ ekf_node ───────────┐
                                                                                        ▼
-CG-410 ────→ /cg410/odometry ──────────────────────────────────────────────────────→ localization_manager
+CG-410 ────→ /chcnav/odometry ──────────────────────────────────────────────────→ localization_manager
                                                                                        │
 ndt_node ──→ /ndt/pose ────────────────────────────────────────────────────────────→  │
                                                                                        ▼
@@ -56,8 +56,8 @@ ndt_node ──→ /ndt/pose ─────────────────
 `fuse_kiss_odometry=false` 时净化器不启动，EKF 仅融合 INS。模拟器默认采用该模式，因为只有
 锥桶特征的 ICP 可能匹配到相似赛段；需要在真实环境验证 KISS 冗余速度时才显式开启。
 
-仿真默认由 `WUTA-SIM/wuta-ins-simulator` 发布 `/cg410/odometry`。真实车辆接入时可保持
-该接口，或在 bringup 中重映射实际 CG-410 驱动话题。
+仿真默认由 `WUTA-SIM/wuta-ins-simulator` 发布 `/chcnav/odometry`，与实车华测驱动
+（`humble-chcnav-cgi_ros2pkg` 的 `hc_cgi_protocol_process_node`）话题一致。
 
 ---
 

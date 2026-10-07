@@ -11,18 +11,9 @@ TwistFilter::TwistFilter(const VehicleParams & params, int control_rate_hz,
   max_steering_rate_deg_s_(std::max(0.0, max_steering_rate_deg_s)) {}
 
 TwistFilter::FilteredCommand TwistFilter::filter(
-  double raw_angle, double raw_velocity, bool emergency)
+  double raw_angle, double raw_velocity)
 {
   FilteredCommand out;
-  out.emergency = emergency;
-
-  // --- Emergency: stop immediately ---
-  if (emergency) {
-    out.velocity = 0.0;
-    out.steering_angle = 0.0;
-    last_velocity_ = 0.0;
-    return out;
-  }
 
   // --- Velocity smoothing (from HRT-D TwistFilter) ---
   if (raw_velocity >= last_velocity_) {
