@@ -55,45 +55,48 @@ path_generator_node:
         min_points: 20                # 区分冻结闭环与局部 EXPLORE 路径
         publish_period_sec: 0.10      # s，发布周期
 
+    # ==================== 地图原点（坐标系锚点） ====================
+    # 全系统唯一的 map 坐标系原点；路径锚点均用绝对 map 坐标，本项仅作声明/校验。
+    map_origin:
+      x: 0.0
+      y: 0.0
+      yaw: 0.0
+
     # ==================== 赛项：八字绕环（SKIDPAD） ====================
+    # 锚点均为绝对 map 坐标；路径朝向以两点连线方向为准（与 yaw 偏差过大会告警）。
     skidpad:
-      # 路径不跟随当前定位位姿。
+      # 赛道几何锚点（交叉点，不随定位位姿变化）
       geometry:
         radius: 9.125                 # m，绕环半径
         points: 72                    # 每圈 waypoints 数（每 5°）
-        start_x: 0.0                  # m，交叉点
-        start_y: 0.0                  # m，交叉点
-        start_yaw: 0.0                # rad，进/出方向
-        entry_x: -15.0                # m，出发段（相对交叉点；FSAC 起点在计时线前 15m）
-        entry_y: 0.0                  # m
-        exit_length: 25.0             # m，第4圈后的停车段
+        crossing:
+          x: 0.0                      # m，交叉点
+          y: 0.0                      # m
+          yaw: 0.0                    # rad，进/出方向
+      # 路径锚点：发车 → (绕环) → 减速点 → 停止点
+      anchor:
+        entry: { x: -15.0, y: 0.0, yaw: 0.0 }   # 发车坐标（FSAC 起点在计时线前 15m）
+        brake: { x: 15.0,  y: 0.0, yaw: 0.0 }   # 出口减速点
+        stop:  { x: 25.0,  y: 0.0, yaw: 0.0 }   # 出口停止点
       speed:
         velocity: 5.0                 # m/s，绕环目标速度
-        braking_distance: 10.0        # m，停车前线性减速距离
 
     # ==================== 赛项：直线加速（ACCELERATION） ====================
     # 通过终点线后才制动，并在标记的 100m 出口车道内停车。
     acceleration:
-      geometry:
-        start_x: -0.30                # m，起点线
-        start_y: 0.0                  # m
-        start_yaw: 0.0                # rad
-        timing_start_x: 0.0           # m，计时起点
-        length: 75.0                  # m，计时距离
-        stopping_distance: 100.0      # m，终点线后的停车车道
+      anchor:
+        entry: { x: -0.30, y: 0.0, yaw: 0.0 }   # 发车坐标（起点线）
+        brake: { x: 75.0,  y: 0.0, yaw: 0.0 }   # 赛道终点 / 开始制动点（75m 计时终点）
+        stop:  { x: 175.0, y: 0.0, yaw: 0.0 }   # 停止坐标（终点后 100m）
       speed:
         velocity: 15.0                # m/s，加速目标速度
 
     # ==================== 赛项：EBS 测试（EBS） ====================
     # 7.5：起点后 0.3m，25m 测速点 ≥40km/h(11.11m/s)，急停后 ≤10m 内停车。
-    # 结构复用 acceleration（generateStraightRun）。
     ebs:
-      geometry:
-        start_x: 0.3                  # m，起点线后的距离
-        start_y: 0.0                  # m
-        start_yaw: 0.0                # rad
-        timing_start_x: 25.0          # m，25m 测速/急停标记
-        length: 0.0                   # m，无计时段，到测速点直接进入制动
-        stopping_distance: 10.0       # m，制动段 ≤10m
+      anchor:
+        entry: { x: 0.3,  y: 0.0, yaw: 0.0 }    # 发车坐标（起点线后 0.3m）
+        brake: { x: 25.0, y: 0.0, yaw: 0.0 }    # 25m 测速/急停标记
+        stop:  { x: 35.0, y: 0.0, yaw: 0.0 }    # 停止坐标（制动段 ≤10m）
       speed:
         velocity: 12.0                # m/s，≥40km/h(11.11m/s)，留余量

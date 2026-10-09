@@ -93,19 +93,28 @@ PathGeneratorNode::PathGeneratorNode(const rclcpp::NodeOptions & options)
   trackdrive_global_publish_period_sec_ = declare_parameter(
     "trackdrive.global.publish_period_sec", trackdrive_global_publish_period_sec_);
 
+  // MAP ORIGIN（地图坐标系锚点，仅声明/校验）
+  map_origin_.x = declare_parameter("map_origin.x", map_origin_.x);
+  map_origin_.y = declare_parameter("map_origin.y", map_origin_.y);
+  map_origin_.yaw = declare_parameter("map_origin.yaw", map_origin_.yaw);
+
+  // 读取一组锚点（绝对 map 坐标）
+  const auto read_anchor = [this](const std::string & prefix) {
+      Anchor anchor;
+      anchor.x = declare_parameter(prefix + ".x", anchor.x);
+      anchor.y = declare_parameter(prefix + ".y", anchor.y);
+      anchor.yaw = declare_parameter(prefix + ".yaw", anchor.yaw);
+      return anchor;
+    };
+
   // SKIDPAD（八字绕环）
   skidpad_radius_ = declare_parameter("skidpad.geometry.radius", skidpad_radius_);
   skidpad_points_ = declare_parameter("skidpad.geometry.points", skidpad_points_);
-  skidpad_start_x_ = declare_parameter("skidpad.geometry.start_x", skidpad_start_x_);
-  skidpad_start_y_ = declare_parameter("skidpad.geometry.start_y", skidpad_start_y_);
-  skidpad_start_yaw_ = declare_parameter("skidpad.geometry.start_yaw", skidpad_start_yaw_);
-  skidpad_entry_x_ = declare_parameter("skidpad.geometry.entry_x", skidpad_entry_x_);
-  skidpad_entry_y_ = declare_parameter("skidpad.geometry.entry_y", skidpad_entry_y_);
-  skidpad_exit_length_ = declare_parameter(
-    "skidpad.geometry.exit_length", skidpad_exit_length_);
+  skidpad_crossing_ = read_anchor("skidpad.geometry.crossing");
+  skidpad_entry_ = read_anchor("skidpad.anchor.entry");
+  skidpad_brake_ = read_anchor("skidpad.anchor.brake");
+  skidpad_stop_ = read_anchor("skidpad.anchor.stop");
   skidpad_velocity_ = declare_parameter("skidpad.speed.velocity", skidpad_velocity_);
-  skidpad_braking_distance_ = declare_parameter(
-    "skidpad.speed.braking_distance", skidpad_braking_distance_);
 
   // 通用：RViz 轨迹可视化
   driven_trajectory_smoothing_alpha_ = declare_parameter(
@@ -128,31 +137,21 @@ PathGeneratorNode::PathGeneratorNode(const rclcpp::NodeOptions & options)
   record_attach_stamps_ = declare_parameter("record.attach_stamps", record_attach_stamps_);
 
   // ACCELERATION（直线加速）
-  acceleration_start_x_ = declare_parameter(
-    "acceleration.geometry.start_x", acceleration_start_x_);
-  acceleration_start_y_ = declare_parameter(
-    "acceleration.geometry.start_y", acceleration_start_y_);
-  acceleration_start_yaw_ = declare_parameter(
-    "acceleration.geometry.start_yaw", acceleration_start_yaw_);
-  acceleration_timing_start_x_ = declare_parameter(
-    "acceleration.geometry.timing_start_x", acceleration_timing_start_x_);
-  acceleration_length_ = declare_parameter(
-    "acceleration.geometry.length", acceleration_length_);
-  acceleration_stopping_distance_ = declare_parameter(
-    "acceleration.geometry.stopping_distance", acceleration_stopping_distance_);
+  acceleration_entry_ = read_anchor("acceleration.anchor.entry");
+  acceleration_brake_ = read_anchor("acceleration.anchor.brake");
+  acceleration_stop_ = read_anchor("acceleration.anchor.stop");
   acceleration_velocity_ = declare_parameter(
     "acceleration.speed.velocity", acceleration_velocity_);
 
   // EBS 测试参数（赛规 7.5），结构复用 acceleration
-  ebs_start_x_ = declare_parameter("ebs.geometry.start_x", ebs_start_x_);
-  ebs_start_y_ = declare_parameter("ebs.geometry.start_y", ebs_start_y_);
-  ebs_start_yaw_ = declare_parameter("ebs.geometry.start_yaw", ebs_start_yaw_);
-  ebs_timing_start_x_ = declare_parameter(
-    "ebs.geometry.timing_start_x", ebs_timing_start_x_);
-  ebs_length_ = declare_parameter("ebs.geometry.length", ebs_length_);
-  ebs_stopping_distance_ = declare_parameter(
-    "ebs.geometry.stopping_distance", ebs_stopping_distance_);
+  ebs_entry_ = read_anchor("ebs.anchor.entry");
+  ebs_brake_ = read_anchor("ebs.anchor.brake");
+  ebs_stop_ = read_anchor("ebs.anchor.stop");
   ebs_velocity_ = declare_parameter("ebs.speed.velocity", ebs_velocity_);
+
+  RCLCPP_INFO(
+    get_logger(), "Map origin declared at (%.3f, %.3f, yaw=%.3f).",
+    map_origin_.x, map_origin_.y, map_origin_.yaw);
 
   // Subscribers
   mission_sub_ = create_subscription<State>(
@@ -1082,17 +1081,15 @@ autoware_msgs::msg::Lane PathGeneratorNode::generateSkidpadPath(
   autoware_msgs::msg::Lane lane;
   rows.clear();
 
-  // The track is fixed in map, not regenerated from the moving vehicle pose.
-  // At yaw=0 the crossing is (0, 0), the right circle is below it and the
-  // left circle above it, matching perception_simulation/tracks/skidpad.yaml.
-  const double c = std::cos(skidpad_start_yaw_);
-  const double s = std::sin(skidpad_start_yaw_);
+  // 赛道固定在 map 中，不随车辆位姿重建。crossing 为八字几何锚点。
+  const double c = std::cos(skidpad_crossing_.yaw);
+  const double s = std::sin(skidpad_crossing_.yaw);
   const auto to_map = [this, c, s](double local_x, double local_y, double local_yaw,
                                     autoware_msgs::msg::Waypoint & wp) {
-    wp.pose.pose.position.x = skidpad_start_x_ + local_x * c - local_y * s;
-    wp.pose.pose.position.y = skidpad_start_y_ + local_x * s + local_y * c;
+    wp.pose.pose.position.x = skidpad_crossing_.x + local_x * c - local_y * s;
+    wp.pose.pose.position.y = skidpad_crossing_.y + local_x * s + local_y * c;
     wp.pose.pose.position.z = 0.0;
-    const double yaw = skidpad_start_yaw_ + local_yaw;
+    const double yaw = skidpad_crossing_.yaw + local_yaw;
     wp.pose.pose.orientation.z = std::sin(yaw * 0.5);
     wp.pose.pose.orientation.w = std::cos(yaw * 0.5);
   };
@@ -1105,30 +1102,20 @@ autoware_msgs::msg::Lane PathGeneratorNode::generateSkidpadPath(
       wp.twist.twist.linear.x = velocity;
       lane.waypoints.push_back(wp);
       rows.push_back({phase, lap, wp.pose.pose.position.x, wp.pose.pose.position.y,
-        skidpad_start_yaw_ + local_yaw, velocity});
+        skidpad_crossing_.yaw + local_yaw, velocity});
     };
 
   const int circle_points = std::max(8, skidpad_points_);
   const double d_theta = 2.0 * M_PI / circle_points;
 
-  // FSAC: the vehicle starts 15 m before the timing line and enters in the
-  // same direction as the eventual exit.  Include the straight explicitly so
-  // the controller never shortcuts from the staging point to a circle.
-  const double entry_length = std::hypot(skidpad_entry_x_, skidpad_entry_y_);
-  const int entry_segments = std::max(1, static_cast<int>(std::ceil(entry_length)));
-  for (int i = 0; i <= entry_segments; ++i) {
-    const double ratio = static_cast<double>(i) / entry_segments;
-    append_waypoint(skidpad_entry_x_ * (1.0 - ratio),
-      skidpad_entry_y_ * (1.0 - ratio), skidpad_entry_y_ == 0.0 ? 0.0 :
-      std::atan2(-skidpad_entry_y_, -skidpad_entry_x_), skidpad_velocity_, "entry", 0);
-  }
+  // 发车段：从发车坐标直行到交叉点（避免控制器从发车点抄近路切到圆上）
+  appendSegment(lane, rows, skidpad_entry_, skidpad_crossing_,
+    skidpad_velocity_, skidpad_velocity_, "entry", 0);
 
-  // The first right lap establishes steering, the second is timed.  Start at
-  // i=1 because the entry already contributes the crossing waypoint; each
-  // subsequent phase similarly reuses only the preceding phase's endpoint.
+  // 前两圈右圆（第2圈计时）；i 从 1 起，交叉点已由发车段给出
   for (int lap = 0; lap < 2; ++lap) {
     for (int i = 1; i <= circle_points; ++i) {
-      const double theta = M_PI_2 - i * d_theta;  // clockwise, starts at crossing
+      const double theta = M_PI_2 - i * d_theta;  // 顺时针，起点为交叉点
       append_waypoint(skidpad_radius_ * std::cos(theta),
         -skidpad_radius_ + skidpad_radius_ * std::sin(theta),
         std::atan2(-std::cos(theta), std::sin(theta)), skidpad_velocity_,
@@ -1136,11 +1123,10 @@ autoware_msgs::msg::Lane PathGeneratorNode::generateSkidpadPath(
     }
   }
 
-  // Third lap enters the left circle; the fourth is timed.  Counter-clockwise
-  // travel preserves the +x crossing direction.
+  // 后两圈左圆（第4圈计时）；逆时针行驶保持 +x 出交叉点方向
   for (int lap = 0; lap < 2; ++lap) {
     for (int i = 1; i <= circle_points; ++i) {
-      const double theta = -M_PI_2 + i * d_theta;  // counter-clockwise
+      const double theta = -M_PI_2 + i * d_theta;  // 逆时针
       append_waypoint(skidpad_radius_ * std::cos(theta),
         skidpad_radius_ + skidpad_radius_ * std::sin(theta),
         std::atan2(std::cos(theta), -std::sin(theta)), skidpad_velocity_,
@@ -1148,78 +1134,101 @@ autoware_msgs::msg::Lane PathGeneratorNode::generateSkidpadPath(
     }
   }
 
-  // Leave the crossing in the same direction as entry and stop at 25 m.
-  // The final braking segment gives the controller a decreasing speed target.
-  for (int i = 1; i <= static_cast<int>(std::ceil(skidpad_exit_length_)); ++i) {
-    const double distance = std::min(static_cast<double>(i), skidpad_exit_length_);
-    const double remaining = skidpad_exit_length_ - distance;
-    const double velocity = remaining < skidpad_braking_distance_
-      ? skidpad_velocity_ * remaining / skidpad_braking_distance_
-      : skidpad_velocity_;
-    append_waypoint(distance, 0.0, 0.0, velocity, "exit", 0);
-  }
+  // 出口：交叉点 → 减速点（巡航）→ 停止点（匀减速到 0）
+  appendSegment(lane, rows, skidpad_crossing_, skidpad_brake_,
+    skidpad_velocity_, skidpad_velocity_, "exit", 0, true);
+  appendSegment(lane, rows, skidpad_brake_, skidpad_stop_,
+    skidpad_velocity_, 0.0, "exit", 0, true);
 
   RCLCPP_INFO(get_logger(),
-    "Fixed skidpad path generated: %.1f m entry, right lap 1/2, left lap 3/4, %.1f m exit (%zu waypoints)",
-    entry_length, skidpad_exit_length_, lane.waypoints.size());
+    "Fixed skidpad path generated: entry->crossing, right lap 1/2, left lap 3/4, "
+    "brake->stop exit (%zu waypoints)", lane.waypoints.size());
   return lane;
 }
 
-autoware_msgs::msg::Lane PathGeneratorNode::generateStraightRun(
-  double start_x, double start_y, double start_yaw,
-  double timing_start_x, double length, double stopping_distance,
-  double velocity) const
+void PathGeneratorNode::appendSegment(
+  autoware_msgs::msg::Lane & lane, std::vector<PlannedRow> & rows,
+  const Anchor & from, const Anchor & to,
+  double v_start, double v_end, const std::string & phase, int lap,
+  bool skip_first) const
 {
-  autoware_msgs::msg::Lane lane;
-
-  const double finish_x = timing_start_x + length;
-  const double stop_end_x = finish_x + std::max(1e-6, stopping_distance);
-  const double braking_deceleration =
-    velocity * velocity / (2.0 * std::max(1e-6, stopping_distance));
-  const auto append_waypoint = [&lane, start_y, start_yaw](double x, double v) {
-    autoware_msgs::msg::Waypoint wp;
-    wp.pose.pose.position.x = x;
-    wp.pose.pose.position.y = start_y;
-    wp.pose.pose.position.z = 0.0;
-    wp.pose.pose.orientation.z = std::sin(start_yaw * 0.5);
-    wp.pose.pose.orientation.w = std::cos(start_yaw * 0.5);
-    wp.twist.twist.linear.x = v;
-    lane.waypoints.push_back(wp);
-  };
-
-  // 恒定速度通过计时线，之后按 v²=2aΔx 递减到停车终点（有限时间停车）
-  append_waypoint(start_x, velocity);
-  append_waypoint(timing_start_x, velocity);
-  for (int x = static_cast<int>(std::ceil(timing_start_x)) + 1;
-       x <= static_cast<int>(std::ceil(stop_end_x)); ++x) {
-    const double waypoint_x = std::min(static_cast<double>(x), stop_end_x);
-    const double wp_velocity = waypoint_x <= finish_x
-      ? velocity
-      : std::sqrt(2.0 * braking_deceleration * std::max(0.0, stop_end_x - waypoint_x));
-    append_waypoint(waypoint_x, wp_velocity);
+  const double dx = to.x - from.x;
+  const double dy = to.y - from.y;
+  const double length = std::hypot(dx, dy);
+  if (length < 1e-6) {
+    return;
   }
 
-  RCLCPP_INFO(get_logger(),
-    "Fixed straight run path generated: start=%.2f m, timing finish=%.2f m, stop=%.2f m (%zu waypoints)",
-    start_x, finish_x, stop_end_x, lane.waypoints.size());
-  return lane;
+  // 朝向以线段方向为准；与配置锚点 yaw 偏差过大时告警
+  const double heading = std::atan2(dy, dx);
+  const auto yaw_delta = [](double a, double b) {
+      double d = a - b;
+      while (d > M_PI) d -= 2.0 * M_PI;
+      while (d < -M_PI) d += 2.0 * M_PI;
+      return d;
+    };
+  constexpr double kYawTolerance = 0.175;  // ~10°
+  if (std::abs(yaw_delta(heading, from.yaw)) > kYawTolerance ||
+      std::abs(yaw_delta(heading, to.yaw)) > kYawTolerance)
+  {
+    RCLCPP_WARN(get_logger(),
+      "'%s' 锚点朝向与线段方向不一致：heading=%.3f rad, from.yaw=%.3f, to.yaw=%.3f（以线段方向为准）",
+      phase.c_str(), heading, from.yaw, to.yaw);
+  }
+
+  constexpr double kSpacing = 1.0;  // m
+  const int segments = std::max(1, static_cast<int>(std::ceil(length / kSpacing)));
+  for (int i = skip_first ? 1 : 0; i <= segments; ++i) {
+    const double ratio = static_cast<double>(i) / segments;
+    // 匀减速剖面 v² = 2aΔs；v_start==v_end 时退化为匀速
+    const double v_sq = v_start * v_start +
+      (v_end * v_end - v_start * v_start) * ratio;
+
+    autoware_msgs::msg::Waypoint wp;
+    wp.pose.pose.position.x = from.x + dx * ratio;
+    wp.pose.pose.position.y = from.y + dy * ratio;
+    wp.pose.pose.position.z = 0.0;
+    wp.pose.pose.orientation.z = std::sin(heading * 0.5);
+    wp.pose.pose.orientation.w = std::cos(heading * 0.5);
+    wp.twist.twist.linear.x = std::sqrt(std::max(0.0, v_sq));
+    lane.waypoints.push_back(wp);
+    rows.push_back({phase, lap, wp.pose.pose.position.x, wp.pose.pose.position.y,
+      heading, wp.twist.twist.linear.x});
+  }
 }
 
 autoware_msgs::msg::Lane PathGeneratorNode::generateAccelerationPath() const
 {
-  return generateStraightRun(
-    acceleration_start_x_, acceleration_start_y_, acceleration_start_yaw_,
-    acceleration_timing_start_x_, acceleration_length_,
-    acceleration_stopping_distance_, acceleration_velocity_);
+  autoware_msgs::msg::Lane lane;
+  std::vector<PlannedRow> rows;
+  // 发车 → 赛道终点（巡航），终点 → 停止（匀减速到 0）
+  appendSegment(lane, rows, acceleration_entry_, acceleration_brake_,
+    acceleration_velocity_, acceleration_velocity_, "run", 0);
+  appendSegment(lane, rows, acceleration_brake_, acceleration_stop_,
+    acceleration_velocity_, 0.0, "run", 0, true);
+
+  RCLCPP_INFO(get_logger(),
+    "Fixed acceleration path generated: entry=(%.2f, %.2f) brake=(%.2f, %.2f) stop=(%.2f, %.2f) (%zu waypoints)",
+    acceleration_entry_.x, acceleration_entry_.y, acceleration_brake_.x, acceleration_brake_.y,
+    acceleration_stop_.x, acceleration_stop_.y, lane.waypoints.size());
+  return lane;
 }
 
 autoware_msgs::msg::Lane PathGeneratorNode::generateEbsTestPath() const
 {
-  // EBS 测试（赛规 7.5）：起点后 0.3m → 25m 测速点 ≥40km/h(11.11) → RES 急停 → ≤10m 停车
-  return generateStraightRun(
-    ebs_start_x_, ebs_start_y_, ebs_start_yaw_,
-    ebs_timing_start_x_, ebs_length_,
-    ebs_stopping_distance_, ebs_velocity_);
+  autoware_msgs::msg::Lane lane;
+  std::vector<PlannedRow> rows;
+  // EBS（赛规 7.5）：发车 → 25m 测速点（巡航）→ 停止（匀减速到 0，≤10m）
+  appendSegment(lane, rows, ebs_entry_, ebs_brake_,
+    ebs_velocity_, ebs_velocity_, "run", 0);
+  appendSegment(lane, rows, ebs_brake_, ebs_stop_,
+    ebs_velocity_, 0.0, "run", 0, true);
+
+  RCLCPP_INFO(get_logger(),
+    "Fixed EBS path generated: entry=(%.2f, %.2f) brake=(%.2f, %.2f) stop=(%.2f, %.2f) (%zu waypoints)",
+    ebs_entry_.x, ebs_entry_.y, ebs_brake_.x, ebs_brake_.y,
+    ebs_stop_.x, ebs_stop_.y, lane.waypoints.size());
+  return lane;
 }
 
 void PathGeneratorNode::publishVisualization(

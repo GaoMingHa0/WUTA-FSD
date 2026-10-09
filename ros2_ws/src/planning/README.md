@@ -89,16 +89,21 @@ planning/
 - 发布前检查 Trackdrive 局部中心线是否仍有车头前方目标点；若没有，则拒绝该帧反向/不可追踪路径并保持上一条有效路径，避免车辆被短局部路径诱导掉头
 
 #### SKIDPAD（八字绕桩）
-- 使用 `skidpad.geometry.start_*` 固定 map 参考，与 `tracks/skidpad.yaml` 对齐，不随定位位姿重建
-- 车辆参考点从计时线前 15 m 的 `(-15, 0)` 进入；生成下方右圆两圈（第一圈建立转向、第二圈计时）→ 上方左圈两圈（第三圈过渡、第四圈计时）→ 同向 25 m 出口停车
+- 使用 `skidpad.geometry.crossing` 固定 map 参考（交叉点），与 `tracks/skidpad.yaml` 对齐，不随定位位姿重建
+- 车辆从 `skidpad.anchor.entry`（默认 `(-15, 0)`，计时线前 15 m）发车，直行至交叉点后生成下方右圆两圈（第一圈建立转向、第二圈计时）→ 上方左圈两圈（第三圈过渡、第四圈计时）→ 出口 `brake`→`stop` 停车
+- 出口减速段按匀减速剖面 `v²=2aΔs` 从 `skidpad.speed.velocity` 降到 0
 - 圆半径：9.125m（FSG 规定）
 - 路径几何只生成一次；在有效任务状态下重复发布缓存路径，确保晚启动的控制器能够接收
 - 规划轨迹由通用记录器落盘（见 `record.*`），不再单独导出 skidpad CSV
 
 #### ACCELERATION（直线加速）
-- 严格对齐 `WUTA-SIM/perception_simulation/tracks/acceleration.yaml`：车辆参考点从 `x=-0.30 m` 起步，计时起点为 `x=0 m`、计时终点为 `x=75 m`
-- 在整个 75 m 计时段保持 `acceleration.speed.velocity`；仅在终点线后进入 100 m 标记停止区时按恒减速度剖面制动，并在 `x=175 m` 停车
+- 严格对齐赛道 YAML，用绝对 map 坐标锚点描述：`acceleration.anchor.entry`（发车，默认 `x=-0.30 m`）→ `brake`（赛道终点/开始制动，默认 `x=75 m`）→ `stop`（默认 `x=175 m`）
+- 发车到终点巡航保持 `acceleration.speed.velocity`；终点后按匀减速剖面 `v²=2aΔs` 制动到 0
 - 路径只按赛道 map 参考生成一次并缓存，绝不依据实时定位位姿重建，以免终点随车辆前移
+
+#### EBS TEST
+- 用绝对 map 坐标锚点描述：`ebs.anchor.entry`（发车，默认 `x=0.3 m`）→ `brake`（25 m 测速/急停点）→ `stop`（默认 `x=35 m`，制动段 ≤10 m）
+- 满足赛规 7.5：25 m 测速点 ≥40 km/h(11.11 m/s)，急停后 ≤10 m 内停车；结构与 acceleration 相同
 
 ### Topics
 
@@ -132,11 +137,13 @@ planning/
 | `trackdrive.path.min_forward_target` | 0.5 m | Trackdrive 新局部路径至少需要包含一个车头前方目标点，否则保持上一条有效路径 |
 | `trackdrive.speed.degraded_velocity` | 3.0 m/s | 短中心线或低置信度时的降级速度帽，主要保护 2-3 点 Delaunay 兜底 |
 | `trackdrive.path.short_centerline_points` | 3 | 源中心线点数小于等于该值时启用短中心线降速 |
+| `map_origin.x/y/yaw` | 0.0 | 地图坐标系原点；路径锚点均用绝对 map 坐标，本项仅作声明/校验 |
 | `skidpad.geometry.radius` | 9.125m | FSG 标准圆半径 |
+| `skidpad.geometry.crossing.x/y/yaw` | 0.0 | 八字交叉点（几何锚点，进/出方向） |
+| `skidpad.anchor.entry.x/y/yaw` | -15.0 / 0 / 0 | 发车坐标（计时线前 15 m） |
+| `skidpad.anchor.brake.x/y/yaw` | 15.0 / 0 / 0 | 出口减速点 |
+| `skidpad.anchor.stop.x/y/yaw` | 25.0 / 0 / 0 | 出口停止点 |
 | `skidpad.speed.velocity` | 5.0 m/s | 八字速度 |
-| `skidpad.geometry.entry_x/y` | -15.0 / 0.0 m | 相对交叉点的入口参考 |
-| `skidpad.geometry.exit_length` | 25.0 m | 第四圈后的出口停车距离 |
-| `skidpad.speed.braking_distance` | 10.0 m | 出口末段线性降速距离 |
 | `driven_trajectory.smoothing_alpha` | 0.20 | 仅用于 RViz 实际轨迹的一阶平滑；不改变定位、建图或控制输入 |
 | `driven_trajectory.min_distance` | 0.10 m | 平滑后轨迹点的最小空间间隔，抑制静止时的噪声折线 |
 | `driven_trajectory.max_step` | 2.0 m | 单帧跳变门限，超过视为定位跳变（显示与记录共用） |
@@ -145,13 +152,16 @@ planning/
 | `record.dir` | `ros2_ws/control_planning_log/{mission}/{stamp}` | 记录目录模板；相对路径以 WUTA-FSD 根解析 |
 | `record.planned_file` / `record.driven_file` | `planned.csv` / `driven.csv` | 规划轨迹 / 实际位姿文件名 |
 | `record.flush_interval_sec` | 1.0 s | 落盘刷新周期 |
-| `record.max_mb` | 50 | 单文件超过则切分 `_partNNN` |
+| `record.max_mb` | 50.0 | 单文件超过则切分 `_partNNN` |
 | `record.attach_stamps` | true | driven.csv 是否附加车速/指令源时间戳 |
-| `acceleration.geometry.start_x/y/yaw` | -0.30 m / 0 / 0 | 起跑位置线与朝向，来自赛道 YAML |
-| `acceleration.geometry.timing_start_x` | 0.0 m | 计时起点线 |
-| `acceleration.geometry.length` | 75.0 m | 计时距离；路径在此终点线前不减速 |
-| `acceleration.geometry.stopping_distance` | 100.0 m | 终点线后的标记停止区；在其末端速度为零 |
+| `acceleration.anchor.entry.x/y/yaw` | -0.30 / 0 / 0 | 发车坐标（起点线） |
+| `acceleration.anchor.brake.x/y/yaw` | 75.0 / 0 / 0 | 赛道终点 / 开始制动点 |
+| `acceleration.anchor.stop.x/y/yaw` | 175.0 / 0 / 0 | 停止坐标（终点后 100 m） |
 | `acceleration.speed.velocity` | 15.0 m/s | 加速直线速度 |
+| `ebs.anchor.entry.x/y/yaw` | 0.3 / 0 / 0 | 发车坐标（起点线后 0.3 m） |
+| `ebs.anchor.brake.x/y/yaw` | 25.0 / 0 / 0 | 25 m 测速/急停标记 |
+| `ebs.anchor.stop.x/y/yaw` | 35.0 / 0 / 0 | 停止坐标（制动段 ≤10 m） |
+| `ebs.speed.velocity` | 12.0 m/s | EBS 直线速度 |
 
 ---
 

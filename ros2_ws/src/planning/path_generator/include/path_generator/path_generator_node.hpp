@@ -40,6 +40,14 @@ public:
 private:
   struct PlannedRow;
 
+  // 路径锚点：绝对 map 坐标 + 朝向
+  struct Anchor
+  {
+    double x{0.0};
+    double y{0.0};
+    double yaw{0.0};
+  };
+
   // Callbacks
   void onMissionState(const wuta_msgs::msg::MissionState::SharedPtr msg);
   void onCenterline(const autoware_msgs::msg::Lane::SharedPtr msg);    // from boundary_detector
@@ -54,10 +62,12 @@ private:
 
   // Mode-specific path generators
   autoware_msgs::msg::Lane generateSkidpadPath(std::vector<PlannedRow> & rows) const;
-  autoware_msgs::msg::Lane generateStraightRun(
-    double start_x, double start_y, double start_yaw,
-    double timing_start_x, double length, double stopping_distance,
-    double velocity) const;
+  // 沿两点连线按弧长采样生成路径段；朝向以线段方向为准，v_start→v_end 按 v²=2aΔs 过渡
+  void appendSegment(
+    autoware_msgs::msg::Lane & lane, std::vector<PlannedRow> & rows,
+    const Anchor & from, const Anchor & to,
+    double v_start, double v_end, const std::string & phase, int lap,
+    bool skip_first = false) const;
   autoware_msgs::msg::Lane generateAccelerationPath() const;
   autoware_msgs::msg::Lane generateEbsTestPath() const;
   autoware_msgs::msg::Lane resampleTrackdriveLane(const autoware_msgs::msg::Lane & lane) const;
@@ -167,17 +177,17 @@ private:
   int trackdrive_global_min_points_{20};
   double trackdrive_global_publish_period_sec_{0.10};
 
-  // Skidpad reference in map.  This matches tracks/skidpad.yaml by default.
+  // 地图原点（坐标系锚点）：路径锚点均用绝对 map 坐标，本项仅作声明/校验。
+  Anchor map_origin_{0.0, 0.0, 0.0};
+
+  // Skidpad（绝对 map 坐标）：crossing 为八字几何锚点，anchor 为发车/减速/停止点。
   double skidpad_radius_{9.125};       // m
   double skidpad_velocity_{5.0};       // m/s
   int    skidpad_points_{72};          // waypoints per circle (every 5 deg)
-  double skidpad_start_x_{0.0};        // m, crossing reference
-  double skidpad_start_y_{0.0};        // m, crossing reference
-  double skidpad_start_yaw_{0.0};      // rad, entry/exit direction
-  double skidpad_entry_x_{-15.0};      // m, local to crossing reference
-  double skidpad_entry_y_{0.0};        // m, local to crossing reference
-  double skidpad_exit_length_{25.0};   // m, measured from the crossing
-  double skidpad_braking_distance_{10.0};  // m
+  Anchor skidpad_crossing_{0.0, 0.0, 0.0};  // 交叉点 / 进-出方向
+  Anchor skidpad_entry_{-15.0, 0.0, 0.0};   // 发车坐标
+  Anchor skidpad_brake_{15.0, 0.0, 0.0};    // 出口减速点
+  Anchor skidpad_stop_{25.0, 0.0, 0.0};     // 出口停止点
 
   // Driven-trajectory visualization only. These do not affect localization
   // or the controller; they prevent INS/EKF measurement noise from appearing
@@ -217,26 +227,18 @@ private:
   double last_cmd_throttle_{std::nan("")};
   double last_cmd_stamp_{std::nan("")};
 
-  // Acceleration reference in map.  These values match acceleration.yaml:
-  // start at -0.30 m, timing starts at 0 m, finish is 75 m later, and the
-  // marked exit/stopping lane extends another 100 m.
-  double acceleration_start_x_{-0.30};      // m
-  double acceleration_start_y_{0.0};        // m
-  double acceleration_start_yaw_{0.0};      // rad
-  double acceleration_timing_start_x_{0.0}; // m
-  double acceleration_length_{75.0};        // timed distance, m
-  double acceleration_stopping_distance_{100.0};  // after finish, m
-  double acceleration_velocity_{15.0};      // m/s
+  // Acceleration（绝对 map 坐标）：发车 → 赛道终点(开始制动) → 停止。
+  Anchor acceleration_entry_{-0.30, 0.0, 0.0};  // 发车坐标
+  Anchor acceleration_brake_{75.0, 0.0, 0.0};   // 赛道终点 / 开始制动点
+  Anchor acceleration_stop_{175.0, 0.0, 0.0};   // 停止坐标
+  double acceleration_velocity_{15.0};          // m/s
 
-  // EBS test reference — 满足赛规 7.5：起点后 0.3m，25m 测速点 ≥40km/h(11.11)，
-  // RES 急停后 ≤10m 内停车。结构复用 generateStraightRun（同 acceleration）。
-  double ebs_start_x_{0.3};         // m, start-position line
-  double ebs_start_y_{0.0};         // m
-  double ebs_start_yaw_{0.0};       // rad
-  double ebs_timing_start_x_{25.0}; // m, 25m 测速/急停标记
-  double ebs_length_{0.0};          // m, 无计时段
-  double ebs_stopping_distance_{10.0}; // m, 制动段 ≤10m
-  double ebs_velocity_{12.0};       // m/s, ≥40km/h(11.11)，留余量
+  // EBS 测试（绝对 map 坐标），满足赛规 7.5：起点后 0.3m，25m 测速点 ≥40km/h(11.11)，
+  // RES 急停后 ≤10m 内停车。
+  Anchor ebs_entry_{0.3, 0.0, 0.0};             // 发车坐标
+  Anchor ebs_brake_{25.0, 0.0, 0.0};            // 25m 测速/急停标记
+  Anchor ebs_stop_{35.0, 0.0, 0.0};             // 停止坐标（制动段 ≤10m）
+  double ebs_velocity_{12.0};                   // m/s, ≥40km/h(11.11)，留余量
 
   // Subscribers
   rclcpp::Subscription<wuta_msgs::msg::MissionState>::SharedPtr mission_sub_;
