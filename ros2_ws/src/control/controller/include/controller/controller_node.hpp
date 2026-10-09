@@ -93,11 +93,6 @@ private:
   double filtered_trackdrive_lookahead_{5.0};
   rclcpp::Time last_trackdrive_lookahead_time_;
   double trackdrive_target_loss_hold_time_{0.5};
-  double trackdrive_target_loss_hold_speed_{2.0};
-  double trackdrive_start_speed_{3.0};
-  double trackdrive_start_speed_duration_{4.0};
-  rclcpp::Time trackdrive_start_speed_time_;
-  bool trackdrive_start_speed_started_{false};
 
   // 状态
   VehicleState vehicle_state_;

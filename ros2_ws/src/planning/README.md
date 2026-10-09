@@ -82,21 +82,22 @@ planning/
 
 #### TRACKDRIVE（高速循迹）
 - 使用 `boundary_detector` 基于在线锥桶地图输出的局部中心线
-- 将稀疏局部中心线按 `trackdrive.resample_spacing` 重采样
-- 根据重采样后的局部曲率限制 waypoint 速度：直道不超过 `trackdrive.explore.max_velocity`（第1圈），弯道不低于 `trackdrive.explore.min_velocity`，横向加速度上限由 `trackdrive.explore.lateral_accel_limit` 控制；RACE 状态使用 `trackdrive.race.*` 覆盖
-- 当在线中心线源点数很少（默认不超过 3 点）时，将速度上限临时压到 `trackdrive.degraded_velocity`，避免短 Delaunay 兜底在紧凑弯道里被高速追踪成掉头
+- 将稀疏局部中心线按 `trackdrive.path.resample_spacing` 重采样
+- 根据重采样后的局部曲率限制 waypoint 速度：直道不超过 `trackdrive.speed.explore.max_velocity`（第1圈），弯道不低于 `trackdrive.speed.explore.min_velocity`，横向加速度上限由 `trackdrive.speed.explore.lateral_accel_limit` 控制；RACE 状态使用 `trackdrive.speed.race.*` 覆盖
+- 进入循迹后前 `trackdrive.speed.launch.distance` 米内，速度上限为 `trackdrive.speed.launch.velocity`（起步限速，替代原控制侧 start_speed）
+- 当在线中心线源点数很少（默认不超过 3 点）时，将速度上限临时压到 `trackdrive.speed.degraded_velocity`，避免短 Delaunay 兜底在紧凑弯道里被高速追踪成掉头
 - 发布前检查 Trackdrive 局部中心线是否仍有车头前方目标点；若没有，则拒绝该帧反向/不可追踪路径并保持上一条有效路径，避免车辆被短局部路径诱导掉头
 
 #### SKIDPAD（八字绕桩）
-- 使用 `skidpad_start_*` 固定 map 参考，与 `tracks/skidpad.yaml` 对齐，不随定位位姿重建
+- 使用 `skidpad.geometry.start_*` 固定 map 参考，与 `tracks/skidpad.yaml` 对齐，不随定位位姿重建
 - 车辆参考点从计时线前 15 m 的 `(-15, 0)` 进入；生成下方右圆两圈（第一圈建立转向、第二圈计时）→ 上方左圈两圈（第三圈过渡、第四圈计时）→ 同向 25 m 出口停车
 - 圆半径：9.125m（FSG 规定）
 - 路径几何只生成一次；在有效任务状态下重复发布缓存路径，确保晚启动的控制器能够接收
-- 路径生成时输出分析 CSV，默认位置为 `WUTA-FSD/ros2_ws/log/trajectory/skidpad_trajectory.csv`；路径的每行包含阶段、圈次、坐标、航向和目标速度
+- 规划轨迹由通用记录器落盘（见 `record.*`），不再单独导出 skidpad CSV
 
 #### ACCELERATION（直线加速）
 - 严格对齐 `WUTA-SIM/perception_simulation/tracks/acceleration.yaml`：车辆参考点从 `x=-0.30 m` 起步，计时起点为 `x=0 m`、计时终点为 `x=75 m`
-- 在整个 75 m 计时段保持 `acceleration_velocity`；仅在终点线后进入 100 m 标记停止区时按恒减速度剖面制动，并在 `x=175 m` 停车
+- 在整个 75 m 计时段保持 `acceleration.speed.velocity`；仅在终点线后进入 100 m 标记停止区时按恒减速度剖面制动，并在 `x=175 m` 停车
 - 路径只按赛道 map 参考生成一次并缓存，绝不依据实时定位位姿重建，以免终点随车辆前移
 
 ### Topics
@@ -118,30 +119,39 @@ planning/
 | `boundary_detector.local_pairing_min_streak` | 3 | 颜色配对连续不足多少个周期后，允许车辆局部坐标系左右锥几何配对兜底；仿真中优先避免颜色误判后长时间断路 |
 | `boundary_detector.local_pairing_color_imbalance_ratio` | 0.20 | 红/蓝较少一侧低于该比例时，认为颜色严重失衡并立即启用局部左右配对兜底 |
 | `boundary_detector.delaunay_min_waypoints` | 3 | Delaunay fallback must produce at least this many centerline points; 3-point fallback is allowed but path_generator caps short centerlines to low speed |
-| `trackdrive.explore.max_velocity` | 7.0 m/s | 第1圈（探索圈）循迹速度 |
-| `trackdrive.resample_spacing` | 1.0 m | 高速循迹局部中心线重采样间距，用于给 Pure Pursuit 提供连续前向目标 |
-| `trackdrive.explore.min_velocity` | 3.0 m/s | 第1圈曲率限速的最低目标速度 |
-| `trackdrive.explore.lateral_accel_limit` | 4.0 m/s^2 | 第1圈曲率限速使用的横向加速度上限 |
-| `trackdrive.race.lap2_max_velocity` | 9.0 m/s | RACE 第2圈速度上限（lap_count≤1） |
-| `trackdrive.race.lap3_max_velocity` | 10.0 m/s | RACE 第3圈起速度上限（lap_count>1） |
-| `trackdrive.race.min_velocity` | 4.0 m/s | RACE 曲率限速最低目标速度 |
-| `trackdrive.race.lateral_accel_limit` | 6.0 m/s^2 | RACE 曲率限速横向加速度上限 |
-| `trackdrive.min_forward_target` | 0.5 m | Trackdrive 新局部路径至少需要包含一个车头前方目标点，否则保持上一条有效路径 |
-| `trackdrive.degraded_velocity` | 3.0 m/s | 短中心线或低置信度时的降级速度帽，主要保护 2-3 点 Delaunay 兜底 |
-| `trackdrive.short_centerline_points` | 3 | 源中心线点数小于等于该值时启用短中心线降速 |
-| `skidpad_radius` | 9.125m | FSG 标准圆半径 |
-| `skidpad_velocity` | 5.0 m/s | 八字速度 |
-| `skidpad_entry_x/y` | -15.0 / 0.0 m | 相对交叉点的入口参考 |
-| `skidpad_exit_length` | 25.0 m | 第四圈后的出口停车距离 |
-| `skidpad_braking_distance` | 10.0 m | 出口末段线性降速距离 |
-| `skidpad_csv_path` | `ros2_ws/log/trajectory/skidpad_trajectory.csv` | 分析轨迹输出；相对路径以 WUTA-FSD 根目录解析 |
-| `driven_trajectory_smoothing_alpha` | 0.20 | 仅用于 RViz 实际轨迹的一阶平滑；不改变定位、建图或控制输入 |
-| `driven_trajectory_min_distance` | 0.10 m | 平滑后轨迹点的最小空间间隔，抑制静止时的噪声折线 |
-| `acceleration_start_x/y/yaw` | -0.30 m / 0 / 0 | 起跑位置线与朝向，来自赛道 YAML |
-| `acceleration_timing_start_x` | 0.0 m | 计时起点线 |
-| `acceleration_length` | 75.0 m | 计时距离；路径在此终点线前不减速 |
-| `acceleration_stopping_distance` | 100.0 m | 终点线后的标记停止区；在其末端速度为零 |
-| `acceleration_velocity` | 15.0 m/s | 加速直线速度 |
+| `trackdrive.speed.explore.max_velocity` | 7.0 m/s | 第1圈（探索圈）循迹速度 |
+| `trackdrive.path.resample_spacing` | 1.0 m | 高速循迹局部中心线重采样间距，用于给 Pure Pursuit 提供连续前向目标 |
+| `trackdrive.speed.explore.min_velocity` | 3.0 m/s | 第1圈曲率限速的最低目标速度 |
+| `trackdrive.speed.explore.lateral_accel_limit` | 4.0 m/s^2 | 第1圈曲率限速使用的横向加速度上限 |
+| `trackdrive.speed.race.lap2_max_velocity` | 9.0 m/s | RACE 第2圈速度上限（lap_count≤1） |
+| `trackdrive.speed.race.lap3_max_velocity` | 10.0 m/s | RACE 第3圈起速度上限（lap_count>1） |
+| `trackdrive.speed.race.min_velocity` | 4.0 m/s | RACE 曲率限速最低目标速度 |
+| `trackdrive.speed.race.lateral_accel_limit` | 6.0 m/s^2 | RACE 曲率限速横向加速度上限 |
+| `trackdrive.speed.launch.velocity` | 3.0 m/s | 起步阶段速度上限（进入循迹后前段距离） |
+| `trackdrive.speed.launch.distance` | 12.0 m | 起步限速持续距离 |
+| `trackdrive.path.min_forward_target` | 0.5 m | Trackdrive 新局部路径至少需要包含一个车头前方目标点，否则保持上一条有效路径 |
+| `trackdrive.speed.degraded_velocity` | 3.0 m/s | 短中心线或低置信度时的降级速度帽，主要保护 2-3 点 Delaunay 兜底 |
+| `trackdrive.path.short_centerline_points` | 3 | 源中心线点数小于等于该值时启用短中心线降速 |
+| `skidpad.geometry.radius` | 9.125m | FSG 标准圆半径 |
+| `skidpad.speed.velocity` | 5.0 m/s | 八字速度 |
+| `skidpad.geometry.entry_x/y` | -15.0 / 0.0 m | 相对交叉点的入口参考 |
+| `skidpad.geometry.exit_length` | 25.0 m | 第四圈后的出口停车距离 |
+| `skidpad.speed.braking_distance` | 10.0 m | 出口末段线性降速距离 |
+| `driven_trajectory.smoothing_alpha` | 0.20 | 仅用于 RViz 实际轨迹的一阶平滑；不改变定位、建图或控制输入 |
+| `driven_trajectory.min_distance` | 0.10 m | 平滑后轨迹点的最小空间间隔，抑制静止时的噪声折线 |
+| `driven_trajectory.max_step` | 2.0 m | 单帧跳变门限，超过视为定位跳变（显示与记录共用） |
+| `driven_trajectory.display_window_m` | 200.0 m | RViz 显示只保留最近该长度的历史，避免内存无界增长 |
+| `record.enabled` | true | 是否记录规划轨迹与实际行驶位姿 |
+| `record.dir` | `ros2_ws/control_planning_log/{mission}/{stamp}` | 记录目录模板；相对路径以 WUTA-FSD 根解析 |
+| `record.planned_file` / `record.driven_file` | `planned.csv` / `driven.csv` | 规划轨迹 / 实际位姿文件名 |
+| `record.flush_interval_sec` | 1.0 s | 落盘刷新周期 |
+| `record.max_mb` | 50 | 单文件超过则切分 `_partNNN` |
+| `record.attach_stamps` | true | driven.csv 是否附加车速/指令源时间戳 |
+| `acceleration.geometry.start_x/y/yaw` | -0.30 m / 0 / 0 | 起跑位置线与朝向，来自赛道 YAML |
+| `acceleration.geometry.timing_start_x` | 0.0 m | 计时起点线 |
+| `acceleration.geometry.length` | 75.0 m | 计时距离；路径在此终点线前不减速 |
+| `acceleration.geometry.stopping_distance` | 100.0 m | 终点线后的标记停止区；在其末端速度为零 |
+| `acceleration.speed.velocity` | 15.0 m/s | 加速直线速度 |
 
 ---
 

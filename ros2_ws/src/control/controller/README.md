@@ -89,11 +89,9 @@ inspection.*     车检：恒定开度 + 正弦转向
 - 默认速度取自当前单调进度点 waypoint 的 `twist.linear.x`，由 `path_generator` 在各模式写入
 - Trackdrive 改用**前视目标点**的速度：每次在线局部中心线刷新都会把进度点重置到车辆原点
   附近的「曲率为 0、速度为最大」的点，用前视点速度才能在入弯前采用弯道曲率限速
-- Trackdrive 从首个有效前向目标开始，在 `start_speed_duration`（4 s）内将速度目标固定为
-  `start_speed`（3 m/s）；该阶段让初始锥筒地图和在线中心线稳定，结束后自动恢复前视点的曲率
-  速度剖面（`start_speed_duration=0` 可关闭）
-- Trackdrive 短暂没有有效前向目标时，在 `target_loss_hold_time`（0.5 s）内沿用上一条有效命令，
-  并把速度压到 `target_loss_hold_speed`（2 m/s）；超时后停车
+- 起步限速已划归 `path_generator`（`trackdrive.speed.launch.*`），控制侧不再覆盖起步速度
+- Trackdrive 短暂没有有效前向目标时，在 `target_loss_hold_time`（0.5 s）内沿用上一条有效命令
+  （其速度已由规划侧限速，控制侧不再二次封顶）；超时后停车
 - Skidpad/Acceleration/EBS 的零速终点只有在车辆进入 `finish.position_tolerance`（0.75 m）后
   才允许成为单调进度点；此前保持倒数正速度点，避免定位噪声让车辆在终点前数米停车
 - TwistFilter 做速度平滑，避免急加速/急减速
@@ -235,9 +233,6 @@ skidpad 5 m/s；acceleration 15 m/s；EBS 12 m/s。
 | `trackdrive.pure_pursuit.*`（进度、门限项） | — | 同 acceleration |
 | `trackdrive.pid.*` | 同 acceleration | 独立 PID 增益 |
 | `trackdrive.target_loss_hold_time` | 0.5 s | 无前向目标时保留上一命令的最长时间 |
-| `trackdrive.target_loss_hold_speed` | 2.0 m/s | 保留命令期间速度上限；超时后停车 |
-| `trackdrive.start_speed` | 3.0 m/s | 起步稳定阶段固定速度目标 |
-| `trackdrive.start_speed_duration` | 4.0 s | 起步固定速度时长；设为 `0` 关闭 |
 
 ### 赛项：inspection
 

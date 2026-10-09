@@ -1,74 +1,99 @@
 path_generator_node:
   ros__parameters:
-    # ============ TRACKDRIVE / EXPLORE（第1圈，建图/探索圈速度配置） ============
-    trackdrive.explore.max_velocity: 7.0        # m/s，探索圈目标速度，也是重采样默认速度
-    trackdrive.explore.min_velocity: 3.0        # m/s，曲率限速下限
-    trackdrive.explore.lateral_accel_limit: 4.0 # m/s^2，曲率限速
-    # ============ TRACKDRIVE / RACE（比赛圈速度配置，覆盖 explore） ============
-    # Lap 1 retains the validated 7 m/s profile. Laps 2 and 3 progressively
-    # raise the cap only after the frozen global centerline is accepted.
-    trackdrive.race.lap2_max_velocity: 9.0      # m/s，第2圈（lap_count≤1）
-    trackdrive.race.lap3_max_velocity: 10.0     # m/s，第3圈起（lap_count>1）
-    trackdrive.race.min_velocity: 4.0           # m/s，第2/3圈共用下限
-    trackdrive.race.lateral_accel_limit: 6.0    # m/s^2，第2/3圈共用曲率限速
-    # ============ TRACKDRIVE 通用处理（所有状态共用） ============
-    trackdrive.resample_spacing: 1.0            # m
-    trackdrive.min_forward_target: 0.5          # m，拒绝局部反向中心线
-    trackdrive.full_speed_forward_distance: 15.0 # m，随路径长度 min→max 渐增
-    # ============ TRACKDRIVE 降级限速（短中心线 / 低置信度共用） ============
-    trackdrive.degraded_velocity: 3.0           # m/s，短中心线或低置信度时的速度帽
-    trackdrive.short_centerline_points: 3       # 源中心线点数低于此值视为短路径
-    # ============ TRACKDRIVE 置信度 → 速度映射 ============
-    trackdrive.confidence.slow_threshold: 0.45
-    trackdrive.confidence.full_threshold: 0.75
-    trackdrive.confidence.timeout_sec: 0.50     # 位姿超时 → 置信度为 0
-    # ============ TRACKDRIVE 全局冻结中心线 ============
-    trackdrive.global.horizon_distance: 40.0    # m，冻结环局部地平线长度
-    trackdrive.global.search_points: 24         # 进度点有界搜索窗口
-    trackdrive.global.min_points: 20            # 区分冻结闭环与局部 EXPLORE 路径
-    trackdrive.global.publish_period_sec: 0.10
+    # ==================== RViz 轨迹可视化 ====================
+    # 仅平滑并抽稀 RViz 中显示的定位历史；控制器与建图仍使用原始 /localization/pose
+    # /planning/final_waypoints_viz（规划轨迹）和 /planning/driven_trajectory_viz（实际轨迹）
+    driven_trajectory:
+      smoothing_alpha: 0.20     # 平滑系数(0~1)，越小越平滑
+      min_distance: 0.10        # m，最小采样间距
+      max_step: 2.0             # m，单帧最大跳变（仅 RViz）
+      display_window_m: 200.0   # m，仅保留最近该长度的历史，避免内存无界增长
 
-    # SKIDPAD (FSG standard geometry)
-    skidpad_radius: 9.125          # m
-    skidpad_velocity: 5.0          # m/s
-    skidpad_points: 72             # waypoints per circle (every 5 deg)
-    # Fixed map reference matching WUTA-SIM/perception_simulation/tracks/skidpad.yaml.
-    # The path never follows the current localization pose.
-    skidpad_start_x: 0.0           # m, crossing point
-    skidpad_start_y: 0.0           # m, crossing point
-    skidpad_start_yaw: 0.0         # rad, entry/exit direction
-    # FSAC start position: vehicle reference is 15 m before the timing line.
-    # Coordinates are local to the crossing reference above.
-    skidpad_entry_x: -15.0         # m
-    skidpad_entry_y: 0.0           # m
-    skidpad_exit_length: 25.0      # m, stop point after the fourth lap
-    skidpad_braking_distance: 10.0 # m, linear deceleration before the stop
-    # Runtime analysis artifact; relative paths resolve from WUTA-FSD.
-    skidpad_csv_path: ros2_ws/log/trajectory/skidpad_trajectory.csv
+    # ==================== 轨迹/路径记录（落盘） ====================
+    # 每次运行一个目录包裹：{mission}/{stamp}/planned.csv + driven.csv
+    # 记录内容仅用于离线分析，不影响规划/控制输出。
+    record:
+      enabled: true
+      dir: ros2_ws/control_planning_log/{mission}/{stamp}  # 相对 WUTA-FSD 解析
+      planned_file: planned.csv   # 规划轨迹逐点（含 phase/lap/target_speed）
+      driven_file: driven.csv     # 实际位姿 + 车速 + 控制指令
+      flush_interval_sec: 1.0     # s，落盘刷新周期
+      max_mb: 50.0                # MB，单文件超过则切分 _partNNN
+      attach_stamps: true         # 是否附加车速/指令的源时间戳（判断滞后）
 
-    # Driven Trajectory RViz marker: smooth only the displayed localization
-    # history; controller and mapping continue to use raw /localization/pose.
-    driven_trajectory_smoothing_alpha: 0.20
-    driven_trajectory_min_distance: 0.10  # m
-    driven_trajectory_max_step: 2.0       # m per pose update, RViz only
+    # ==================== 赛项：高速循迹（TRACKDRIVE） ====================
+    trackdrive:
+      # ---------- 速度规划 ----------
+      speed:
+        explore:                      # 第1圈：探索/建图圈
+          max_velocity: 7.0           # m/s，目标速度上限（也是重采样默认速度）
+          min_velocity: 3.0           # m/s，曲率限速下限
+          lateral_accel_limit: 4.0    # m/s^2，曲率限速 a=κv²
+        race:                         # 第2/3圈：比赛圈（冻结中心线确认后生效）
+          lap2_max_velocity: 9.0      # m/s，第2圈（lap_count≤1）
+          lap3_max_velocity: 10.0     # m/s，第3圈起（lap_count>1）
+          min_velocity: 4.0           # m/s，曲率限速下限（第2/3圈共用）
+          lateral_accel_limit: 6.0    # m/s^2，曲率限速（第2/3圈共用）
+        launch:                       # 起步限速：进入循迹后前段距离的速度上限
+          velocity: 3.0               # m/s，起步阶段速度上限
+          distance: 12.0              # m，起步限速持续距离（原 4s@3m/s 换算）
+        degraded_velocity: 3.0        # m/s，短中心线或低置信度时的速度帽
+        confidence:                   # 置信度 → 速度映射
+          slow_threshold: 0.45        # 低于此置信度按 degraded_velocity 行驶
+          full_threshold: 0.75        # 高于此置信度按 max_velocity 行驶
+          timeout_sec: 0.50           # s，位姿超时 → 置信度为 0
+      # ---------- 路径生成 ----------
+      path:
+        resample_spacing: 1.0         # m，重采样间距
+        min_forward_target: 0.5       # m，拒绝局部反向中心线
+        full_speed_forward_distance: 15.0  # m，路径越长允许速度越高(min→max 渐增)
+        short_centerline_points: 3    # 源中心线点数低于此值视为短路径
+      # ---------- 全局冻结中心线 ----------
+      global:
+        horizon_distance: 40.0        # m，冻结环局部地平线长度
+        search_points: 24             # 进度点有界搜索窗口
+        min_points: 20                # 区分冻结闭环与局部 EXPLORE 路径
+        publish_period_sec: 0.10      # s，发布周期
 
-    # ACCELERATION — matches perception_simulation/tracks/acceleration.yaml.
-    # The 75 m timed run begins at x=0.0; brake only after its finish line and
-    # stop at the end of the marked 100 m exit lane.
-    acceleration_start_x: -0.30      # m, start-position line
-    acceleration_start_y: 0.0        # m
-    acceleration_start_yaw: 0.0      # rad
-    acceleration_timing_start_x: 0.0 # m
-    acceleration_length: 75.0        # m, timed distance
-    acceleration_stopping_distance: 100.0 # m, post-finish exit lane
-    acceleration_velocity: 15.0      # m/s
+    # ==================== 赛项：八字绕环（SKIDPAD） ====================
+    skidpad:
+      # 路径不跟随当前定位位姿。
+      geometry:
+        radius: 9.125                 # m，绕环半径
+        points: 72                    # 每圈 waypoints 数（每 5°）
+        start_x: 0.0                  # m，交叉点
+        start_y: 0.0                  # m，交叉点
+        start_yaw: 0.0                # rad，进/出方向
+        entry_x: -15.0                # m，出发段（相对交叉点；FSAC 起点在计时线前 15m）
+        entry_y: 0.0                  # m
+        exit_length: 25.0             # m，第4圈后的停车段
+      speed:
+        velocity: 5.0                 # m/s，绕环目标速度
+        braking_distance: 10.0        # m，停车前线性减速距离
 
-    # EBS TEST — 满足赛规 7.5：起点后 0.3m，25m 测速点 ≥40km/h(11.11)，
-    # RES 急停后 ≤10m 内停车。结构复用 acceleration（generateStraightRun）。
-    ebs_start_x: 0.3            # m，起点线后 0.3m
-    ebs_start_y: 0.0            # m
-    ebs_start_yaw: 0.0          # rad
-    ebs_timing_start_x: 25.0    # m，25m 测速/急停标记
-    ebs_length: 0.0             # m，无计时段，到测速点直接进入制动
-    ebs_stopping_distance: 10.0 # m，制动段 ≤10m
-    ebs_velocity: 12.0          # m/s，≥40km/h(11.11)，留余量
+    # ==================== 赛项：直线加速（ACCELERATION） ====================
+    # 通过终点线后才制动，并在标记的 100m 出口车道内停车。
+    acceleration:
+      geometry:
+        start_x: -0.30                # m，起点线
+        start_y: 0.0                  # m
+        start_yaw: 0.0                # rad
+        timing_start_x: 0.0           # m，计时起点
+        length: 75.0                  # m，计时距离
+        stopping_distance: 100.0      # m，终点线后的停车车道
+      speed:
+        velocity: 15.0                # m/s，加速目标速度
+
+    # ==================== 赛项：EBS 测试（EBS） ====================
+    # 7.5：起点后 0.3m，25m 测速点 ≥40km/h(11.11m/s)，急停后 ≤10m 内停车。
+    # 结构复用 acceleration（generateStraightRun）。
+    ebs:
+      geometry:
+        start_x: 0.3                  # m，起点线后的距离
+        start_y: 0.0                  # m
+        start_yaw: 0.0                # rad
+        timing_start_x: 25.0          # m，25m 测速/急停标记
+        length: 0.0                   # m，无计时段，到测速点直接进入制动
+        stopping_distance: 10.0       # m，制动段 ≤10m
+      speed:
+        velocity: 12.0                # m/s，≥40km/h(11.11m/s)，留余量

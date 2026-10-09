@@ -2,21 +2,28 @@
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
+#include <ctime>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <limits>
+#include <sstream>
 
 namespace path_generator
 {
 namespace
 {
-double yawFromPose(const geometry_msgs::msg::PoseStamped & pose)
+double yawFromQuaternion(const geometry_msgs::msg::Quaternion & q)
 {
-  const auto & q = pose.pose.orientation;
   return std::atan2(
     2.0 * (q.w * q.z + q.x * q.y),
     1.0 - 2.0 * (q.y * q.y + q.z * q.z));
+}
+
+double yawFromPose(const geometry_msgs::msg::PoseStamped & pose)
+{
+  return yawFromQuaternion(pose.pose.orientation);
 }
 
 double longitudinalOffset(
@@ -35,41 +42,47 @@ using State = wuta_msgs::msg::MissionState;
 PathGeneratorNode::PathGeneratorNode(const rclcpp::NodeOptions & options)
 : Node("path_generator_node", options)
 {
-  // EXPLORE（第1圈，建图/探索圈）速度配置
+  // TRACKDRIVE / EXPLORE（第1圈，建图/探索圈）速度配置
   trackdrive_explore_max_velocity_ = declare_parameter(
-    "trackdrive.explore.max_velocity", trackdrive_explore_max_velocity_);
+    "trackdrive.speed.explore.max_velocity", trackdrive_explore_max_velocity_);
   trackdrive_explore_min_velocity_ = declare_parameter(
-    "trackdrive.explore.min_velocity", trackdrive_explore_min_velocity_);
+    "trackdrive.speed.explore.min_velocity", trackdrive_explore_min_velocity_);
   trackdrive_explore_lateral_accel_limit_ = declare_parameter(
-    "trackdrive.explore.lateral_accel_limit", trackdrive_explore_lateral_accel_limit_);
-  // RACE（比赛圈）速度配置
+    "trackdrive.speed.explore.lateral_accel_limit",
+    trackdrive_explore_lateral_accel_limit_);
+  // TRACKDRIVE / RACE（比赛圈）速度配置
   trackdrive_race_lap2_max_velocity_ = declare_parameter(
-    "trackdrive.race.lap2_max_velocity", trackdrive_race_lap2_max_velocity_);
+    "trackdrive.speed.race.lap2_max_velocity", trackdrive_race_lap2_max_velocity_);
   trackdrive_race_lap3_max_velocity_ = declare_parameter(
-    "trackdrive.race.lap3_max_velocity", trackdrive_race_lap3_max_velocity_);
+    "trackdrive.speed.race.lap3_max_velocity", trackdrive_race_lap3_max_velocity_);
   trackdrive_race_min_velocity_ = declare_parameter(
-    "trackdrive.race.min_velocity", trackdrive_race_min_velocity_);
+    "trackdrive.speed.race.min_velocity", trackdrive_race_min_velocity_);
   trackdrive_race_lateral_accel_limit_ = declare_parameter(
-    "trackdrive.race.lateral_accel_limit", trackdrive_race_lateral_accel_limit_);
-  // 通用处理（所有状态共用）
+    "trackdrive.speed.race.lateral_accel_limit", trackdrive_race_lateral_accel_limit_);
+  // 起步限速（距离制）：进入循迹后前段距离限速
+  trackdrive_launch_velocity_ = declare_parameter(
+    "trackdrive.speed.launch.velocity", trackdrive_launch_velocity_);
+  trackdrive_launch_distance_ = declare_parameter(
+    "trackdrive.speed.launch.distance", trackdrive_launch_distance_);
+  // 路径生成（所有状态共用）
   trackdrive_resample_spacing_ = declare_parameter(
-    "trackdrive.resample_spacing", trackdrive_resample_spacing_);
+    "trackdrive.path.resample_spacing", trackdrive_resample_spacing_);
   trackdrive_min_forward_target_ = declare_parameter(
-    "trackdrive.min_forward_target", trackdrive_min_forward_target_);
+    "trackdrive.path.min_forward_target", trackdrive_min_forward_target_);
   trackdrive_full_speed_forward_distance_ = declare_parameter(
-    "trackdrive.full_speed_forward_distance", trackdrive_full_speed_forward_distance_);
+    "trackdrive.path.full_speed_forward_distance", trackdrive_full_speed_forward_distance_);
   // 降级限速（短中心线 / 低置信度共用）
   trackdrive_degraded_velocity_ = declare_parameter(
-    "trackdrive.degraded_velocity", trackdrive_degraded_velocity_);
+    "trackdrive.speed.degraded_velocity", trackdrive_degraded_velocity_);
   trackdrive_short_centerline_points_ = declare_parameter(
-    "trackdrive.short_centerline_points", trackdrive_short_centerline_points_);
+    "trackdrive.path.short_centerline_points", trackdrive_short_centerline_points_);
   // 置信度 → 速度映射
   trackdrive_confidence_slow_threshold_ = declare_parameter(
-    "trackdrive.confidence.slow_threshold", trackdrive_confidence_slow_threshold_);
+    "trackdrive.speed.confidence.slow_threshold", trackdrive_confidence_slow_threshold_);
   trackdrive_confidence_full_threshold_ = declare_parameter(
-    "trackdrive.confidence.full_threshold", trackdrive_confidence_full_threshold_);
+    "trackdrive.speed.confidence.full_threshold", trackdrive_confidence_full_threshold_);
   trackdrive_confidence_timeout_sec_ = declare_parameter(
-    "trackdrive.confidence.timeout_sec", trackdrive_confidence_timeout_sec_);
+    "trackdrive.speed.confidence.timeout_sec", trackdrive_confidence_timeout_sec_);
   // 全局冻结中心线
   trackdrive_global_horizon_distance_ = declare_parameter(
     "trackdrive.global.horizon_distance", trackdrive_global_horizon_distance_);
@@ -79,44 +92,67 @@ PathGeneratorNode::PathGeneratorNode(const rclcpp::NodeOptions & options)
     "trackdrive.global.min_points", trackdrive_global_min_points_);
   trackdrive_global_publish_period_sec_ = declare_parameter(
     "trackdrive.global.publish_period_sec", trackdrive_global_publish_period_sec_);
-  skidpad_radius_         = declare_parameter("skidpad_radius",         skidpad_radius_);
-  skidpad_velocity_       = declare_parameter("skidpad_velocity",       skidpad_velocity_);
-  skidpad_points_         = declare_parameter("skidpad_points",         skidpad_points_);
-  skidpad_start_x_        = declare_parameter("skidpad_start_x",        skidpad_start_x_);
-  skidpad_start_y_        = declare_parameter("skidpad_start_y",        skidpad_start_y_);
-  skidpad_start_yaw_      = declare_parameter("skidpad_start_yaw",      skidpad_start_yaw_);
-  skidpad_entry_x_        = declare_parameter("skidpad_entry_x",        skidpad_entry_x_);
-  skidpad_entry_y_        = declare_parameter("skidpad_entry_y",        skidpad_entry_y_);
-  skidpad_exit_length_    = declare_parameter("skidpad_exit_length",    skidpad_exit_length_);
+
+  // SKIDPAD（八字绕环）
+  skidpad_radius_ = declare_parameter("skidpad.geometry.radius", skidpad_radius_);
+  skidpad_points_ = declare_parameter("skidpad.geometry.points", skidpad_points_);
+  skidpad_start_x_ = declare_parameter("skidpad.geometry.start_x", skidpad_start_x_);
+  skidpad_start_y_ = declare_parameter("skidpad.geometry.start_y", skidpad_start_y_);
+  skidpad_start_yaw_ = declare_parameter("skidpad.geometry.start_yaw", skidpad_start_yaw_);
+  skidpad_entry_x_ = declare_parameter("skidpad.geometry.entry_x", skidpad_entry_x_);
+  skidpad_entry_y_ = declare_parameter("skidpad.geometry.entry_y", skidpad_entry_y_);
+  skidpad_exit_length_ = declare_parameter(
+    "skidpad.geometry.exit_length", skidpad_exit_length_);
+  skidpad_velocity_ = declare_parameter("skidpad.speed.velocity", skidpad_velocity_);
   skidpad_braking_distance_ = declare_parameter(
-    "skidpad_braking_distance", skidpad_braking_distance_);
-  skidpad_csv_path_       = declare_parameter("skidpad_csv_path",       skidpad_csv_path_);
+    "skidpad.speed.braking_distance", skidpad_braking_distance_);
+
+  // 通用：RViz 轨迹可视化
   driven_trajectory_smoothing_alpha_ = declare_parameter(
-    "driven_trajectory_smoothing_alpha", driven_trajectory_smoothing_alpha_);
+    "driven_trajectory.smoothing_alpha", driven_trajectory_smoothing_alpha_);
   driven_trajectory_min_distance_ = declare_parameter(
-    "driven_trajectory_min_distance", driven_trajectory_min_distance_);
+    "driven_trajectory.min_distance", driven_trajectory_min_distance_);
   driven_trajectory_max_step_ = declare_parameter(
-    "driven_trajectory_max_step", driven_trajectory_max_step_);
-  acceleration_start_x_ = declare_parameter("acceleration_start_x", acceleration_start_x_);
-  acceleration_start_y_ = declare_parameter("acceleration_start_y", acceleration_start_y_);
+    "driven_trajectory.max_step", driven_trajectory_max_step_);
+  driven_trajectory_display_window_m_ = declare_parameter(
+    "driven_trajectory.display_window_m", driven_trajectory_display_window_m_);
+
+  // 通用：轨迹/路径记录（落盘，仅离线分析用）
+  record_enabled_ = declare_parameter("record.enabled", record_enabled_);
+  record_dir_template_ = declare_parameter("record.dir", record_dir_template_);
+  record_planned_file_ = declare_parameter("record.planned_file", record_planned_file_);
+  record_driven_file_ = declare_parameter("record.driven_file", record_driven_file_);
+  record_flush_interval_sec_ = declare_parameter(
+    "record.flush_interval_sec", record_flush_interval_sec_);
+  record_max_mb_ = declare_parameter("record.max_mb", record_max_mb_);
+  record_attach_stamps_ = declare_parameter("record.attach_stamps", record_attach_stamps_);
+
+  // ACCELERATION（直线加速）
+  acceleration_start_x_ = declare_parameter(
+    "acceleration.geometry.start_x", acceleration_start_x_);
+  acceleration_start_y_ = declare_parameter(
+    "acceleration.geometry.start_y", acceleration_start_y_);
   acceleration_start_yaw_ = declare_parameter(
-    "acceleration_start_yaw", acceleration_start_yaw_);
+    "acceleration.geometry.start_yaw", acceleration_start_yaw_);
   acceleration_timing_start_x_ = declare_parameter(
-    "acceleration_timing_start_x", acceleration_timing_start_x_);
-  acceleration_length_    = declare_parameter("acceleration_length",    acceleration_length_);
+    "acceleration.geometry.timing_start_x", acceleration_timing_start_x_);
+  acceleration_length_ = declare_parameter(
+    "acceleration.geometry.length", acceleration_length_);
   acceleration_stopping_distance_ = declare_parameter(
-    "acceleration_stopping_distance", acceleration_stopping_distance_);
-  acceleration_velocity_  = declare_parameter("acceleration_velocity",  acceleration_velocity_);
+    "acceleration.geometry.stopping_distance", acceleration_stopping_distance_);
+  acceleration_velocity_ = declare_parameter(
+    "acceleration.speed.velocity", acceleration_velocity_);
 
   // EBS 测试参数（赛规 7.5），结构复用 acceleration
-  ebs_start_x_ = declare_parameter("ebs_start_x", ebs_start_x_);
-  ebs_start_y_ = declare_parameter("ebs_start_y", ebs_start_y_);
-  ebs_start_yaw_ = declare_parameter("ebs_start_yaw", ebs_start_yaw_);
-  ebs_timing_start_x_ = declare_parameter("ebs_timing_start_x", ebs_timing_start_x_);
-  ebs_length_ = declare_parameter("ebs_length", ebs_length_);
+  ebs_start_x_ = declare_parameter("ebs.geometry.start_x", ebs_start_x_);
+  ebs_start_y_ = declare_parameter("ebs.geometry.start_y", ebs_start_y_);
+  ebs_start_yaw_ = declare_parameter("ebs.geometry.start_yaw", ebs_start_yaw_);
+  ebs_timing_start_x_ = declare_parameter(
+    "ebs.geometry.timing_start_x", ebs_timing_start_x_);
+  ebs_length_ = declare_parameter("ebs.geometry.length", ebs_length_);
   ebs_stopping_distance_ = declare_parameter(
-    "ebs_stopping_distance", ebs_stopping_distance_);
-  ebs_velocity_ = declare_parameter("ebs_velocity", ebs_velocity_);
+    "ebs.geometry.stopping_distance", ebs_stopping_distance_);
+  ebs_velocity_ = declare_parameter("ebs.speed.velocity", ebs_velocity_);
 
   // Subscribers
   mission_sub_ = create_subscription<State>(
@@ -149,6 +185,16 @@ PathGeneratorNode::PathGeneratorNode(const rclcpp::NodeOptions & options)
   lap_count_sub_ = create_subscription<std_msgs::msg::UInt32>(
     "/system/lap_count", status_qos,
     std::bind(&PathGeneratorNode::onLapCount, this, std::placeholders::_1));
+
+  // 记录用：车速与控制指令。仅在记录开启时订阅，避免影响正常运行功能。
+  if (record_enabled_) {
+    chcnav_velocity_sub_ = create_subscription<geometry_msgs::msg::TwistStamped>(
+      "/chcnav/velocity", 10,
+      std::bind(&PathGeneratorNode::onChcnavVelocity, this, std::placeholders::_1));
+    control_command_sub_ = create_subscription<autoware_msgs::msg::Command>(
+      "/control/command", 10,
+      std::bind(&PathGeneratorNode::onControlCommand, this, std::placeholders::_1));
+  }
 
   // Publisher — final_waypoints consumed by controller
   waypoints_pub_ = create_publisher<autoware_msgs::msg::Lane>("/planning/final_waypoints", 10);
@@ -185,6 +231,8 @@ void PathGeneratorNode::onPose(const geometry_msgs::msg::PoseStamped::SharedPtr 
   current_pose_ = *msg;
   pose_ready_ = true;
   last_pose_received_at_ = now();
+  updateTrackdriveLaunchDistance(*msg);
+  appendDrivenRecord(*msg);
 
   // Smooth and spatially decimate the visualization history.  The raw pose
   // still reaches the controller unchanged; this only makes the RViz line
@@ -229,6 +277,23 @@ void PathGeneratorNode::onPose(const geometry_msgs::msg::PoseStamped::SharedPtr 
     {
       trajectory_.push_back(filtered_trajectory_point_);
       last_trajectory_point_ = filtered_trajectory_point_;
+
+      // 显示窗口：仅保留最近 display_window_m 米，避免内存无界增长
+      const double window = std::max(0.0, driven_trajectory_display_window_m_);
+      if (window > 0.0 && trajectory_.size() > 2) {
+        double total = 0.0;
+        std::size_t keep_from = trajectory_.size();
+        for (std::size_t i = trajectory_.size(); i-- > 1; ) {
+          total += std::hypot(
+            trajectory_[i].x - trajectory_[i - 1].x,
+            trajectory_[i].y - trajectory_[i - 1].y);
+          keep_from = i - 1;
+          if (total >= window) break;
+        }
+        if (keep_from > 0) {
+          trajectory_.erase(trajectory_.begin(), trajectory_.begin() + keep_from);
+        }
+      }
 
       // Publish every few points so RViz can discover the topic before subscribing
       if (trajectory_.size() % 3 == 0)
@@ -300,6 +365,13 @@ void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
     last_trackdrive_lane_ready_ = false;
     global_trackdrive_lane_ready_ = false;
     global_progress_ready_ = false;
+    trackdrive_planned_written_ = false;
+    closeRecordFiles();  // 赛项切换：结束上一赛项的记录，下一帧按新赛项另开目录
+  }
+
+  // FINISH：收尾落盘
+  if (system_state_ == State::FINISH) {
+    closeRecordFiles();
   }
 
   // Trigger non-trackdrive paths when system is active
@@ -307,8 +379,10 @@ void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
 
   if (mission_mode_ == State::MISSION_SKIDPAD) {
     if (!skidpad_path_ready_) {
-      skidpad_path_ = generateSkidpadPath();
+      std::vector<PlannedRow> planned_rows;
+      skidpad_path_ = generateSkidpadPath(planned_rows);
       skidpad_path_ready_ = true;
+      writePlannedRecord(planned_rows);
     }
     auto lane = skidpad_path_;
     lane.header.stamp    = now();
@@ -322,6 +396,7 @@ void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
     if (!acceleration_path_ready_) {
       acceleration_path_ = generateAccelerationPath();
       acceleration_path_ready_ = true;
+      writePlannedRecord(plannedRowsFromLane(acceleration_path_, "run"));
     }
     auto lane = acceleration_path_;
     lane.header.stamp    = now();
@@ -333,6 +408,7 @@ void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
     if (!ebs_path_ready_) {
       ebs_path_ = generateEbsTestPath();
       ebs_path_ready_ = true;
+      writePlannedRecord(plannedRowsFromLane(ebs_path_, "run"));
     }
     auto lane = ebs_path_;
     lane.header.stamp    = now();
@@ -358,6 +434,11 @@ void PathGeneratorNode::onCenterline(const autoware_msgs::msg::Lane::SharedPtr m
   if (global_centerline_ready_ || closed_map_lane) {
     global_trackdrive_lane_ = *msg;
     global_trackdrive_lane_ready_ = msg->waypoints.size() >= 3;
+    // 规划参考线（冻结全局中心线）落盘：每次运行只记一次
+    if (global_trackdrive_lane_ready_ && !trackdrive_planned_written_) {
+      writePlannedRecord(plannedRowsFromLane(global_trackdrive_lane_, "reference"));
+      trackdrive_planned_written_ = true;
+    }
     if (global_trackdrive_lane_ready_ && pose_ready_) {
       publishGlobalTrackdriveHorizon();
     }
@@ -410,9 +491,17 @@ void PathGeneratorNode::publishTrackdriveLane(
       max_velocity - std::clamp(
         trackdrive_degraded_velocity_, 0.0, max_velocity));
   const double safety_cap = std::min(distance_cap, confidence_cap);
+  double effective_cap = safety_cap;
+  // 起步限速（距离制）：进入循迹后前段路程限速
+  if (trackdrive_launch_active_ &&
+      trackdrive_launch_traveled_ < std::max(0.0, trackdrive_launch_distance_) &&
+      trackdrive_launch_velocity_ > 0.0)
+  {
+    effective_cap = std::min(effective_cap, trackdrive_launch_velocity_);
+  }
   for (auto & waypoint : lane.waypoints) {
     waypoint.twist.twist.linear.x =
-      std::min(waypoint.twist.twist.linear.x, safety_cap);
+      std::min(waypoint.twist.twist.linear.x, effective_cap);
   }
 
   if (!trackdriveLaneHasForwardTarget(lane)) {
@@ -575,6 +664,40 @@ double PathGeneratorNode::currentTrackdriveConfidence() const
     std::clamp(localization_confidence_, 0.0, 1.0));
 }
 
+// 起步限速（距离制）：进入循迹后累计行驶距离，用于限速前段路程
+void PathGeneratorNode::updateTrackdriveLaunchDistance(
+  const geometry_msgs::msg::PoseStamped & pose)
+{
+  const bool launch_phase =
+    mission_mode_ == State::MISSION_TRACKDRIVE && trackdriveStateActive();
+
+  if (launch_phase && !trackdrive_launch_active_) {
+    // 首次进入循迹：起步限速复位
+    trackdrive_launch_active_ = true;
+    trackdrive_launch_traveled_ = 0.0;
+    trackdrive_launch_pose_ready_ = false;
+  } else if (!launch_phase) {
+    trackdrive_launch_active_ = false;
+    trackdrive_launch_pose_ready_ = false;
+  }
+  if (!trackdrive_launch_active_) return;
+
+  const auto & point = pose.pose.position;
+  if (!trackdrive_launch_pose_ready_) {
+    trackdrive_launch_last_point_ = point;
+    trackdrive_launch_pose_ready_ = true;
+    return;
+  }
+
+  const double step = std::hypot(
+    point.x - trackdrive_launch_last_point_.x,
+    point.y - trackdrive_launch_last_point_.y);
+  trackdrive_launch_last_point_ = point;
+  // 定位跳变不计入累计距离
+  if (step > 5.0) return;
+  trackdrive_launch_traveled_ += step;
+}
+
 autoware_msgs::msg::Lane PathGeneratorNode::resampleTrackdriveLane(
   const autoware_msgs::msg::Lane & input) const
 {
@@ -702,53 +825,262 @@ bool PathGeneratorNode::trackdriveLaneHasForwardTarget(
   return false;
 }
 
-void PathGeneratorNode::exportSkidpadCsv(const std::vector<SkidpadCsvRow> & rows) const
+std::string PathGeneratorNode::missionName() const
 {
-  if (skidpad_csv_path_.empty()) return;
+  switch (mission_mode_) {
+    case State::MISSION_TRACKDRIVE:   return "trackdrive";
+    case State::MISSION_SKIDPAD:      return "skidpad";
+    case State::MISSION_ACCELERATION: return "acceleration";
+    case State::MISSION_INSPECTION:   return "inspection";
+    case State::MISSION_EBS_TEST:     return "ebs";
+    default:                          return "unknown";
+  }
+}
 
-  namespace fs = std::filesystem;
-  fs::path output_path(skidpad_csv_path_);
-  if (output_path.is_relative()) {
+std::vector<PathGeneratorNode::PlannedRow> PathGeneratorNode::plannedRowsFromLane(
+  const autoware_msgs::msg::Lane & lane, const std::string & phase) const
+{
+  std::vector<PlannedRow> rows;
+  rows.reserve(lane.waypoints.size());
+  for (const auto & wp : lane.waypoints) {
+    rows.push_back({phase, 0, wp.pose.pose.position.x, wp.pose.pose.position.y,
+      yawFromQuaternion(wp.pose.pose.orientation), wp.twist.twist.linear.x});
+  }
+  return rows;
+}
+
+bool PathGeneratorNode::openRecordStream(
+  std::ofstream & stream, const std::string & filename, std::size_t & bytes)
+{
+  stream.open(std::filesystem::path(record_dir_) / filename,
+    std::ios::out | std::ios::trunc);
+  if (!stream.is_open()) {
+    RCLCPP_ERROR(get_logger(), "Unable to open record file: %s", filename.c_str());
+    return false;
+  }
+  bytes = 0;
+  return true;
+}
+
+void PathGeneratorNode::ensureRecordFiles()
+{
+  if (!record_enabled_) return;
+
+  const std::string mission = missionName();
+  if (record_mission_ == mission &&
+      (planned_stream_.is_open() || driven_stream_.is_open()))
+  {
+    return;  // 当前赛项的记录文件已就绪
+  }
+
+  closeRecordFiles();
+  record_mission_ = mission;
+
+  // stamp = 本次运行首次打开的时间（本地时间）
+  const std::time_t now_t = std::time(nullptr);
+  std::tm tm_buf{};
+  localtime_r(&now_t, &tm_buf);
+  std::ostringstream stamp;
+  stamp << std::put_time(&tm_buf, "%Y%m%d_%H%M%S");
+  record_stamp_ = stamp.str();
+
+  const auto replace_all = [](std::string text, const std::string & from,
+                                const std::string & to) {
+      for (std::size_t pos = text.find(from); pos != std::string::npos;
+           pos = text.find(from, pos + to.size()))
+      {
+        text.replace(pos, from.size(), to);
+      }
+      return text;
+    };
+  std::string dir = replace_all(record_dir_template_, "{mission}", mission);
+  dir = replace_all(dir, "{stamp}", record_stamp_);
+
+  std::filesystem::path path(dir);
+  if (path.is_relative()) {
     try {
       // <WUTA-FSD>/ros2_ws/install/path_generator/share/path_generator
-      // is the package share path in this workspace installation.
-      fs::path fsd_root = ament_index_cpp::get_package_share_directory("path_generator");
+      std::filesystem::path fsd_root =
+        ament_index_cpp::get_package_share_directory("path_generator");
       for (int i = 0; i < 5; ++i) fsd_root = fsd_root.parent_path();
-      output_path = fsd_root / output_path;
+      path = fsd_root / path;
     } catch (const std::exception & exception) {
       RCLCPP_WARN(get_logger(), "Cannot resolve WUTA-FSD output root: %s", exception.what());
     }
   }
 
   std::error_code error;
-  fs::create_directories(output_path.parent_path(), error);
+  std::filesystem::create_directories(path, error);
   if (error) {
-    RCLCPP_ERROR(get_logger(), "Unable to create skidpad CSV directory %s: %s",
-      output_path.parent_path().c_str(), error.message().c_str());
+    RCLCPP_ERROR(get_logger(), "Unable to create record dir %s: %s",
+      path.c_str(), error.message().c_str());
+    record_mission_.clear();
     return;
   }
+  record_dir_ = path.string();
+  planned_part_ = 0;
+  driven_part_ = 0;
 
-  std::ofstream stream(output_path);
-  if (!stream.is_open()) {
-    RCLCPP_ERROR(get_logger(), "Unable to write skidpad CSV: %s", output_path.c_str());
-    return;
+  if (openRecordStream(planned_stream_, record_planned_file_, planned_bytes_)) {
+    planned_stream_ << "index,phase,lap,x_m,y_m,yaw_rad,target_speed_mps\n";
+    planned_stream_.flush();
   }
-
-  stream << "index,phase,lap,x_m,y_m,yaw_rad,target_speed_mps\n";
-  stream << std::fixed << std::setprecision(6);
-  for (std::size_t index = 0; index < rows.size(); ++index) {
-    const auto & row = rows[index];
-    stream << index << ',' << row.phase << ',' << row.lap << ','
-           << row.x << ',' << row.y << ',' << row.yaw << ',' << row.velocity << '\n';
+  if (openRecordStream(driven_stream_, record_driven_file_, driven_bytes_)) {
+    driven_stream_
+      << "t_sec,x_m,y_m,z_m,yaw_rad,speed_mps,cmd_speed_mps,cmd_angle_deg,cmd_throttle_brake";
+    if (record_attach_stamps_) {
+      driven_stream_ << ",speed_t_sec,cmd_t_sec";
+    }
+    driven_stream_ << '\n';
+    driven_stream_.flush();
   }
-  RCLCPP_INFO(get_logger(), "Skidpad trajectory CSV: %s (%zu rows)",
-    output_path.c_str(), rows.size());
+  RCLCPP_INFO(get_logger(), "Recording %s to %s", mission.c_str(), record_dir_.c_str());
 }
 
-autoware_msgs::msg::Lane PathGeneratorNode::generateSkidpadPath() const
+void PathGeneratorNode::writePlannedRecord(const std::vector<PlannedRow> & rows)
+{
+  if (!record_enabled_ || rows.empty()) return;
+  ensureRecordFiles();
+  if (!planned_stream_.is_open()) return;
+
+  planned_stream_ << std::fixed << std::setprecision(6);
+  for (std::size_t index = 0; index < rows.size(); ++index) {
+    const auto & row = rows[index];
+    planned_stream_ << index << ',' << row.phase << ',' << row.lap << ','
+                    << row.x << ',' << row.y << ',' << row.yaw << ',' << row.velocity << '\n';
+  }
+  planned_stream_.flush();
+  const std::streamoff planned_pos = planned_stream_.tellp();
+  planned_bytes_ = planned_pos > 0 ? static_cast<std::size_t>(planned_pos) : 0;
+}
+
+void PathGeneratorNode::appendDrivenRecord(const geometry_msgs::msg::PoseStamped & pose)
+{
+  if (!record_enabled_) return;
+  ensureRecordFiles();
+  if (!driven_stream_.is_open()) return;
+
+  const auto & stamp = pose.header.stamp;
+  const double t = (stamp.sec == 0 && stamp.nanosec == 0)
+    ? now().seconds()
+    : static_cast<double>(stamp.sec) + static_cast<double>(stamp.nanosec) * 1e-9;
+  const auto & position = pose.pose.position;
+
+  driven_stream_ << std::fixed << std::setprecision(6)
+                 << t << ',' << position.x << ',' << position.y << ',' << position.z
+                 << ',' << yawFromPose(pose) << ',';
+  const auto write_value = [this](double value) {
+      if (std::isfinite(value)) {
+        driven_stream_ << std::fixed << std::setprecision(6) << value;
+      } else {
+        driven_stream_ << "nan";
+      }
+    };
+  write_value(last_speed_mps_);       driven_stream_ << ',';
+  write_value(last_cmd_speed_);       driven_stream_ << ',';
+  write_value(last_cmd_angle_);       driven_stream_ << ',';
+  write_value(last_cmd_throttle_);
+  if (record_attach_stamps_) {
+    driven_stream_ << ',';
+    write_value(last_speed_stamp_);   driven_stream_ << ',';
+    write_value(last_cmd_stamp_);
+  }
+  driven_stream_ << '\n';
+  const std::streamoff driven_pos = driven_stream_.tellp();
+  driven_bytes_ = driven_pos > 0 ? static_cast<std::size_t>(driven_pos) : 0;
+
+  flushRecords();
+}
+
+void PathGeneratorNode::flushRecords()
+{
+  if (!record_enabled_) return;
+
+  const rclcpp::Time now_t = now();
+  if (last_record_flush_.nanoseconds() != 0 &&
+      (now_t - last_record_flush_).seconds() < std::max(0.1, record_flush_interval_sec_))
+  {
+    return;
+  }
+  last_record_flush_ = now_t;
+
+  const std::size_t max_bytes = static_cast<std::size_t>(
+    std::max(1.0, record_max_mb_) * 1024.0 * 1024.0);
+  const auto rotate_filename = [](const std::string & base, int part) {
+      const std::filesystem::path path(base);
+      return path.stem().string() + "_part" + std::to_string(part) +
+             path.extension().string();
+    };
+
+  if (planned_stream_.is_open()) {
+    planned_stream_.flush();
+    if (planned_bytes_ >= max_bytes) {
+      planned_stream_.close();
+      ++planned_part_;
+      if (openRecordStream(
+          planned_stream_, rotate_filename(record_planned_file_, planned_part_), planned_bytes_))
+      {
+        planned_stream_ << "index,phase,lap,x_m,y_m,yaw_rad,target_speed_mps\n";
+        planned_stream_.flush();
+      }
+    }
+  }
+  if (driven_stream_.is_open()) {
+    driven_stream_.flush();
+    if (driven_bytes_ >= max_bytes) {
+      driven_stream_.close();
+      ++driven_part_;
+      if (openRecordStream(
+          driven_stream_, rotate_filename(record_driven_file_, driven_part_), driven_bytes_))
+      {
+        driven_stream_
+          << "t_sec,x_m,y_m,z_m,yaw_rad,speed_mps,cmd_speed_mps,cmd_angle_deg,cmd_throttle_brake";
+        if (record_attach_stamps_) {
+          driven_stream_ << ",speed_t_sec,cmd_t_sec";
+        }
+        driven_stream_ << '\n';
+        driven_stream_.flush();
+      }
+    }
+  }
+}
+
+void PathGeneratorNode::closeRecordFiles()
+{
+  if (planned_stream_.is_open()) {
+    planned_stream_.flush();
+    planned_stream_.close();
+  }
+  if (driven_stream_.is_open()) {
+    driven_stream_.flush();
+    driven_stream_.close();
+  }
+  record_mission_.clear();
+}
+
+void PathGeneratorNode::onChcnavVelocity(const geometry_msgs::msg::TwistStamped::SharedPtr msg)
+{
+  last_speed_mps_ = std::hypot(msg->twist.linear.x, msg->twist.linear.y);
+  const auto & stamp = msg->header.stamp;
+  last_speed_stamp_ = static_cast<double>(stamp.sec) +
+    static_cast<double>(stamp.nanosec) * 1e-9;
+}
+
+void PathGeneratorNode::onControlCommand(const autoware_msgs::msg::Command::SharedPtr msg)
+{
+  last_cmd_speed_ = msg->speed;
+  last_cmd_angle_ = msg->angle;
+  last_cmd_throttle_ = msg->throttle_brake;
+  const auto & stamp = msg->header.stamp;
+  last_cmd_stamp_ = static_cast<double>(stamp.sec) +
+    static_cast<double>(stamp.nanosec) * 1e-9;
+}
+
+autoware_msgs::msg::Lane PathGeneratorNode::generateSkidpadPath(
+  std::vector<PlannedRow> & rows) const
 {
   autoware_msgs::msg::Lane lane;
-  std::vector<SkidpadCsvRow> csv_rows;
+  rows.clear();
 
   // The track is fixed in map, not regenerated from the moving vehicle pose.
   // At yaw=0 the crossing is (0, 0), the right circle is below it and the
@@ -765,14 +1097,14 @@ autoware_msgs::msg::Lane PathGeneratorNode::generateSkidpadPath() const
     wp.pose.pose.orientation.w = std::cos(yaw * 0.5);
   };
 
-  const auto append_waypoint = [&lane, &csv_rows, &to_map, this](
+  const auto append_waypoint = [&lane, &rows, &to_map, this](
     double local_x, double local_y, double local_yaw, double velocity,
     const std::string & phase, int lap) {
       autoware_msgs::msg::Waypoint wp;
       to_map(local_x, local_y, local_yaw, wp);
       wp.twist.twist.linear.x = velocity;
       lane.waypoints.push_back(wp);
-      csv_rows.push_back({phase, lap, wp.pose.pose.position.x, wp.pose.pose.position.y,
+      rows.push_back({phase, lap, wp.pose.pose.position.x, wp.pose.pose.position.y,
         skidpad_start_yaw_ + local_yaw, velocity});
     };
 
@@ -826,8 +1158,6 @@ autoware_msgs::msg::Lane PathGeneratorNode::generateSkidpadPath() const
       : skidpad_velocity_;
     append_waypoint(distance, 0.0, 0.0, velocity, "exit", 0);
   }
-
-  exportSkidpadCsv(csv_rows);
 
   RCLCPP_INFO(get_logger(),
     "Fixed skidpad path generated: %.1f m entry, right lap 1/2, left lap 3/4, %.1f m exit (%zu waypoints)",

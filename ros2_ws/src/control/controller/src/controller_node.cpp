@@ -180,12 +180,6 @@ void ControllerNode::loadMissionConfig()
   load_pid("trackdrive", trackdrive_cfg_);
   trackdrive_target_loss_hold_time_ = declare_parameter(
     "trackdrive.target_loss_hold_time", trackdrive_target_loss_hold_time_);
-  trackdrive_target_loss_hold_speed_ = declare_parameter(
-    "trackdrive.target_loss_hold_speed", trackdrive_target_loss_hold_speed_);
-  trackdrive_start_speed_ = declare_parameter(
-    "trackdrive.start_speed", trackdrive_start_speed_);
-  trackdrive_start_speed_duration_ = declare_parameter(
-    "trackdrive.start_speed_duration", trackdrive_start_speed_duration_);
   filtered_trackdrive_lookahead_ = trackdrive_lookahead_;
 }
 
@@ -317,7 +311,6 @@ void ControllerNode::onMissionState(const MissionState::SharedPtr msg)
   // 未使能且非车检：复位控制状态并发布零指令
   if (!enabled_ && state_ != MissionState::INSPECTION) {
     resetControlPipeline();
-    trackdrive_start_speed_started_ = false;
     publishZeroCommand(" [inactive state]");
   }
 
@@ -410,9 +403,8 @@ void ControllerNode::controlLoop()
       (loop_time - last_valid_trackdrive_cmd_time_).seconds() <=
         std::max(0.0, trackdrive_target_loss_hold_time_);
     if (can_hold_trackdrive_cmd) {
+      // 直接回放上一条有效指令（其速度已由规划侧限速，控制侧不再二次封顶）
       raw_cmd = last_valid_trackdrive_cmd_;
-      raw_cmd.velocity = std::min(
-        raw_cmd.velocity, std::max(0.0, trackdrive_target_loss_hold_speed_));
       RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
         "No forward waypoint target available; holding last Trackdrive command at %.2f m/s.",
         raw_cmd.velocity);
@@ -422,24 +414,6 @@ void ControllerNode::controlLoop()
       RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
         "No forward waypoint target available; publishing stop command.");
       return;
-    }
-  }
-
-  // 循迹起步阶段固定速度目标
-  if (mission_mode_ == MissionState::MISSION_TRACKDRIVE && raw_cmd.valid &&
-      trackdrive_start_speed_duration_ > 0.0)
-  {
-    if (!trackdrive_start_speed_started_) {
-      trackdrive_start_speed_started_ = true;
-      trackdrive_start_speed_time_ = loop_time;
-      RCLCPP_INFO(
-        get_logger(),
-        "Trackdrive launch speed fixed at %.2f m/s for %.2f s after first valid target.",
-        trackdrive_start_speed_, trackdrive_start_speed_duration_);
-    }
-    const double elapsed = (loop_time - trackdrive_start_speed_time_).seconds();
-    if (elapsed < trackdrive_start_speed_duration_) {
-      raw_cmd.velocity = std::max(0.0, trackdrive_start_speed_);
     }
   }
 

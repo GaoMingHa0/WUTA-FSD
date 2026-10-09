@@ -101,9 +101,6 @@ controller_node:
         output_limit: 1.0                 # 开度输出钳位
         integral_limit: 1.0               # 积分项钳位
       target_loss_hold_time: 0.5          # s，无前向目标时保持上一指令的时长
-      target_loss_hold_speed: 2.0         # m/s，保持期间的速度上限
-      start_speed: 3.0                    # m/s，起步阶段固定速度
-      start_speed_duration: 4.0           # s，起步阶段时长（0 关闭）
 
     # ---------- 赛项：车检 ----------
     inspection:
