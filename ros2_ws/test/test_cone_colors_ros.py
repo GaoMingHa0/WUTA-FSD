@@ -18,7 +18,7 @@ from ament_index_python.packages import get_package_prefix
 from autoware_msgs.msg import Lane
 from geometry_msgs.msg import PoseStamped, TransformStamped
 from rclpy.qos import QoSProfile, DurabilityPolicy
-from sensor_msgs.msg import CameraInfo
+from sensor_msgs.msg import CameraInfo, PointCloud2
 from std_msgs.msg import Bool, String
 from visualization_msgs.msg import MarkerArray
 from tf2_ros import StaticTransformBroadcaster
@@ -354,18 +354,23 @@ def test_closed_red_blue_map_produces_counterclockwise_global_centerline(ros):
 
 @pytest.mark.parametrize('left_color,expected_quality', [('red', 'PASS'), ('yellow', 'FAIL')])
 def test_mission_quality_requires_red_and_blue_boundaries(ros, left_color, expected_quality):
-    ros.start('mission_manager', 'mission_manager_node', {'min_red_cones': 1, 'min_blue_cones': 1}, {
+    ros.start('mission_manager', 'mission_manager_node', {'min_red_cones': 1, 'min_blue_cones': 1, 'check_imu': False}, {
         '/mapping/cone_map': 'map', '/system/mission_state': 'mission',
-        '/system/start_command': 'start', '/system/lidar_ready': 'lidar_ready',
+        '/system/start_command': 'start', '/rslidar_points': 'cloud',
+        '/system/mission_mode_cmd': 'mode',
         '/system/localization_ready': 'localization_ready'})
     maps = ros.publisher(ConeMap, 'map')
-    start, lidar_ready, loc_ready = [ros.publisher(Bool, name) for name in ('start', 'lidar_ready', 'localization_ready')]
+    start, loc_ready = [ros.publisher(Bool, name) for name in ('start', 'localization_ready')]
+    cloud = ros.publisher(PointCloud2, 'cloud')
+    mode = ros.publisher(String, 'mode')
     states = ros.received(MissionState, 'mission')
-    ros.wait(lambda: all(p.get_subscription_count() for p in (maps, start, lidar_ready, loc_ready)))
+    ros.wait(lambda: all(p.get_subscription_count() for p in (maps, start, cloud, loc_ready, mode)))
 
     def begin():
-        for publisher in (start, lidar_ready, loc_ready):
-            publisher.publish(Bool(data=True))
+        cloud.publish(PointCloud2())
+        loc_ready.publish(Bool(data=True))
+        mode.publish(String(data='trackdrive'))
+        start.publish(Bool(data=True))
 
     ros.wait(lambda: states and states[-1].state == MissionState.EXPLORE, begin)
     m = ConeMap()
@@ -374,3 +379,49 @@ def test_mission_quality_requires_red_and_blue_boundaries(ros, left_color, expec
     m.blue_cones.append(cone(3, -2, Cone.COLOR_BLUE))
     ros.wait(lambda: states and states[-1].state == MissionState.MAPPING_DONE, lambda: maps.publish(m))
     assert 'quality=' + expected_quality in ros.output()
+
+
+@pytest.mark.parametrize('check_lidar', [True, False])
+def test_mission_lidar_heartbeat_ready_and_timeout(ros, check_lidar):
+    ros.start('mission_manager', 'mission_manager_node', {
+        'check_lidar': check_lidar, 'check_imu': False, 'check_camera': False,
+        'sensor_timeout_sec': .35, 'selfcheck_interval_sec': .1,
+        'selfcheck_grace_sec': 3.0,
+    }, {
+        '/rslidar_points': 'cloud', '/system/mission_state': 'mission',
+        '/system/localization_ready': 'localization_ready',
+        '/system/mission_mode_cmd': 'mode', '/system/start_command': 'start',
+        '/system/emergency': 'emergency', '/system/lidar_ready': 'old_ready',
+    })
+    cloud = ros.publisher(PointCloud2, 'cloud')
+    loc = ros.publisher(Bool, 'localization_ready')
+    mode = ros.publisher(String, 'mode')
+    go = ros.publisher(Bool, 'start')
+    old = ros.publisher(Bool, 'old_ready')
+    states = ros.received(MissionState, 'mission')
+    ros.wait(lambda: states and all(p.get_subscription_count() for p in (cloud, loc, mode, go)))
+    assert old.get_subscription_count() == 0
+    loc.publish(Bool(data=True))
+    old.publish(Bool(data=True))
+    ros.spin(.15)
+    assert states[-1].state == MissionState.IDLE
+    assert 'lidar_ready=0' in states[-1].description
+    cloud.publish(PointCloud2())
+    ros.wait(lambda: states[-1].state == MissionState.READY)
+    assert 'lidar_ready=1' in states[-1].description
+    ros.wait(lambda: 'lidar_ready=0' in states[-1].description)
+    if check_lidar:
+        ros.wait(lambda: states[-1].state == MissionState.EMERGENCY)
+        cloud.publish(PointCloud2())
+        ros.spin(.15)
+        assert states[-1].state == MissionState.EMERGENCY
+        assert 'lidar_ready=0' in states[-1].description
+    else:
+        # Disabling fault checks must not let an old READY bypass freshness at GO.
+        mode.publish(String(data='acceleration'))
+        ros.wait(lambda: 'mode_selected=1' in states[-1].description)
+        go.publish(Bool(data=True))
+        ros.wait(lambda: 'go_count=1' in states[-1].description)
+        assert states[-1].state == MissionState.READY
+        cloud.publish(PointCloud2())
+        ros.wait(lambda: states[-1].state == MissionState.EXPLORE)

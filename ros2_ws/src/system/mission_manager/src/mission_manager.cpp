@@ -102,13 +102,6 @@ MissionManager::MissionManager(const rclcpp::NodeOptions & options)
     std::bind(
       &MissionManager::onLocalizationConfidence, this, std::placeholders::_1));
 
-  lidar_status_sub_ = create_subscription<std_msgs::msg::Bool>(
-    "/system/lidar_ready", 10,
-    [this](const std_msgs::msg::Bool::SharedPtr msg) {
-      lidar_ready_ = msg->data;
-      advanceWhenReady();
-    });
-
   localization_status_sub_ = create_subscription<std_msgs::msg::Bool>(
     "/system/localization_ready", 10,
     [this](const std_msgs::msg::Bool::SharedPtr msg) {
@@ -121,10 +114,11 @@ MissionManager::MissionManager(const rclcpp::NodeOptions & options)
   // 开机传感器自检：订阅设备数据流，心跳超时即判故障
   // ---------------------------------------------------------------------------
   lidar_data_sub_ = create_subscription<sensor_msgs::msg::PointCloud2>(
-    declare_parameter("lidar_topic", "/rslidar_points"), 10,
+    declare_parameter("lidar_topic", "/rslidar_points"), rclcpp::SensorDataQoS(),
     [this](const sensor_msgs::msg::PointCloud2::SharedPtr msg) {
       (void)msg;
       lidar_last_seen_ = now();
+      advanceWhenReady();
     });
   imu_data_sub_ = create_subscription<nav_msgs::msg::Odometry>(
     declare_parameter("imu_topic", "/chcnav/odometry"), 10,
@@ -133,7 +127,7 @@ MissionManager::MissionManager(const rclcpp::NodeOptions & options)
       imu_last_seen_ = now();
     });
   camera_data_sub_ = create_subscription<sensor_msgs::msg::Image>(
-    declare_parameter("camera_topic", "/zed2i/zed_node/left/image_rect_color"), 10,
+    declare_parameter("camera_topic", "/zed/zed_node/rgb/image_rect_color"), rclcpp::SensorDataQoS(),
     [this](const sensor_msgs::msg::Image::SharedPtr msg) {
       (void)msg;
       camera_last_seen_ = now();
@@ -155,8 +149,72 @@ MissionManager::MissionManager(const rclcpp::NodeOptions & options)
   publishLapCount();
 }
 
+bool MissionManager::lidarReady() const
+{
+  const double age = lidar_last_seen_.nanoseconds() == 0
+    ? -1.0 : (now() - lidar_last_seen_).seconds();
+  return !sensor_fault_ && age >= 0.0 && age <= sensor_timeout_sec_;
+}
+
+void MissionManager::refreshLidarReady()
+{
+  lidar_ready_ = lidarReady();
+}
+
+MissionManager::RaceGates MissionManager::raceGates() const
+{
+  RaceGates gates{};
+  gates.pose_fresh = last_pose_received_at_.nanoseconds() != 0 &&
+    (now() - last_pose_received_at_).seconds() <= std::max(0.05, localization_timeout_sec_);
+  gates.confidence_ok = localization_confidence_ >=
+    std::clamp(min_localization_confidence_, 0.0, 1.0);
+  gates.localization_ok = localization_ready_ && gates.pose_fresh && gates.confidence_ok &&
+    (!use_ndt_race_localization_ || ndt_map_ready_);
+  gates.first_lap_complete = lap_count_ >= 1;
+  gates.passed = map_closed_ && map_quality_ok_ && global_centerline_ready_ &&
+    gates.localization_ok && gates.first_lap_complete;
+  return gates;
+}
+
+std::string MissionManager::waitingReasons() const
+{
+  std::vector<std::string> reasons;
+  const auto require = [&reasons](bool passed, const char *name) {
+      if (!passed) reasons.emplace_back(name);
+    };
+  if (current_state_ == State::IDLE || current_state_ == State::READY) {
+    if (mission_mode_ != State::MISSION_INSPECTION) {
+      require(lidarReady(), "lidar");
+      require(localization_ready_, "localization");
+    }
+    require(mode_selected_, "mode");
+    require(start_requested_, "go");
+  } else if (current_state_ == State::MAPPING_DONE) {
+    const auto gates = raceGates();
+    require(map_closed_, "map_closed");
+    require(map_quality_ok_, "map_quality");
+    require(global_centerline_ready_, "centerline");
+    require(localization_ready_, "localization");
+    require(gates.pose_fresh, "pose");
+    require(gates.confidence_ok, "confidence");
+    require(!use_ndt_race_localization_ || ndt_map_ready_, "ndt");
+    require(gates.first_lap_complete, "lap");
+  } else if (current_state_ == State::EMERGENCY) {
+    reasons.emplace_back("emergency");
+  } else if (current_state_ == State::FINISH) {
+    reasons.emplace_back("finished");
+  }
+  std::string result;
+  for (const auto &reason : reasons) {
+    if (!result.empty()) result += ',';
+    result += reason;
+  }
+  return result.empty() ? "none" : result;
+}
+
 void MissionManager::advanceWhenReady()
 {
+  refreshLidarReady();
   if (lidar_ready_ && localization_ready_ && current_state_ == State::IDLE) {
     transitionTo(State::READY);
   }
@@ -177,7 +235,7 @@ void MissionManager::advanceWhenReady()
     return;
   }
 
-  if (current_state_ == State::READY) {
+  if (current_state_ == State::READY && lidar_ready_ && localization_ready_) {
     start_requested_ = false;  // 用后即清，避免 GO 重放再次触发
     RCLCPP_INFO(
       get_logger(), "RES start command accepted (mission_mode=%u).",
@@ -190,18 +248,7 @@ void MissionManager::advanceRaceWhenReady()
 {
   if (current_state_ != State::MAPPING_DONE) return;
 
-  const bool pose_fresh =
-    last_pose_received_at_.nanoseconds() != 0 &&
-    (now() - last_pose_received_at_).seconds() <=
-      std::max(0.05, localization_timeout_sec_);
-  const bool localization_gate =
-    localization_ready_ && pose_fresh &&
-    localization_confidence_ >=
-      std::clamp(min_localization_confidence_, 0.0, 1.0) &&
-    (!use_ndt_race_localization_ || ndt_map_ready_);
-  const bool first_lap_complete = lap_count_ >= 1;
-  if (map_closed_ && map_quality_ok_ && global_centerline_ready_ &&
-      localization_gate && first_lap_complete)
+  if (raceGates().passed)
   {
     RCLCPP_INFO(
       get_logger(),
@@ -263,7 +310,21 @@ void MissionManager::publishState()
   msg.state           = current_state_;
   msg.mission_mode    = mission_mode_;
   msg.localization_mode = localization_mode_;
-  msg.description = "lap=" + std::to_string(lap_count_);
+  const auto gates = raceGates();
+  msg.description = "lap=" + std::to_string(lap_count_) +
+    " mode_selected=" + std::to_string(mode_selected_) +
+    " go_count=" + std::to_string(go_received_count_) +
+    " go_pending=" + std::to_string(start_requested_) +
+    " lidar_ready=" + std::to_string(lidarReady()) +
+    " localization_ready=" + std::to_string(localization_ready_) +
+    " map_closed=" + std::to_string(map_closed_) +
+    " map_quality=" + std::to_string(map_quality_ok_) +
+    " centerline_ready=" + std::to_string(global_centerline_ready_) +
+    " pose_fresh=" + std::to_string(gates.pose_fresh) +
+    " confidence_ok=" + std::to_string(gates.confidence_ok) +
+    " ndt_required=" + std::to_string(use_ndt_race_localization_) +
+    " ndt_ready=" + std::to_string(ndt_map_ready_) +
+    " diag_version=2 wait=" + waitingReasons();
   state_pub_->publish(msg);
 }
 
@@ -493,6 +554,7 @@ void MissionManager::onEmergency(const std_msgs::msg::Bool::SharedPtr msg)
 void MissionManager::onStartCommand(const std_msgs::msg::Bool::SharedPtr msg)
 {
   if (!msg->data) return;
+  ++go_received_count_;
   start_requested_ = true;
   advanceWhenReady();
 }
@@ -554,6 +616,7 @@ void MissionManager::onMissionComplete(const std_msgs::msg::Bool::SharedPtr msg)
 
 void MissionManager::selfCheckTick()
 {
+  refreshLidarReady();
   if (sensor_fault_) return;  // 故障已锁存，保持 EMERGENCY
   const bool any_checked = check_lidar_ || check_imu_ || check_camera_;
   if (!any_checked) return;  

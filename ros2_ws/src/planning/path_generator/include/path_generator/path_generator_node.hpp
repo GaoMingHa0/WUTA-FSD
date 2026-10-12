@@ -26,7 +26,7 @@ namespace path_generator
  * Subscribes to MissionState and routes to the correct path generation mode:
  *
  *  TRACKDRIVE  → forwards centerline from boundary_detector (Delaunay)
- *  SKIDPAD     → publishes a fixed four-lap figure-8 and exit path
+ *  SKIDPAD     → publishes a fixed figure-8 or temporary left U-turn test path
  *  ACCELERATION → generates straight-line path to finish
  *
  * All modes output to /planning/final_waypoints (autoware_msgs::Lane),
@@ -40,7 +40,7 @@ public:
 private:
   struct PlannedRow;
 
-  // 路径锚点：绝对 map 坐标 + 朝向
+  // 路径锚点：所选参考系中的平面坐标 + 朝向（rad）
   struct Anchor
   {
     double x{0.0};
@@ -62,13 +62,14 @@ private:
 
   // Mode-specific path generators
   autoware_msgs::msg::Lane generateSkidpadPath(std::vector<PlannedRow> & rows) const;
+  autoware_msgs::msg::Lane generateUTurnTestPath(std::vector<PlannedRow> & rows) const;
   // 沿两点连线按弧长采样生成路径段；朝向以线段方向为准，v_start→v_end 按 v²=2aΔs 过渡
   void appendSegment(
     autoware_msgs::msg::Lane & lane, std::vector<PlannedRow> & rows,
     const Anchor & from, const Anchor & to,
     double v_start, double v_end, const std::string & phase, int lap,
     bool skip_first = false) const;
-  autoware_msgs::msg::Lane generateAccelerationPath() const;
+  autoware_msgs::msg::Lane generateAccelerationPath(const Anchor & start_pose) const;
   autoware_msgs::msg::Lane generateEbsTestPath() const;
   autoware_msgs::msg::Lane resampleTrackdriveLane(const autoware_msgs::msg::Lane & lane) const;
   autoware_msgs::msg::Lane extractGlobalTrackdriveHorizon();
@@ -189,6 +190,13 @@ private:
   Anchor skidpad_brake_{15.0, 0.0, 0.0};    // 出口减速点
   Anchor skidpad_stop_{25.0, 0.0, 0.0};     // 出口停止点
 
+  // 临时无人测试：以 skidpad.anchor.entry 为固定 map 起点及初始朝向。
+  bool skidpad_u_turn_enabled_{false};
+  double skidpad_u_turn_straight_{15.0};
+  double skidpad_u_turn_radius_{9.125};
+  double skidpad_u_turn_velocity_{1.0};
+  double skidpad_u_turn_brake_distance_{5.0};
+
   // Driven-trajectory visualization only. These do not affect localization
   // or the controller; they prevent INS/EKF measurement noise from appearing
   // as a jagged vehicle path in RViz.
@@ -199,7 +207,9 @@ private:
 
   // 记录器参数（落盘，仅离线分析用，不影响规划/控制输出）
   bool record_enabled_{true};
-  std::string record_dir_template_{"ros2_ws/log/trajectory/{mission}/{stamp}"};
+  std::string record_dir_template_{"logs/{mission}/{stamp}/jrajectory"};
+  std::string record_run_dir_;
+  std::size_t record_segment_{0};
   std::string record_planned_file_{"planned.csv"};
   std::string record_driven_file_{"driven.csv"};
   double record_flush_interval_sec_{1.0};
@@ -227,7 +237,8 @@ private:
   double last_cmd_throttle_{std::nan("")};
   double last_cmd_stamp_{std::nan("")};
 
-  // Acceleration（绝对 map 坐标）：发车 → 赛道终点(开始制动) → 停止。
+  // Acceleration：默认相对启动位姿；生成后缓存为固定 map 路径。
+  std::string acceleration_anchor_frame_{"start_pose"};
   Anchor acceleration_entry_{-0.30, 0.0, 0.0};  // 发车坐标
   Anchor acceleration_brake_{75.0, 0.0, 0.0};   // 赛道终点 / 开始制动点
   Anchor acceleration_stop_{175.0, 0.0, 0.0};   // 停止坐标

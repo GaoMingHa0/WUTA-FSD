@@ -15,7 +15,7 @@ ekf_node:
     odom0: /kiss/odometry_sanitized
     odom0_config:
       #    x      y      z
-      - [false, false, false,
+      [false, false, false,
       #  roll  pitch    yaw
          false, false, false,
       # The sanitizer derives body-frame planar velocity from accepted steps.
@@ -37,7 +37,7 @@ ekf_node:
     odom1: /chcnav/odometry
     odom1_config:
       #    x      y      z
-      - [true,  true,  true,
+      [true,  true,  true,
       #  roll  pitch    yaw
          true,  true,  true,
       #  vx     vy     vz

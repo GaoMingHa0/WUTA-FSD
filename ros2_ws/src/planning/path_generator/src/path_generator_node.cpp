@@ -4,11 +4,13 @@
 #include <cmath>
 #include <cstddef>
 #include <ctime>
+#include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <limits>
 #include <sstream>
+#include <stdexcept>
 
 namespace path_generator
 {
@@ -116,6 +118,22 @@ PathGeneratorNode::PathGeneratorNode(const rclcpp::NodeOptions & options)
   skidpad_stop_ = read_anchor("skidpad.anchor.stop");
   skidpad_velocity_ = declare_parameter("skidpad.speed.velocity", skidpad_velocity_);
 
+  skidpad_u_turn_enabled_ = declare_parameter("skidpad.u_turn_test.enabled", skidpad_u_turn_enabled_);
+  skidpad_u_turn_straight_ = declare_parameter("skidpad.u_turn_test.straight_distance", skidpad_u_turn_straight_);
+  skidpad_u_turn_radius_ = declare_parameter("skidpad.u_turn_test.radius", skidpad_u_turn_radius_);
+  skidpad_u_turn_velocity_ = declare_parameter("skidpad.u_turn_test.velocity", skidpad_u_turn_velocity_);
+  skidpad_u_turn_brake_distance_ = declare_parameter("skidpad.u_turn_test.brake_distance", skidpad_u_turn_brake_distance_);
+  if (skidpad_u_turn_enabled_ &&
+      (!std::isfinite(skidpad_u_turn_straight_) || skidpad_u_turn_straight_ <= 0.0 ||
+       !std::isfinite(skidpad_u_turn_radius_) || skidpad_u_turn_radius_ <= 0.0 ||
+       !std::isfinite(skidpad_u_turn_velocity_) || skidpad_u_turn_velocity_ <= 0.0 ||
+       !std::isfinite(skidpad_u_turn_brake_distance_) || skidpad_u_turn_brake_distance_ <= 0.0 ||
+       skidpad_u_turn_brake_distance_ > skidpad_u_turn_straight_ ||
+       !std::isfinite(skidpad_entry_.x) || !std::isfinite(skidpad_entry_.y) ||
+       !std::isfinite(skidpad_entry_.yaw))) {
+    throw std::invalid_argument("Invalid skidpad.u_turn_test geometry/speed or entry anchor");
+  }
+
   // 通用：RViz 轨迹可视化
   driven_trajectory_smoothing_alpha_ = declare_parameter(
     "driven_trajectory.smoothing_alpha", driven_trajectory_smoothing_alpha_);
@@ -127,6 +145,7 @@ PathGeneratorNode::PathGeneratorNode(const rclcpp::NodeOptions & options)
     "driven_trajectory.display_window_m", driven_trajectory_display_window_m_);
 
   // 通用：轨迹/路径记录（落盘，仅离线分析用）
+  record_run_dir_ = declare_parameter("record.run_dir", std::string{});
   record_enabled_ = declare_parameter("record.enabled", record_enabled_);
   record_dir_template_ = declare_parameter("record.dir", record_dir_template_);
   record_planned_file_ = declare_parameter("record.planned_file", record_planned_file_);
@@ -137,6 +156,11 @@ PathGeneratorNode::PathGeneratorNode(const rclcpp::NodeOptions & options)
   record_attach_stamps_ = declare_parameter("record.attach_stamps", record_attach_stamps_);
 
   // ACCELERATION（直线加速）
+  acceleration_anchor_frame_ = declare_parameter<std::string>(
+    "acceleration.anchor_frame", acceleration_anchor_frame_);
+  if (acceleration_anchor_frame_ != "start_pose" && acceleration_anchor_frame_ != "map") {
+    throw std::invalid_argument("acceleration.anchor_frame must be start_pose or map");
+  }
   acceleration_entry_ = read_anchor("acceleration.anchor.entry");
   acceleration_brake_ = read_anchor("acceleration.anchor.brake");
   acceleration_stop_ = read_anchor("acceleration.anchor.stop");
@@ -353,9 +377,13 @@ void PathGeneratorNode::onLapCount(
 
 void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
 {
+  const bool was_active = trackdriveStateActive();
   const bool mission_changed = msg->mission_mode != mission_mode_;
   mission_mode_  = msg->mission_mode;
   system_state_  = msg->state;
+  if (!was_active && trackdriveStateActive() && mission_mode_ == State::MISSION_ACCELERATION) {
+    acceleration_path_ready_ = false;  // 新任务重新冻结，运行中状态广播不重锚定
+  }
 
   if (mission_changed) {
     skidpad_path_ready_ = false;
@@ -379,7 +407,8 @@ void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
   if (mission_mode_ == State::MISSION_SKIDPAD) {
     if (!skidpad_path_ready_) {
       std::vector<PlannedRow> planned_rows;
-      skidpad_path_ = generateSkidpadPath(planned_rows);
+      skidpad_path_ = skidpad_u_turn_enabled_
+        ? generateUTurnTestPath(planned_rows) : generateSkidpadPath(planned_rows);
       skidpad_path_ready_ = true;
       writePlannedRecord(planned_rows);
     }
@@ -389,11 +418,26 @@ void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
     waypoints_pub_->publish(lane);
     publishVisualization(lane, 0.0f, 1.0f, 1.0f);  // cyan for skidpad
   } else if (mission_mode_ == State::MISSION_ACCELERATION) {
-    // This route is fixed by acceleration.yaml. Regenerating it from the
-    // moving localization pose would shift the finish line forward on every
-    // MissionState update, so the controller could never reach its stop.
+    // 启动时只转换一次；车辆随后移动/转向不会改变终点。
     if (!acceleration_path_ready_) {
-      acceleration_path_ = generateAccelerationPath();
+      Anchor start_pose;
+      if (acceleration_anchor_frame_ == "start_pose") {
+        const auto & q = current_pose_.pose.orientation;
+        const double norm2 = q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w;
+        const double age = pose_ready_ ? (now() - last_pose_received_at_).seconds() : -1.0;
+        if (!pose_ready_ || !localization_ready_ || current_pose_.header.frame_id != "map" ||
+          age < 0.0 || age > 0.5 || !std::isfinite(norm2) || norm2 < 1e-12) {
+          RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000,
+            "Waiting for fresh valid map localization before anchoring acceleration path.");
+          return;
+        }
+        auto rotation = q;
+        const double norm = std::sqrt(norm2);
+        rotation.x /= norm; rotation.y /= norm; rotation.z /= norm; rotation.w /= norm;
+        start_pose = {current_pose_.pose.position.x, current_pose_.pose.position.y,
+          yawFromQuaternion(rotation)};
+      }
+      acceleration_path_ = generateAccelerationPath(start_pose);
       acceleration_path_ready_ = true;
       writePlannedRecord(plannedRowsFromLane(acceleration_path_, "run"));
     }
@@ -831,7 +875,7 @@ std::string PathGeneratorNode::missionName() const
     case State::MISSION_SKIDPAD:      return "skidpad";
     case State::MISSION_ACCELERATION: return "acceleration";
     case State::MISSION_INSPECTION:   return "inspection";
-    case State::MISSION_EBS_TEST:     return "ebs";
+    case State::MISSION_EBS_TEST:     return "ebs_test";
     default:                          return "unknown";
   }
 }
@@ -880,7 +924,10 @@ void PathGeneratorNode::ensureRecordFiles()
   std::tm tm_buf{};
   localtime_r(&now_t, &tm_buf);
   std::ostringstream stamp;
-  stamp << std::put_time(&tm_buf, "%Y%m%d_%H%M%S");
+  stamp << std::put_time(&tm_buf, "%Y%m%d_%H%M%S") << "_"
+        << std::setw(6) << std::setfill('0')
+        << (std::chrono::duration_cast<std::chrono::microseconds>(
+              std::chrono::system_clock::now().time_since_epoch()).count() % 1000000);
   record_stamp_ = stamp.str();
 
   const auto replace_all = [](std::string text, const std::string & from,
@@ -896,19 +943,48 @@ void PathGeneratorNode::ensureRecordFiles()
   dir = replace_all(dir, "{stamp}", record_stamp_);
 
   std::filesystem::path path(dir);
-  if (path.is_relative()) {
+  if (!record_run_dir_.empty()) {
+    path = std::filesystem::path(record_run_dir_) / "jrajectory";
+    if (record_segment_ > 0) {
+      path /= "segments";
+      path /= mission;
+      path /= record_stamp_ + "_" + std::to_string(record_segment_);
+    }
+  } else if (path.is_relative()) {
     try {
-      // <WUTA-FSD>/ros2_ws/install/path_generator/share/path_generator
-      std::filesystem::path fsd_root =
-        ament_index_cpp::get_package_share_directory("path_generator");
-      for (int i = 0; i < 5; ++i) fsd_root = fsd_root.parent_path();
-      path = fsd_root / path;
+      auto root = std::filesystem::path(
+        ament_index_cpp::get_package_share_directory("path_generator"));
+      while (!root.empty() && root != root.root_path() &&
+             !std::filesystem::exists(root / "WUTA-FSD" / "ros2_ws")) {
+        root = root.parent_path();
+      }
+      if (root.empty() || root == root.root_path()) {
+        throw std::runtime_error("Cannot find project root; set record.run_dir or absolute record.dir");
+      }
+      path = root / path;
     } catch (const std::exception & exception) {
-      RCLCPP_WARN(get_logger(), "Cannot resolve WUTA-FSD output root: %s", exception.what());
+      RCLCPP_ERROR(get_logger(), "Cannot resolve record directory: %s", exception.what());
+      record_mission_.clear();
+      return;
     }
   }
-
+  // Never truncate previous CSV files, including a planner restarted in this run.
   std::error_code error;
+  const bool planned_exists = std::filesystem::exists(path / record_planned_file_, error);
+  if (!error) {
+    const bool driven_exists = std::filesystem::exists(path / record_driven_file_, error);
+    if (planned_exists || driven_exists) {
+      path /= "segments";
+      path /= mission;
+      path /= record_stamp_ + "_" + std::to_string(record_segment_);
+    }
+  }
+  if (error) {
+    RCLCPP_ERROR(get_logger(), "Unable to inspect record dir %s: %s",
+      path.c_str(), error.message().c_str());
+    record_mission_.clear();
+    return;
+  }
   std::filesystem::create_directories(path, error);
   if (error) {
     RCLCPP_ERROR(get_logger(), "Unable to create record dir %s: %s",
@@ -917,6 +993,7 @@ void PathGeneratorNode::ensureRecordFiles()
     return;
   }
   record_dir_ = path.string();
+  ++record_segment_;
   planned_part_ = 0;
   driven_part_ = 0;
 
@@ -1075,6 +1152,52 @@ void PathGeneratorNode::onControlCommand(const autoware_msgs::msg::Command::Shar
     static_cast<double>(stamp.nanosec) * 1e-9;
 }
 
+autoware_msgs::msg::Lane PathGeneratorNode::generateUTurnTestPath(
+  std::vector<PlannedRow> & rows) const
+{
+  autoware_msgs::msg::Lane lane;
+  rows.clear();
+  const double c = std::cos(skidpad_entry_.yaw);
+  const double s = std::sin(skidpad_entry_.yaw);
+  const auto to_map = [this, c, s](double x, double y, double yaw) {
+      return Anchor{skidpad_entry_.x + x*c - y*s,
+        skidpad_entry_.y + x*s + y*c, skidpad_entry_.yaw + yaw};
+    };
+  const double length = skidpad_u_turn_straight_;
+  const double radius = skidpad_u_turn_radius_;
+  const double speed = skidpad_u_turn_velocity_;
+  const Anchor turn_start = to_map(length, 0.0, 0.0);
+  const Anchor turn_end = to_map(length, 2.0*radius, M_PI);
+  const Anchor brake = to_map(skidpad_u_turn_brake_distance_, 2.0*radius, M_PI);
+  const Anchor stop = to_map(0.0, 2.0*radius, M_PI);
+  appendSegment(lane, rows, skidpad_entry_, turn_start, speed, speed, "u_outbound", 0);
+
+  // 左转半圆：圆心 (length, radius)，从 -pi/2 逆时针至 +pi/2。
+  // 弧长间距不超过 1 m；各段省略重复接点，切线方向连续。
+  const int arc_segments = std::max(8, static_cast<int>(std::ceil(M_PI*radius)));
+  for (int i = 1; i <= arc_segments; ++i) {
+    const double angle = -M_PI_2 + M_PI*i/arc_segments;
+    const Anchor point = i == arc_segments ? turn_end :
+      to_map(length + radius*std::cos(angle), radius + radius*std::sin(angle),
+        angle + M_PI_2);
+    autoware_msgs::msg::Waypoint wp;
+    wp.pose.pose.position.x = point.x;
+    wp.pose.pose.position.y = point.y;
+    wp.pose.pose.orientation.z = std::sin(point.yaw*0.5);
+    wp.pose.pose.orientation.w = std::cos(point.yaw*0.5);
+    wp.twist.twist.linear.x = speed;
+    lane.waypoints.push_back(wp);
+    rows.push_back({"u_left_turn", 0, point.x, point.y, point.yaw, speed});
+  }
+  appendSegment(lane, rows, turn_end, brake, speed, speed, "u_return", 0, true);
+  appendSegment(lane, rows, brake, stop, speed, 0.0, "u_brake", 0, true);
+  RCLCPP_INFO(get_logger(),
+    "Fixed left U-turn test: straight=%.2fm radius=%.2fm speed=%.2fm/s "
+    "stop=(%.2f, %.2f), %zu waypoints", length, radius, speed,
+    stop.x, stop.y, lane.waypoints.size());
+  return lane;
+}
+
 autoware_msgs::msg::Lane PathGeneratorNode::generateSkidpadPath(
   std::vector<PlannedRow> & rows) const
 {
@@ -1197,20 +1320,32 @@ void PathGeneratorNode::appendSegment(
   }
 }
 
-autoware_msgs::msg::Lane PathGeneratorNode::generateAccelerationPath() const
+autoware_msgs::msg::Lane PathGeneratorNode::generateAccelerationPath(const Anchor & start_pose) const
 {
   autoware_msgs::msg::Lane lane;
   std::vector<PlannedRow> rows;
+  const auto to_map = [&start_pose](const Anchor & local) {
+      const double c = std::cos(start_pose.yaw);
+      const double s = std::sin(start_pose.yaw);
+      return Anchor{start_pose.x + local.x*c - local.y*s,
+        start_pose.y + local.x*s + local.y*c,
+        std::atan2(std::sin(start_pose.yaw + local.yaw),
+          std::cos(start_pose.yaw + local.yaw))};
+    };
+  const Anchor entry = to_map(acceleration_entry_);
+  const Anchor brake = to_map(acceleration_brake_);
+  const Anchor stop = to_map(acceleration_stop_);
   // 发车 → 赛道终点（巡航），终点 → 停止（匀减速到 0）
-  appendSegment(lane, rows, acceleration_entry_, acceleration_brake_,
+  appendSegment(lane, rows, entry, brake,
     acceleration_velocity_, acceleration_velocity_, "run", 0);
-  appendSegment(lane, rows, acceleration_brake_, acceleration_stop_,
+  appendSegment(lane, rows, brake, stop,
     acceleration_velocity_, 0.0, "run", 0, true);
 
   RCLCPP_INFO(get_logger(),
-    "Fixed acceleration path generated: entry=(%.2f, %.2f) brake=(%.2f, %.2f) stop=(%.2f, %.2f) (%zu waypoints)",
-    acceleration_entry_.x, acceleration_entry_.y, acceleration_brake_.x, acceleration_brake_.y,
-    acceleration_stop_.x, acceleration_stop_.y, lane.waypoints.size());
+    "Fixed acceleration path generated: anchor_frame=%s start=(%.3f, %.3f, yaw=%.3f rad) "
+    "entry=(%.2f, %.2f) brake=(%.2f, %.2f) stop=(%.2f, %.2f) (%zu waypoints)",
+    acceleration_anchor_frame_.c_str(), start_pose.x, start_pose.y, start_pose.yaw,
+    entry.x, entry.y, brake.x, brake.y, stop.x, stop.y, lane.waypoints.size());
   return lane;
 }
 

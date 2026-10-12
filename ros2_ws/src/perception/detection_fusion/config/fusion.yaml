@@ -1,3 +1,4 @@
+# 实车融合参数唯一入口，保留迁移前硬件launch的有效值。
 detection_fusion_node:
   ros__parameters:
     lidar_topic: /perception/lidar/cones_raw
@@ -6,15 +7,30 @@ detection_fusion_node:
     output_topic: /perception/fused/cones
     fixed_frame: odom
     sync_slop_sec: 0.03
-    max_wait_sec: 0.10
+    max_wait_sec: 0.1
     max_queue: 20
     max_match_distance: 0.8
     mahalanobis_gate: 11.345
     pixel_margin: 8.0
     ambiguity_margin: 0.15
-    min_detection_confidence: 0.5
-    min_color_probability: 0.8
+    min_detection_confidence: 0.25
+    min_color_probability: 0.6
     lidar_sigma: 0.12
     reference_sigma: 0.15
     max_position_shift: 0.25
-    fuse_positions: true
+    fuse_positions: false
+    publish_unmatched_lidar: false
+    pointcloud_topic: /rslidar_points
+    guided_clustering: true
+    guided_voxel_size: 0.05
+    guided_cluster_tolerance: 0.15
+    guided_depth_tolerance: 0.4
+    guided_min_cluster_size: 5
+    guided_max_cluster_size: 200
+    guided_max_width: 0.5
+    guided_min_height: 0.08
+    guided_max_height: 0.7
+    debug_red: false
+    debug_orange: false
+    debug_sync_slop_sec: 0.06
+    debug_pixel_margin: 8.0

@@ -476,6 +476,8 @@ bool ConeMapBuilder::checkLoopClosure()
   const double dx = current_pose_.pose.position.x - start_pose_.pose.position.x;
   const double dy = current_pose_.pose.position.y - start_pose_.pose.position.y;
   const double dist_from_start = std::sqrt(dx * dx + dy * dy);
+  if (dist_from_start >= 2.0 * loop_closure_distance_) departed_start_ = true;
+  if (!departed_start_) return false;
   if (dist_from_start >= loop_closure_distance_) return false;
 
   const auto yaw_from_pose = [](const geometry_msgs::msg::PoseStamped & pose) {

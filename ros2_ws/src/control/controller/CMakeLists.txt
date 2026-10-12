@@ -44,4 +44,11 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/launch")
   )
 endif()
 
+if(BUILD_TESTING)
+  enable_testing()
+  add_executable(test_speed_pid test/test_speed_pid.cpp)
+  target_include_directories(test_speed_pid PRIVATE include)
+  add_test(NAME speed_pid COMMAND test_speed_pid)
+endif()
+
 ament_package()

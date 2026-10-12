@@ -10,7 +10,9 @@ Pure Pursuit 横向控制 + 速度跟踪纵向控制节点。算法来自 HRT-D 
 
 参数按点分命名空间分类，直线、EBS、八字、高速循迹四个赛项各自拥有一套独立的
 `pure_pursuit` / `pid` 调参，`inspection` 独立成流程，`vehicle` / `control` 全局共用。
-调参只需修改 `config/controller.yaml`，无需改动源码。
+调参修改本包 `config/controller.yaml`，它已恢复为独立文件。
+全车直接加载该模块配置；CAN标定与命令超时在 `system/can_interface/config/can_interface.yaml`。
+两个模块的最大转角必须相同，启动检查会核对。主目录旧统一配置不再加载；修改后重启节点生效。
 
 ```
 vehicle.*        轴距、最大转向角
@@ -115,13 +117,17 @@ skidpad 5 m/s；acceleration 15 m/s；EBS 12 m/s。
 
 ### 速度 PID（纵向开度）
 
+各赛项分别使用 `<mission>.pid.kp/ki/kd/integral_limit`。
+驱动和制动开度分别受该赛项 `throttle.max_opening` 和 `brake.max_opening` 限制；目标速度由规划模块的对应赛项速度配置生成。
+统一速度调试入口与 simple_p 已移除。车速反馈和定位的0.5秒超时保护固定保留。
+
 [controller_node.cpp](src/controller_node.cpp) `computeSpeedPid()`
 
 - 输入：平滑后的目标速度与 `/chcnav/velocity` 实测车速之差
-- 输出：`throttle_brake ∈ [-output_limit, output_limit]`，随 `/control/command` 一起发布
+- 输出：`throttle_brake ∈ [-brake.max_opening, throttle.max_opening]`，随 `/control/command` 一起发布
 - 每个赛项的 PID 增益独立，取自该赛项 `pid` 命名空间；切换赛项时生效
 - 首拍只初始化时间，不输出
-- 积分项与输出同量纲，分别钳位到 `integral_limit` / `output_limit`
+- 积分项与输出同量纲，积分项钳位到 `pid.integral_limit`，输出分别使用油门/制动开度边界
 - 目标速度 ≤ `pid.stop_clear_eps` 且实测车速 < `pid.stop_clear_speed` 时清零积分，防止溜车
 - 急停或速度反馈未就绪时清 PID 状态并输出 0（保守，不驱动）
 
@@ -203,7 +209,8 @@ skidpad 5 m/s；acceleration 15 m/s；EBS 12 m/s。
 | `*.pid.kp / ki / kd` | 1.0 / 0.05 / 0.1 | 速度 PID 增益 |
 | `*.pid.stop_clear_eps` | 0.05 m/s | 目标速度消积分阈值 |
 | `*.pid.stop_clear_speed` | 0.5 m/s | 消积分车速门限 |
-| `*.pid.output_limit` | 1.0 | 开度输出钳位 |
+| `*.throttle.max_opening` | 1.0 | 最大驱动开度，范围[0,1] |
+| `*.brake.max_opening` | 1.0 | 最大制动开度，范围[0,1] |
 | `*.pid.integral_limit` | 1.0 | 积分项钳位 |
 | `*.finish.position_tolerance` | 0.75 m | 终点位置容差 |
 | `*.finish.speed_threshold` | 0.2 m/s | 终点速度阈值 |
@@ -254,3 +261,5 @@ skidpad 5 m/s；acceleration 15 m/s；EBS 12 m/s。
 - [x] 速度 PID 闭环：`/chcnav/velocity` 反馈 → `/control/command.throttle_brake`
 - [x] Trackdrive 曲率速度规划：`path_generator` 为在线局部中心线生成速度剖面，控制器采用前视目标点速度以在路径刷新后保持弯道减速
 - [x] `/control/command` → VCU CAN 帧：由 `system/can_interface` 封装为 0x210（Signal1 `throttle_brake` / Signal2 `angle`）
+
+旧赛项 `pid.output_limit` 已移除，启动时若仍传入会明确报错。迁移时把旧值同时填入两个新开度参数，保持行为一致；车检配置不变。

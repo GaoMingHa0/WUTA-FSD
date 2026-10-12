@@ -1,0 +1,8 @@
+# 立体适配器话题配置，默认使用C++后端。
+/**:
+  ros__parameters:
+    boxes_topic: /camera/yolo/cones
+    depth_topic: /zed/zed_node/depth/depth_registered
+    info_topic: /zed/zed_node/rgb/camera_info
+    output_topic: /perception/camera/cones
+    output_info_topic: /perception/camera/camera_info

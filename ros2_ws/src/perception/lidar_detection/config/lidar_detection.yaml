@@ -1,40 +1,24 @@
+# 实车M1检测参数。由模块化硬件launch直接加载，不再被固定阈值覆盖。
+# 仿真地面滤波在仿真入口显式覆盖，不修改此文件。
 lidar_detection_node:
   ros__parameters:
-    # Backend: "traditional" or "dl"
-    detector_type: "traditional"
-
-    # Topic names
-    input_topic:  "/hesai/pandar"           # Hesai 128-line LiDAR raw point cloud
-    output_topic: "/perception/lidar/cones" # ConeArray output
-    visualization_tf_timeout_sec: 0.1        # Exact map<-lidar TF wait for cones_viz
-
-    # --- Traditional detector parameters ---
-
-    # Ground removal
-    # The simulator ground is centered at z=-1.0 m in the lidar frame.
-    # RANSAC with a 0.2 m inlier band also removes most points from a 0.3 m
-    # cone, leaving a cluster that fails min_cone_height.  A known-height
-    # cutoff keeps the cone body while rejecting simulated ground returns.
-    use_ransac: false
-    ground_z_threshold: -0.95       # m, keep points above this height
-    ransac_distance_threshold: 0.2  # m
-    ground_max_tilt_deg: 5.0        # ground normal must stay within 5 deg of lidar Z
-
-    # Voxel downsampling
-    voxel_leaf_size: 0.1            # m
-
-    # Euclidean clustering
-    cluster_tolerance: 0.4          # m
+    detector_type: traditional
+    input_topic: /rslidar_points
+    output_topic: /perception/lidar/cones_raw
+    visualization_tf_timeout_sec: 0.1
+    use_ransac: true
+    ground_z_threshold: -0.95
+    ransac_distance_threshold: 0.08
+    ground_max_tilt_deg: 5.0
+    voxel_leaf_size: 0.08
+    cluster_tolerance: 0.4
     min_cluster_size: 3
     max_cluster_size: 200
-
-    # Cone shape filter
-    max_cone_width: 0.5             # m
-    max_cone_height: 0.6            # m
-    min_cone_height: 0.1            # m
-
-    # Detection range
-    max_detection_range: 20.0       # m
-
-    # --- DL detector parameters (used when detector_type: "dl") ---
-    # model_path: "/path/to/model.bin"
+    max_cone_width: 0.5
+    max_cone_height: 0.6
+    min_cone_height: 0.1
+    max_detection_range: 20.0
+    voxel_before_ground: true
+    ransac_max_iterations: 500
+    ransac_probability: 0.999
+    profile_stages: false

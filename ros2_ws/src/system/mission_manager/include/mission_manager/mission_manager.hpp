@@ -43,6 +43,17 @@ private:
   void onGlobalCenterlineReady(const std_msgs::msg::Bool::SharedPtr msg);
   void onLocalizationConfidence(const std_msgs::msg::Float32::SharedPtr msg);
   void onPose(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
+  bool lidarReady() const;
+  void refreshLidarReady();
+  struct RaceGates {
+    bool pose_fresh;
+    bool confidence_ok;
+    bool localization_ok;
+    bool first_lap_complete;
+    bool passed;
+  };
+  RaceGates raceGates() const;
+  std::string waitingReasons() const;
   void advanceWhenReady();
   void advanceRaceWhenReady();
   bool coneMapQualityPasses(const wuta_msgs::msg::ConeMap & map) const;
@@ -67,6 +78,7 @@ private:
   bool global_centerline_ready_{false};
   bool ndt_map_ready_{false};
   bool mode_selected_{false};     // 已由 AMI 选过任务模式（0x501 模式字节到达过）
+  uint32_t go_received_count_{0};  // Diagnostic counter; includes consumed GO events.
   bool start_requested_{false};   // RES GO 放行（0x1E4 Byte1=0x13 → /system/start_command）
 
   // Trackdrive lap counter. The first active localization pose defines the
@@ -97,7 +109,7 @@ private:
   bool use_ndt_race_localization_{false};
 
   // 开机传感器自检（心跳监控）参数与状态
-  bool check_lidar_{false};   // 预留，型号/话题未定
+  bool check_lidar_{false};   // M1；关闭故障检查仍需点云心跳才能发车
   bool check_imu_{true};      // CGI-410
   bool check_camera_{false};  // 预留
   double sensor_timeout_sec_{2.0};
@@ -119,7 +131,6 @@ private:
   // Subscribers
   rclcpp::Subscription<wuta_msgs::msg::ConeMap>::SharedPtr cone_map_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr emergency_sub_;
-  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr lidar_status_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr localization_status_sub_;
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr mission_mode_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr start_command_sub_;

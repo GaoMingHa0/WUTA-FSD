@@ -85,6 +85,7 @@ private:
   bool loop_closed_{false};
   bool start_pose_set_{false};
   bool travel_pose_ready_{false};
+  bool departed_start_{false};  // 排除静止定位噪声累加造成的假闭环
   bool mapping_pose_ready_{false};
   bool formal_mapping_lap_completed_{false};
   double traveled_distance_{0.0};

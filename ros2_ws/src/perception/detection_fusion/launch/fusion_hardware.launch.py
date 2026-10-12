@@ -4,7 +4,7 @@ from pathlib import Path
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
-from launch.conditions import IfCondition, UnlessCondition
+from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
@@ -52,7 +52,8 @@ def setup(context):
             get_package_share_directory('zed_wrapper')) / 'launch/zed_camera.launch.py')),
             launch_arguments={'camera_model': 'zed2i', 'camera_name': 'zed',
                 'ros_params_override_path': str(share / 'config/zed_hardware.yaml'),
-                'publish_tf': 'true', 'publish_map_tf': 'true'}.items(),
+                'publish_tf': value('zed_publish_tf'),
+                'publish_map_tf': value('zed_publish_map_tf')}.items(),
             condition=IfCondition(LaunchConfiguration('start_drivers'))),
         Node(package='rslidar_sdk', executable='rslidar_sdk_node',
              parameters=[{'config_path': str(share / 'config/rsm1_hardware.yaml')}],
@@ -124,9 +125,10 @@ def setup(context):
                  'semantic_color_confirmation_hits': 3}],
              remappings=[('/perception/lidar/cones', '/perception/fused/cones'),
                          ('/localization/pose', value('localization_pose_topic'))],
-             condition=UnlessCondition(PythonExpression([
-                 '"', LaunchConfiguration('debug_red'), '" == "true" or "',
-                 LaunchConfiguration('debug_orange'), '" == "true"'])), output='screen'),
+             condition=IfCondition(PythonExpression([
+                 '"', LaunchConfiguration('start_map_builder'), '" == "true" and not ("',
+                 LaunchConfiguration('debug_red'), '" == "true" or "',
+                 LaunchConfiguration('debug_orange'), '" == "true")'])), output='screen'),
         Node(package='rviz2', executable='rviz2', arguments=['-d', value('rviz_config')],
              condition=IfCondition(LaunchConfiguration('launch_rviz')), output='screen'),
     ]
@@ -146,6 +148,9 @@ def generate_launch_description():
             description='C++ late fusion or original Python fusion node'),
         DeclareLaunchArgument('calibration_path', description='camera-from-lidar YAML path'),
         DeclareLaunchArgument('start_drivers', default_value='true', choices=['true', 'false']),
+        DeclareLaunchArgument('start_map_builder', default_value='true', choices=['true', 'false']),
+        DeclareLaunchArgument('zed_publish_tf', default_value='true', choices=['true', 'false']),
+        DeclareLaunchArgument('zed_publish_map_tf', default_value='true', choices=['true', 'false']),
         DeclareLaunchArgument('launch_rviz', default_value='false', choices=['true', 'false']),
         DeclareLaunchArgument('rviz_config', default_value=str(Path(
             get_package_share_directory('detection_fusion')) / 'config/hardware.rviz')),

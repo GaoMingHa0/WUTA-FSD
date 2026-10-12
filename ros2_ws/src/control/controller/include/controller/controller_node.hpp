@@ -12,6 +12,7 @@
 #include "controller/vehicle_state.hpp"
 #include "controller/pure_pursuit.hpp"
 #include "controller/twist_filter.hpp"
+#include "controller/speed_pid.hpp"
 
 namespace controller
 {
@@ -31,7 +32,8 @@ private:
     double pid_kd{0.1};
     double pid_stop_clear_eps{0.05};
     double pid_stop_clear_speed{0.5};
-    double pid_output_limit{1.0};
+    double throttle_max_opening{1.0};
+    double brake_max_opening{1.0};
     double pid_integral_limit{1.0};
     bool   has_finish{false};
     double finish_position_tolerance{0.75};
@@ -98,6 +100,8 @@ private:
   VehicleState vehicle_state_;
   std::vector<autoware_msgs::msg::Waypoint> waypoints_;
   bool pose_ready_{false};
+  const double pose_timeout_sec_{0.5};  // 固定定位超时保护，不作为调参入口
+  rclcpp::Time last_pose_time_;
   bool waypoints_ready_{false};
   bool enabled_{false};
   bool emergency_{false};
@@ -119,12 +123,14 @@ private:
 
   // 速度 PID（当前赛项生效的增益）
   bool speed_feedback_available_{false};
+  rclcpp::Time last_speed_feedback_time_;
   double pid_speed_kp_{1.0};
   double pid_speed_ki_{0.05};
   double pid_speed_kd_{0.1};
   double pid_stop_clear_eps_{0.05};
   double pid_stop_clear_speed_{0.5};
-  double pid_output_limit_{1.0};
+  double throttle_max_opening_{1.0};
+  double brake_max_opening_{1.0};
   double pid_integral_limit_{1.0};
   double pid_integral_{0.0};
   double pid_prev_err_{0.0};

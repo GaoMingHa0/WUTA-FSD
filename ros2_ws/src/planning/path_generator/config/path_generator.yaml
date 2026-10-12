@@ -14,7 +14,8 @@ path_generator_node:
     # 记录内容仅用于离线分析，不影响规划/控制输出。
     record:
       enabled: true
-      dir: ros2_ws/control_planning_log/{mission}/{stamp}  # 相对 WUTA-FSD 解析
+      run_dir: ""  # 启动入口传入绝对运行目录，轨迹写入 jrajectory/
+      dir: logs/{mission}/{stamp}/jrajectory  # 独立启动时相对项目根目录解析
       planned_file: planned.csv   # 规划轨迹逐点（含 phase/lap/target_speed）
       driven_file: driven.csv     # 实际位姿 + 车速 + 控制指令
       flush_interval_sec: 1.0     # s，落盘刷新周期
@@ -56,7 +57,7 @@ path_generator_node:
         publish_period_sec: 0.10      # s，发布周期
 
     # ==================== 地图原点（坐标系锚点） ====================
-    # 全系统唯一的 map 坐标系原点；路径锚点均用绝对 map 坐标，本项仅作声明/校验。
+    # map坐标原点声明，本项不执行坐标变换；acceleration可单独选start_pose参考系。
     map_origin:
       x: 0.0
       y: 0.0
@@ -65,6 +66,14 @@ path_generator_node:
     # ==================== 赛项：八字绕环（SKIDPAD） ====================
     # 锚点均为绝对 map 坐标；路径朝向以两点连线方向为准（与 yaw 偏差过大会告警）。
     skidpad:
+      # 临时替代八字：直行 → 左转半圆 → 返回起点横截线并停车。
+      # 起点/朝向使用 anchor.entry（绝对 map）；关闭 enabled 恢复原八字。
+      u_turn_test:
+        enabled: true
+        straight_distance: 15.0       # m，去程和返程直线长度
+        radius: 9.125                 # m，回程位于起点左侧 2R
+        velocity: 1.0                 # m/s，巡航及转弯速度
+        brake_distance: 5.0           # m，返程最后此距离减速到 0，须 <= straight_distance
       # 赛道几何锚点（交叉点，不随定位位姿变化）
       geometry:
         radius: 9.125                 # m，绕环半径
@@ -84,12 +93,15 @@ path_generator_node:
     # ==================== 赛项：直线加速（ACCELERATION） ====================
     # 通过终点线后才制动，并在标记的 100m 出口车道内停车。
     acceleration:
+      # start_pose：启动时冻结一次定位位姿；X前、Y左、yaw=0沿发车车头。
+      # 转换后仍发布固定map路径；map可恢复原来的绝对地图锚点方式。
+      anchor_frame: start_pose
       anchor:
-        entry: { x: -0.30, y: 0.0, yaw: 0.0 }   # 发车坐标（起点线）
-        brake: { x: 75.0,  y: 0.0, yaw: 0.0 }   # 赛道终点 / 开始制动点（75m 计时终点）
-        stop:  { x: 175.0, y: 0.0, yaw: 0.0 }   # 停止坐标（终点后 100m）
+        entry: { x: 0.0, y: 0.0, yaw: 0.0 }   # 发车位置后方0.30m
+        brake: { x: 5.0, y: 0.0, yaw: 0.0 }   # 发车位置前方15m开始制动
+        stop:  { x: 10.0, y: 0.0, yaw: 0.0 }   # 发车位置前方20m停车
       speed:
-        velocity: 15.0                # m/s，加速目标速度
+        velocity: 0.7                # m/s，加速目标速度
 
     # ==================== 赛项：EBS 测试（EBS） ====================
     # 7.5：起点后 0.3m，25m 测速点 ≥40km/h(11.11m/s)，急停后 ≤10m 内停车。

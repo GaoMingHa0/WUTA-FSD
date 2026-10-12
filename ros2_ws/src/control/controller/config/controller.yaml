@@ -1,110 +1,123 @@
+# 控制器参数唯一入口；修改后重启控制器。CAN通信和执行器标定在CAN模块config。
 controller_node:
   ros__parameters:
     # ---------- 车辆 ----------
     vehicle:
-      wheel_base: 1.614           # m，轴距
-      max_steer_angle: 28.0       # deg，前轮最大转角。注意：需与 can_interface 中 max_steer_angle 保持一致
+      wheel_base: 1.614  # m，轴距
+      max_steer_angle: 28.0  # deg，前轮最大转角。控制器与 CAN 接口共用此值
 
     # ---------- 控制回路与安全滤波（所有赛项共用）----------
     control:
-      rate_hz: 50                       # Hz，控制回路频率
-      max_steering_rate_deg_s: 180.0    # deg/s，转向变化率上限；越小越平滑
-      accel_alpha: 0.1                  # 加速平滑系数(0~1)；越大加速越跟手
-      decel_alpha: 0.7                  # 减速响应系数(0~1)；越大减速越跟手
+      rate_hz: 50  # Hz，控制回路频率
+      max_steering_rate_deg_s: 180.0  # deg/s，转向变化率上限；越小越平滑
+      accel_alpha: 0.1  # 加速平滑系数(0~1)；越大加速越跟手
+      decel_alpha: 0.7  # 减速响应系数(0~1)；越大减速越跟手
 
     # ---------- 赛项：直线加速 ----------
     acceleration:
       pure_pursuit:
-        lookahead_ratio: 2.0              # 前视 = 车速 × 该系数
-        min_lookahead: 2.0                # m，低速前视下限
-        max_lookahead: 20.0               # m，高速前视上限
-        max_progress_advance: 4           # 单周期最多推进的路径点数
+        lookahead_ratio: 2.0  # 前视 = 车速 × 该系数
+        min_lookahead: 2.0  # m，低速前视下限
+        max_lookahead: 20.0  # m，高速前视上限
+        max_progress_advance: 4  # 单周期最多推进的路径点数
         terminal_progress_distance: 0.75  # m，终点进度点触发距离
-        course_speed_threshold: 0.5       # m/s，低于此速用 yaw 作航向
-        forward_margin: 0.5               # m，目标点前向接纳门限
+        course_speed_threshold: 0.5  # m/s，低于此速用 yaw 作航向
+        forward_margin: 0.5  # m，目标点前向接纳门限
       pid:
-        kp: 1.0                           # 比例增益
-        ki: 0.05                          # 积分增益
-        kd: 0.1                           # 微分增益
-        stop_clear_eps: 0.05              # m/s，目标速度低于此值开始消积分
-        stop_clear_speed: 0.5             # m/s，车速低于此值才允许消积分
-        output_limit: 1.0                 # 开度输出钳位
-        integral_limit: 1.0               # 积分项钳位
+        kp: 0.3 # 比例增益
+        ki: 0.05  # 积分增益
+        kd: 0.1  # 微分增益
+        stop_clear_eps: 0.05  # m/s，目标速度低于此值开始消积分
+        stop_clear_speed: 0.5  # m/s，车速低于此值才允许消积分
+        integral_limit: 1.0  # 积分项钳位
+      throttle:
+        max_opening: 1.0  # 最大驱动开度，范围0～1
+      brake:
+        max_opening: 1.0  # 最大制动开度，范围0～1
       finish:
-        position_tolerance: 0.75          # m，距终点位置容差
-        speed_threshold: 0.2              # m/s，判定停稳的车速阈值
+        position_tolerance: 0.75  # m，距终点位置容差
+        speed_threshold: 0.2  # m/s，判定停稳的车速阈值
 
     # ---------- 赛项：EBS 测试 ----------
     ebs:
       pure_pursuit:
-        lookahead_ratio: 2.0              # 前视 = 车速 × 该系数
-        min_lookahead: 2.0                # m，低速前视下限
-        max_lookahead: 20.0               # m，高速前视上限
-        max_progress_advance: 4           # 单周期最多推进的路径点数
+        lookahead_ratio: 2.0  # 前视 = 车速 × 该系数
+        min_lookahead: 2.0  # m，低速前视下限
+        max_lookahead: 20.0  # m，高速前视上限
+        max_progress_advance: 4  # 单周期最多推进的路径点数
         terminal_progress_distance: 0.75  # m，终点进度点触发距离
-        course_speed_threshold: 0.5       # m/s，低于此速用 yaw 作航向
-        forward_margin: 0.5               # m，目标点前向接纳门限
+        course_speed_threshold: 0.5  # m/s，低于此速用 yaw 作航向
+        forward_margin: 0.5  # m，目标点前向接纳门限
       pid:
-        kp: 1.0                           # 比例增益
-        ki: 0.05                          # 积分增益
-        kd: 0.1                           # 微分增益
-        stop_clear_eps: 0.05              # m/s，目标速度低于此值开始消积分
-        stop_clear_speed: 0.5             # m/s，车速低于此值才允许消积分
-        output_limit: 1.0                 # 开度输出钳位
-        integral_limit: 1.0               # 积分项钳位
+        kp: 1.0  # 比例增益
+        ki: 0.05  # 积分增益
+        kd: 0.1  # 微分增益
+        stop_clear_eps: 0.05  # m/s，目标速度低于此值开始消积分
+        stop_clear_speed: 0.5  # m/s，车速低于此值才允许消积分
+        integral_limit: 1.0  # 积分项钳位
+      throttle:
+        max_opening: 1.0  # 最大驱动开度，范围0～1
+      brake:
+        max_opening: 1.0  # 最大制动开度，范围0～1
       finish:
-        position_tolerance: 0.75          # m，距终点位置容差
-        speed_threshold: 0.2              # m/s，判定停稳的车速阈值
+        position_tolerance: 0.75  # m，距终点位置容差
+        speed_threshold: 0.2  # m/s，判定停稳的车速阈值
 
     # ---------- 赛项：八字绕环 ----------
     skidpad:
       pure_pursuit:
-        lookahead: 2.5                    # m，固定前视距离
-        max_progress_advance: 4           # 单周期最多推进的路径点数
+        lookahead: 2.5  # m，固定前视距离
+        max_progress_advance: 4  # 单周期最多推进的路径点数
         terminal_progress_distance: 0.75  # m，终点进度点触发距离
-        course_speed_threshold: 0.5       # m/s，低于此速用 yaw 作航向
-        forward_margin: 0.5               # m，目标点前向接纳门限
+        course_speed_threshold: 0.5  # m/s，低于此速用 yaw 作航向
+        forward_margin: 0.5  # m，目标点前向接纳门限
       pid:
-        kp: 1.0                           # 比例增益
-        ki: 0.05                          # 积分增益
-        kd: 0.1                           # 微分增益
-        stop_clear_eps: 0.05              # m/s，目标速度低于此值开始消积分
-        stop_clear_speed: 0.5             # m/s，车速低于此值才允许消积分
-        output_limit: 1.0                 # 开度输出钳位
-        integral_limit: 1.0               # 积分项钳位
+        kp: 1.0  # 比例增益
+        ki: 0.05  # 积分增益
+        kd: 0.1  # 微分增益
+        stop_clear_eps: 0.05  # m/s，目标速度低于此值开始消积分
+        stop_clear_speed: 0.5  # m/s，车速低于此值才允许消积分
+        integral_limit: 1.0  # 积分项钳位
+      throttle:
+        max_opening: 1.0  # 最大驱动开度，范围0～1
+      brake:
+        max_opening: 1.0  # 最大制动开度，范围0～1
       finish:
-        position_tolerance: 0.75          # m，距终点位置容差
-        speed_threshold: 0.2              # m/s，判定停稳的车速阈值
+        position_tolerance: 0.75  # m，距终点位置容差
+        speed_threshold: 0.2  # m/s，判定停稳的车速阈值
 
     # ---------- 赛项：高速循迹 ----------
     trackdrive:
       pure_pursuit:
-        min_lookahead: 3.0                # m，急弯前视下限
-        max_lookahead: 5.0                # m，直线前视上限
-        max_progress_advance: 4           # 单周期最多推进的路径点数
+        min_lookahead: 3.0  # m，急弯前视下限
+        max_lookahead: 5.0  # m，直线前视上限
+        max_progress_advance: 4  # 单周期最多推进的路径点数
         terminal_progress_distance: 0.75  # m，终点进度点触发距离
-        course_speed_threshold: 0.5       # m/s，低于此速用 yaw 作航向
-        forward_margin: 0.5               # m，目标点前向接纳门限
-        dynamic_lookahead: true           # 按前方曲率自适应前视
+        course_speed_threshold: 0.5  # m/s，低于此速用 yaw 作航向
+        forward_margin: 0.5  # m，目标点前向接纳门限
+        dynamic_lookahead: true  # 按前方曲率自适应前视
         curvature_preview_distance: 12.0  # m，前方曲率检查长度
-        straight_curvature: 0.03          # 1/m，超过开始缩短前视
-        corner_curvature: 0.16            # 1/m，达到即用最小前视
-        lookahead_rate_limit: 3.0         # m/s，前视变化率上限
-        curvature_percentile: 0.75        # 曲率抗噪分位(0~1)
-        curvature_peak_factor: 0.6        # 峰值曲率权重(0~1)
+        straight_curvature: 0.03  # 1/m，超过开始缩短前视
+        corner_curvature: 0.16  # 1/m，达到即用最小前视
+        lookahead_rate_limit: 3.0  # m/s，前视变化率上限
+        curvature_percentile: 0.75  # 曲率抗噪分位(0~1)
+        curvature_peak_factor: 0.6  # 峰值曲率权重(0~1)
       pid:
-        kp: 1.0                           # 比例增益
-        ki: 0.05                          # 积分增益
-        kd: 0.1                           # 微分增益
-        stop_clear_eps: 0.05              # m/s，目标速度低于此值开始消积分
-        stop_clear_speed: 0.5             # m/s，车速低于此值才允许消积分
-        output_limit: 1.0                 # 开度输出钳位
-        integral_limit: 1.0               # 积分项钳位
-      target_loss_hold_time: 0.5          # s，无前向目标时保持上一指令的时长
+        kp: 1.0  # 比例增益
+        ki: 0.05  # 积分增益
+        kd: 0.1  # 微分增益
+        stop_clear_eps: 0.05  # m/s，目标速度低于此值开始消积分
+        stop_clear_speed: 0.5  # m/s，车速低于此值才允许消积分
+        integral_limit: 1.0  # 积分项钳位
+      throttle:
+        max_opening: 1.0  # 最大驱动开度，范围0～1
+      brake:
+        max_opening: 1.0  # 最大制动开度，范围0～1
+      target_loss_hold_time: 0.5  # s，无前向目标时保持上一指令的时长
 
     # ---------- 赛项：车检 ----------
     inspection:
-      throttle: 0.05            # 恒定纵向开度[0,1]，直接下发，不走 PID
-      steer_amplitude: 6.0      # deg，前轮正弦转向幅值（= 方向盘 ±30° ÷ 转向比 5）
-      steer_period: 9.0         # s，正弦转向周期
-      duration: 27.0            # s，车检时长（与周期自动配成过零收尾）
+      throttle: 0.05  # 恒定纵向开度[0,1]，直接下发，不走 PID
+      steer_amplitude: 6.0  # deg，前轮正弦转向幅值（= 方向盘 ±30° ÷ 转向比 5）
+      steer_period: 9.0  # s，正弦转向周期
+      duration: 27.0  # s，车检时长（与周期自动配成过零收尾）

@@ -70,3 +70,7 @@ ros2_ws/src/perception/camera_detection/models/*.pt
 ros2_ws/src/perception/camera_detection/models/*.pth*
 ros2_ws/src/perception/camera_detection/models/*.calib
 ros2_ws/src/perception/calibration/camera_lidar.yaml
+
+# Local runtime state and generated install manifests
+.runtime/
+ros2_ws/symlink_install_manifest.txt

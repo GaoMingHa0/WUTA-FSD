@@ -25,9 +25,9 @@ mission_manager:
     check_lidar: true
     check_imu: true
     check_camera: true
-    lidar_topic: /hesai/pandar
+    lidar_topic: /rslidar_points
     imu_topic: /chcnav/odometry
-    camera_topic: /zed2i/zed_node/left/image_rect_color
+    camera_topic: /zed/zed_node/rgb/image_rect_color
     sensor_timeout_sec: 2.0
     selfcheck_interval_sec: 1.0
     selfcheck_grace_sec: 4.0

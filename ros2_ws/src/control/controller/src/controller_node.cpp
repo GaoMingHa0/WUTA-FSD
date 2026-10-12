@@ -3,6 +3,7 @@
 #include <chrono>
 #include <cmath>
 #include <string>
+#include <stdexcept>
 #include <vector>
 #include <visualization_msgs/msg/marker.hpp>
 
@@ -26,6 +27,10 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
   VehicleParams vp;
   vp.wheel_base      = declare_parameter("vehicle.wheel_base",       vp.wheel_base);
   vp.max_steer_angle = declare_parameter("vehicle.max_steer_angle",  vp.max_steer_angle);
+  if (!std::isfinite(vp.wheel_base) || vp.wheel_base <= 0 ||
+    !std::isfinite(vp.max_steer_angle) || vp.max_steer_angle <= 0) {
+    throw std::invalid_argument("Vehicle wheel_base and max_steer_angle must be finite and positive");
+  }
 
   // 控制回路与安全滤波（所有赛项共用）
   const int rate_hz = declare_parameter("control.rate_hz", 50);
@@ -34,6 +39,11 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
   TwistFilter::Config filter_cfg;
   filter_cfg.accel_alpha = declare_parameter("control.accel_alpha", filter_cfg.accel_alpha);
   filter_cfg.decel_alpha = declare_parameter("control.decel_alpha", filter_cfg.decel_alpha);
+  if (rate_hz <= 0 || !std::isfinite(max_steering_rate_deg_s) || max_steering_rate_deg_s < 0 ||
+    !std::isfinite(filter_cfg.accel_alpha) || filter_cfg.accel_alpha < 0 || filter_cfg.accel_alpha > 1 ||
+    !std::isfinite(filter_cfg.decel_alpha) || filter_cfg.decel_alpha < 0 || filter_cfg.decel_alpha > 1) {
+    throw std::invalid_argument("Invalid control rate, steering rate or smoothing alpha");
+  }
 
   // 各赛项独立调参
   loadMissionConfig();
@@ -86,6 +96,7 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
     std::bind(&ControllerNode::controlLoop, this));
 
   RCLCPP_INFO(get_logger(), "ControllerNode ready. rate=%dHz", rate_hz);
+
 }
 
 // 从参数读入各赛项的横向/纵向/终点配置
@@ -109,10 +120,27 @@ void ControllerNode::loadMissionConfig()
       ns + ".pid.stop_clear_eps", m.pid_stop_clear_eps);
     m.pid_stop_clear_speed = declare_parameter(
       ns + ".pid.stop_clear_speed", m.pid_stop_clear_speed);
-    m.pid_output_limit = declare_parameter(
-      ns + ".pid.output_limit", m.pid_output_limit);
+    // 油门/制动限幅属于执行开度参数，按赛项分别设置。
+    if (get_node_parameters_interface()->get_parameter_overrides().count(ns + ".pid.output_limit")) {
+      throw std::invalid_argument(ns + ": 旧pid.output_limit已移除，请将原值分别迁移到throttle.max_opening和brake.max_opening");
+    }
+    m.throttle_max_opening = declare_parameter(
+      ns + ".throttle.max_opening", m.throttle_max_opening);
+    m.brake_max_opening = declare_parameter(
+      ns + ".brake.max_opening", m.brake_max_opening);
     m.pid_integral_limit = declare_parameter(
       ns + ".pid.integral_limit", m.pid_integral_limit);
+    for (double value : {m.pid_kp, m.pid_ki, m.pid_kd, m.pid_stop_clear_eps,
+      m.pid_stop_clear_speed, m.pid_integral_limit}) {
+      if (!std::isfinite(value) || value < 0) {
+        throw std::invalid_argument(ns + ": PID参数必须为非负有限值");
+      }
+    }
+    for (double opening : {m.throttle_max_opening, m.brake_max_opening}) {
+      if (!std::isfinite(opening) || opening < 0 || opening > 1) {
+        throw std::invalid_argument(ns + ": throttle/brake.max_opening必须为[0,1]内的有限值");
+      }
+    }
   };
   auto load_finish = [this](const std::string & ns, MissionConfig & m) {
     m.has_finish = true;
@@ -181,6 +209,20 @@ void ControllerNode::loadMissionConfig()
   trackdrive_target_loss_hold_time_ = declare_parameter(
     "trackdrive.target_loss_hold_time", trackdrive_target_loss_hold_time_);
   filtered_trackdrive_lookahead_ = trackdrive_lookahead_;
+  for (const auto * cfg : {&accel_cfg_, &ebs_cfg_, &skidpad_cfg_, &trackdrive_cfg_}) {
+    if (!std::isfinite(cfg->pp.ld_ratio) || cfg->pp.ld_ratio <= 0 ||
+      !std::isfinite(cfg->pp.min_lookahead) || cfg->pp.min_lookahead <= 0 ||
+      !std::isfinite(cfg->pp.max_lookahead) || cfg->pp.max_lookahead < cfg->pp.min_lookahead) {
+      throw std::invalid_argument("前视距离参数必须有限、为正且上下限有序");
+    }
+  }
+  if (!std::isfinite(curvature_percentile_) || curvature_percentile_ < 0 || curvature_percentile_ > 1 ||
+    !std::isfinite(curvature_peak_factor_) || curvature_peak_factor_ < 0 ||
+    !std::isfinite(trackdrive_lookahead_rate_limit_) || trackdrive_lookahead_rate_limit_ < 0 ||
+    !std::isfinite(trackdrive_straight_curvature_) || trackdrive_straight_curvature_ < 0 ||
+    !std::isfinite(trackdrive_corner_curvature_) || trackdrive_corner_curvature_ <= trackdrive_straight_curvature_) {
+    throw std::invalid_argument("曲率前视参数无效");
+  }
 }
 
 const ControllerNode::MissionConfig & ControllerNode::configFor(uint8_t mission_mode) const
@@ -203,7 +245,8 @@ void ControllerNode::applyMissionConfig(uint8_t mission_mode)
   pid_speed_kd_ = cfg.pid_kd;
   pid_stop_clear_eps_ = cfg.pid_stop_clear_eps;
   pid_stop_clear_speed_ = cfg.pid_stop_clear_speed;
-  pid_output_limit_ = cfg.pid_output_limit;
+  throttle_max_opening_ = cfg.throttle_max_opening;
+  brake_max_opening_ = cfg.brake_max_opening;
   pid_integral_limit_ = cfg.pid_integral_limit;
 }
 
@@ -222,25 +265,40 @@ void ControllerNode::resetControlPipeline()
 
 void ControllerNode::onPose(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
 {
+  const auto & p = msg->pose.position;
+  const auto & rotation = msg->pose.orientation;
+  const double norm2 = rotation.x * rotation.x + rotation.y * rotation.y +
+    rotation.z * rotation.z + rotation.w * rotation.w;
+  if (!std::isfinite(p.x) || !std::isfinite(p.y) || !std::isfinite(norm2) || norm2 < 1e-12) {
+    pose_ready_ = false;
+    return;
+  }
   vehicle_state_.x = msg->pose.position.x;
   vehicle_state_.y = msg->pose.position.y;
 
   const auto & q = msg->pose.orientation;
   vehicle_state_.yaw = std::atan2(
     2.0 * (q.w * q.z + q.x * q.y),
-    1.0 - 2.0 * (q.y * q.y + q.z * q.z));
+    norm2 - 2.0 * (q.y * q.y + q.z * q.z));
 
   pose_ready_ = true;
+  last_pose_time_ = now();
 }
 
 void ControllerNode::onVelocity(const geometry_msgs::msg::TwistStamped::SharedPtr msg)
 {
   const double vx = msg->twist.linear.x;
   const double vy = msg->twist.linear.y;
+  const double speed = std::hypot(vx, vy);
+  if (!std::isfinite(vx) || !std::isfinite(vy) || !std::isfinite(speed)) {
+    speed_feedback_available_ = false;
+    return;
+  }
   vehicle_state_.vx = vx;
   vehicle_state_.vy = vy;
-  vehicle_state_.velocity = std::sqrt(vx * vx + vy * vy);
+  vehicle_state_.velocity = speed;
   speed_feedback_available_ = true;
+  last_speed_feedback_time_ = now();
 }
 
 double ControllerNode::computeSpeedPid(double target_speed)
@@ -259,12 +317,10 @@ double ControllerNode::computeSpeedPid(double target_speed)
     pid_integral_ = 0.0;
   }
 
-  pid_integral_ = std::clamp(
-    pid_integral_ + pid_speed_ki_ * err * dt, -pid_integral_limit_, pid_integral_limit_);
-  const double deriv = (err - pid_prev_err_) / dt;
-  const double x = std::clamp(
-    pid_speed_kp_ * err + pid_integral_ + pid_speed_kd_ * deriv,
-    -pid_output_limit_, pid_output_limit_);
+  const SpeedPidConfig cfg{
+    pid_speed_kp_, pid_speed_ki_, pid_speed_kd_, pid_integral_limit_,
+    throttle_max_opening_, brake_max_opening_};
+  const double x = speedPidEffort(err, dt, pid_prev_err_, cfg, pid_integral_);
 
   pid_prev_err_ = err;
   pid_last_time_ = t;
@@ -273,16 +329,35 @@ double ControllerNode::computeSpeedPid(double target_speed)
 
 double ControllerNode::computeThrottleBrake(double target_speed)
 {
-  // 急停或速度反馈未就绪：清 PID 状态并输出 0
-  if (emergency_ || !speed_feedback_available_) {
+  // 赛项PID要求有效车速反馈；固定0.5秒超时保护，不提供额外调参入口。
+  const double feedback_age = speed_feedback_available_
+    ? (now() - last_speed_feedback_time_).seconds() : 0.0;
+  const bool feedback_fresh = speed_feedback_available_ && std::isfinite(feedback_age) &&
+    feedback_age >= 0 && feedback_age <= 0.5;
+  if (emergency_ || !feedback_fresh ||
+    !std::isfinite(target_speed) || target_speed < 0) {
+    if (!emergency_ && !feedback_fresh) {
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
+        "车速反馈未就绪、无效或超时，纵向开度归零（不代表主动急停）。");
+    }
     resetSpeedPid();
     return 0.0;
   }
-  return computeSpeedPid(target_speed);
+  const double effort = computeSpeedPid(target_speed);
+  // 零速目标不能因噪声微分项或残余积分重新给出正驱动。
+  return target_speed <= pid_stop_clear_eps_ ? std::min(0.0, effort) : effort;
 }
 
 void ControllerNode::onWaypoints(const autoware_msgs::msg::Lane::SharedPtr msg)
 {
+  for (const auto & wp : msg->waypoints) {
+    if (!std::isfinite(wp.pose.pose.position.x) || !std::isfinite(wp.pose.pose.position.y) ||
+      !std::isfinite(wp.twist.twist.linear.x) || wp.twist.twist.linear.x < 0) {
+      waypoints_ready_ = false;
+      waypoints_.clear();
+      return;
+    }
+  }
   const bool changed = !isSamePath(msg->waypoints);
   waypoints_ = msg->waypoints;
   waypoints_ready_ = !waypoints_.empty();
@@ -306,6 +381,7 @@ void ControllerNode::onMissionState(const MissionState::SharedPtr msg)
   // 赛项切换：应用对应赛项的横向/纵向调参
   if (mission_mode_ != prev_mission) {
     applyMissionConfig(mission_mode_);
+    resetSpeedPid();
   }
 
   // 未使能且非车检：复位控制状态并发布零指令
@@ -355,7 +431,12 @@ void ControllerNode::controlLoop()
     return;
   }
 
-  if (!enabled_ || !pose_ready_ || !waypoints_ready_) return;
+  const double pose_age = pose_ready_ ? (now() - last_pose_time_).seconds() : 0.0;
+  if (!enabled_ || !pose_ready_ || !waypoints_ready_ || pose_age < 0 || pose_age > pose_timeout_sec_) {
+    resetControlPipeline();
+    publishZeroCommand(" [inactive/missing/stale input]");
+    return;
+  }
   if (mission_complete_) return;
 
   const auto loop_time = now();
@@ -418,6 +499,11 @@ void ControllerNode::controlLoop()
   }
 
   // 安全滤波
+  if (!std::isfinite(raw_cmd.steering_angle) || !std::isfinite(raw_cmd.velocity)) {
+    resetControlPipeline();
+    publishZeroCommand(" [non-finite control]");
+    return;
+  }
   auto filtered = twist_filter_->filter(raw_cmd.steering_angle, raw_cmd.velocity);
 
   // 发布命令

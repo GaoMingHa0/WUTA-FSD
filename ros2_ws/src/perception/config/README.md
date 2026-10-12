@@ -1,3 +1,7 @@
+# 当前全车调参入口已改为各模块config
+
+`field_tuning.yaml` 是旧共享入口，全车不读取它。请修改 camera_detection/config、lidar_detection/config 和 detection_fusion/config 下对应文件；新全车launch不再覆盖这些算法阈值。
+
 # 实车感知调试记录与总参数表（2026-09-25）
 
 ## 启动与实时位置

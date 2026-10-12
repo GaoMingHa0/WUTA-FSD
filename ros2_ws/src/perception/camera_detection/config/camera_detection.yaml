@@ -1,0 +1,16 @@
+# 相机检测参数；支持Python YOLO与C++ LW-DETR。模型相对路径以本文件所在目录解析。
+# 推理尺寸必须与所选引擎匹配。
+/**:
+  ros__parameters:
+    model_path: ../../../../../../models/yolov8sp2-int8.engine
+    image_topic: /zed/zed_node/rgb/image_rect_color
+    output_topic: /camera/yolo/cones
+    annotated_topic: /camera/yolo/image_annotated
+    confidence_threshold: 0.25
+    nms_iou_threshold: 0.45
+    inference_threads: 4
+    device: cuda
+    gpu_device_id: 0
+    model_input_width: 1280
+    model_input_height: 768
+    publish_annotated_image: true

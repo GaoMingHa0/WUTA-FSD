@@ -89,6 +89,10 @@ planning/
 - 发布前检查 Trackdrive 局部中心线是否仍有车头前方目标点；若没有，则拒绝该帧反向/不可追踪路径并保持上一条有效路径，避免车辆被短局部路径诱导掉头
 
 #### SKIDPAD（八字绕桩）
+- **临时无人 U 弯测试已启用**：`skidpad.u_turn_test.enabled: true`，沿用 SKIDPAD 任务、发布话题和控制参数。设置为 `false` 恢复下述原八字。
+- 测试以 `skidpad.anchor.entry` 的绝对 map 位置/朝向为起点，直行 `straight_distance` → 左转半圆（`radius`）→ 反向直行同样距离，终点回到起点横截线，左侧偏移 `2*radius`。路径缓存后不随定位移动。
+- 当前直行 15 m、半径 9.125 m、速度 1 m/s；返程最后 `brake_distance=5 m` 按速度平方插值减速到 0。默认起点 `(-15,0,0)`，转弯入口 `(0,0)`、出口 `(0,18.25)`，停车点 `(-15,18.25)`。测试不使用 `geometry.crossing` 或 `anchor.brake/stop`。
+
 - 使用 `skidpad.geometry.crossing` 固定 map 参考（交叉点），与 `tracks/skidpad.yaml` 对齐，不随定位位姿重建
 - 车辆从 `skidpad.anchor.entry`（默认 `(-15, 0)`，计时线前 15 m）发车，直行至交叉点后生成下方右圆两圈（第一圈建立转向、第二圈计时）→ 上方左圈两圈（第三圈过渡、第四圈计时）→ 出口 `brake`→`stop` 停车
 - 出口减速段按匀减速剖面 `v²=2aΔs` 从 `skidpad.speed.velocity` 降到 0
@@ -97,9 +101,9 @@ planning/
 - 规划轨迹由通用记录器落盘（见 `record.*`），不再单独导出 skidpad CSV
 
 #### ACCELERATION（直线加速）
-- 严格对齐赛道 YAML，用绝对 map 坐标锚点描述：`acceleration.anchor.entry`（发车，默认 `x=-0.30 m`）→ `brake`（赛道终点/开始制动，默认 `x=75 m`）→ `stop`（默认 `x=175 m`）
+- 默认 `acceleration.anchor_frame: start_pose`：YAML 锚点相对任务启动时冻结的车辆位姿，X 向前、Y 向左、yaw=0 沿发车车头；设为 `map` 可恢复绝对地图锚点。启动时转换到 map：`acceleration.anchor.entry`（发车，默认 `x=-0.30 m`）→ `brake`（赛道终点/开始制动，默认 `x=75 m`）→ `stop`（默认 `x=175 m`）
 - 发车到终点巡航保持 `acceleration.speed.velocity`；终点后按匀减速剖面 `v²=2aΔs` 制动到 0
-- 路径只按赛道 map 参考生成一次并缓存，绝不依据实时定位位姿重建，以免终点随车辆前移
+- 启动锚定需要有效、新鲜（接收不超过0.5s）的 map 定位及定位 ready；生成后缓存，不随车辆移动重建。同一赛项新任务重新锚定。
 
 #### EBS TEST
 - 用绝对 map 坐标锚点描述：`ebs.anchor.entry`（发车，默认 `x=0.3 m`）→ `brake`（25 m 测速/急停点）→ `stop`（默认 `x=35 m`，制动段 ≤10 m）
@@ -149,7 +153,8 @@ planning/
 | `driven_trajectory.max_step` | 2.0 m | 单帧跳变门限，超过视为定位跳变（显示与记录共用） |
 | `driven_trajectory.display_window_m` | 200.0 m | RViz 显示只保留最近该长度的历史，避免内存无界增长 |
 | `record.enabled` | true | 是否记录规划轨迹与实际行驶位姿 |
-| `record.dir` | `ros2_ws/control_planning_log/{mission}/{stamp}` | 记录目录模板；相对路径以 WUTA-FSD 根解析 |
+| `record.run_dir` | 空 | 启动入口提供的绝对运行目录；轨迹写入 jrajectory/，优先于 record.dir |
+| `record.dir` | `logs/{mission}/{stamp}/jrajectory` | 独立启动目录模板；相对项目根目录解析；全栈由 record.run_dir 指定 |
 | `record.planned_file` / `record.driven_file` | `planned.csv` / `driven.csv` | 规划轨迹 / 实际位姿文件名 |
 | `record.flush_interval_sec` | 1.0 s | 落盘刷新周期 |
 | `record.max_mb` | 50.0 | 单文件超过则切分 `_partNNN` |
