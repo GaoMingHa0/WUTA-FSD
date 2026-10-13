@@ -3,6 +3,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <msg_interfaces/msg/hcinspvatzcb.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <std_msgs/msg/bool.hpp>
@@ -44,6 +45,8 @@ private:
   void onLocalizationConfidence(const std_msgs::msg::Float32::SharedPtr msg);
   void onPose(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
   bool lidarReady() const;
+  bool gnssReady() const;
+  bool startupGnssReady() const;
   void refreshLidarReady();
   struct RaceGates {
     bool pose_fresh;
@@ -117,6 +120,7 @@ private:
   double selfcheck_grace_sec_{4.0};   // 开机上线宽限期
   rclcpp::Time lidar_last_seen_;
   rclcpp::Time imu_last_seen_;
+  int gnss_status_{-1};
   rclcpp::Time camera_last_seen_;
   bool sensor_fault_{false};          // 故障锁，置位后保持 EMERGENCY
   rclcpp::Time startup_time_;
@@ -141,7 +145,7 @@ private:
   rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_sub_;
   // 传感器数据订阅（心跳监控）
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr lidar_data_sub_;
-  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr imu_data_sub_;
+  rclcpp::Subscription<msg_interfaces::msg::Hcinspvatzcb>::SharedPtr imu_data_sub_;
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr camera_data_sub_;
 
   // Timer for periodic state broadcast

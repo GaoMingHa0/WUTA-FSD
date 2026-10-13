@@ -120,11 +120,14 @@ MissionManager::MissionManager(const rclcpp::NodeOptions & options)
       lidar_last_seen_ = now();
       advanceWhenReady();
     });
-  imu_data_sub_ = create_subscription<nav_msgs::msg::Odometry>(
-    declare_parameter("imu_topic", "/chcnav/odometry"), 10,
-    [this](const nav_msgs::msg::Odometry::SharedPtr msg) {
-      (void)msg;
+  declare_parameter("imu_topic", "/chcnav/odometry");  // 保留部署输出配置
+  imu_data_sub_ = create_subscription<msg_interfaces::msg::Hcinspvatzcb>(
+    declare_parameter("ins_heartbeat_topic", "/chcnav/devpvt"), rclcpp::SensorDataQoS(),
+    [this](const msg_interfaces::msg::Hcinspvatzcb::SharedPtr msg) {
       imu_last_seen_ = now();
+      gnss_status_ = static_cast<int>(msg->stat[1]);
+      advanceWhenReady();
+      advanceRaceWhenReady();
     });
   camera_data_sub_ = create_subscription<sensor_msgs::msg::Image>(
     declare_parameter("camera_topic", "/zed/zed_node/rgb/image_rect_color"), rclcpp::SensorDataQoS(),
@@ -156,6 +159,24 @@ bool MissionManager::lidarReady() const
   return !sensor_fault_ && age >= 0.0 && age <= sensor_timeout_sec_;
 }
 
+bool MissionManager::gnssReady() const
+{
+  return gnss_status_ == 4 && imu_last_seen_.nanoseconds() != 0 &&
+    (now() - imu_last_seen_).seconds() >= 0.0 &&
+    (now() - imu_last_seen_).seconds() <= sensor_timeout_sec_;
+}
+
+bool MissionManager::startupGnssReady() const
+{
+  // 台架车检允许状态0；其他模式及RACE继续要求状态4。
+  if (mission_mode_ != State::MISSION_INSPECTION || gnss_status_ != 0) {
+    return gnssReady();
+  }
+  const double age = imu_last_seen_.nanoseconds() == 0
+    ? -1.0 : (now() - imu_last_seen_).seconds();
+  return age >= 0.0 && age <= sensor_timeout_sec_;
+}
+
 void MissionManager::refreshLidarReady()
 {
   lidar_ready_ = lidarReady();
@@ -172,7 +193,7 @@ MissionManager::RaceGates MissionManager::raceGates() const
     (!use_ndt_race_localization_ || ndt_map_ready_);
   gates.first_lap_complete = lap_count_ >= 1;
   gates.passed = map_closed_ && map_quality_ok_ && global_centerline_ready_ &&
-    gates.localization_ok && gates.first_lap_complete;
+    gates.localization_ok && gates.first_lap_complete && gnssReady();
   return gates;
 }
 
@@ -183,6 +204,7 @@ std::string MissionManager::waitingReasons() const
       if (!passed) reasons.emplace_back(name);
     };
   if (current_state_ == State::IDLE || current_state_ == State::READY) {
+    require(startupGnssReady(), "gnss");
     if (mission_mode_ != State::MISSION_INSPECTION) {
       require(lidarReady(), "lidar");
       require(localization_ready_, "localization");
@@ -190,6 +212,7 @@ std::string MissionManager::waitingReasons() const
     require(mode_selected_, "mode");
     require(start_requested_, "go");
   } else if (current_state_ == State::MAPPING_DONE) {
+    require(gnssReady(), "gnss");
     const auto gates = raceGates();
     require(map_closed_, "map_closed");
     require(map_quality_ok_, "map_quality");
@@ -215,6 +238,7 @@ std::string MissionManager::waitingReasons() const
 void MissionManager::advanceWhenReady()
 {
   refreshLidarReady();
+  if (!startupGnssReady()) return;
   if (lidar_ready_ && localization_ready_ && current_state_ == State::IDLE) {
     transitionTo(State::READY);
   }
@@ -246,6 +270,7 @@ void MissionManager::advanceWhenReady()
 
 void MissionManager::advanceRaceWhenReady()
 {
+  if (!gnssReady()) return;
   if (current_state_ != State::MAPPING_DONE) return;
 
   if (raceGates().passed)
@@ -316,6 +341,8 @@ void MissionManager::publishState()
     " go_count=" + std::to_string(go_received_count_) +
     " go_pending=" + std::to_string(start_requested_) +
     " lidar_ready=" + std::to_string(lidarReady()) +
+    " gnss_status=" + std::to_string(gnss_status_) +
+    " gnss_ready=" + std::to_string(startupGnssReady()) +
     " localization_ready=" + std::to_string(localization_ready_) +
     " map_closed=" + std::to_string(map_closed_) +
     " map_quality=" + std::to_string(map_quality_ok_) +

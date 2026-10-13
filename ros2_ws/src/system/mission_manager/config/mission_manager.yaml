@@ -27,6 +27,8 @@ mission_manager:
     check_camera: true
     lidar_topic: /rslidar_points
     imu_topic: /chcnav/odometry
+    # 原始数据到达即表示惯导在线；车检启动允许GNSS=0或4，其他模式及RACE要求GNSS=4。
+    ins_heartbeat_topic: /chcnav/devpvt
     camera_topic: /zed/zed_node/rgb/image_rect_color
     sensor_timeout_sec: 2.0
     selfcheck_interval_sec: 1.0

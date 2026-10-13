@@ -25,3 +25,10 @@ can_interface:
 
     # ---------- 模式保活重发 ----------
     mode_repeat_period_sec: 1.0   # s，mission_mode_cmd 保活（确保FSD收到任务模式）重发周期（<=0 关闭）
+
+    # 桥当前会话的模式恢复；仅模式，不恢复 RES GO/急停
+    mode_cache:
+      enabled: true
+      directory: /run/zlgcan_bridge
+      bootstrap_wait_sec: 2.0
+      max_age_sec: 0.0  # 0=同一存活桥会话不按年龄过期，不代表VCU在线

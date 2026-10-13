@@ -14,6 +14,7 @@
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
   <depend>wuta_msgs</depend>
+  <depend>msg_interfaces</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

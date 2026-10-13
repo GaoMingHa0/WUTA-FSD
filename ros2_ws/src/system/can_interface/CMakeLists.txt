@@ -21,7 +21,7 @@ target_include_directories(can_socket PUBLIC
 target_compile_features(can_socket PUBLIC cxx_std_17)
 
 # 节点层：编排收发
-add_executable(can_interface_node src/can_interface.cpp)
+add_executable(can_interface_node src/can_interface.cpp src/mode_cache.cpp)
 target_include_directories(can_interface_node PRIVATE include)
 target_compile_features(can_interface_node PRIVATE cxx_std_17)
 ament_target_dependencies(can_interface_node rclcpp std_msgs geometry_msgs autoware_msgs wuta_msgs)

@@ -31,7 +31,7 @@ controller_node:
         stop_clear_speed: 0.5  # m/s，车速低于此值才允许消积分
         integral_limit: 1.0  # 积分项钳位
       throttle:
-        max_opening: 1.0  # 最大驱动开度，范围0～1
+        max_opening: 0.07  # 最大驱动开度，范围0～1
       brake:
         max_opening: 1.0  # 最大制动开度，范围0～1
       finish:

@@ -11,6 +11,8 @@
 
 #include "can_interface/can_frame.hpp"
 #include "can_interface/can_socket.hpp"
+#include "can_interface/mode_cache.hpp"
+#include <chrono>
 
 namespace can_interface
 {
@@ -46,6 +48,8 @@ private:
   void parseVcuFrame(const CanFrame & frame);  // 测试模式 → mission_mode_cmd
   // 模式保活：周期重发当前档位，防晚启动/重启的 mission_manager 错过单发模式
   void repeatMissionMode();
+  void applyMissionMode(uint8_t mode);
+  void restoreModeCache();
 
   // ---- 报文解析（RES→工控机 0x1E4：Byte1=遥控器状态） ----
   // 0x11 遥控器上线 / 0x13 发车按钮被按下 / 0x10 按下急停
@@ -85,6 +89,13 @@ private:
   bool tx_armed_{false};
 
   // 0x501 帧缓存（仅模式变化时发布，去重）
+  bool mode_cache_enabled_{true};
+  bool mode_cache_done_{false};
+  std::string mode_cache_directory_{"/run/zlgcan_bridge"};
+  double mode_cache_wait_sec_{2.0};
+  double mode_cache_max_age_sec_{0.0};
+  std::chrono::steady_clock::time_point mode_cache_deadline_;
+  std::string mode_cache_reason_;
   uint8_t last_vcu_mission_mode_{0xFF};   // 最近一次 VCU 任务模式（Byte1）
 
   // 0x1E4 帧缓存（电平信号：按当前值处理，仅变化沿触发动作/日志）

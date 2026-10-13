@@ -10,6 +10,7 @@ find_package(nav_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(wuta_msgs REQUIRED)
+find_package(msg_interfaces REQUIRED)
 
 add_executable(mission_manager_node
   src/mission_manager.cpp
@@ -26,6 +27,7 @@ ament_target_dependencies(mission_manager_node
   sensor_msgs
   std_msgs
   wuta_msgs
+  msg_interfaces
 )
 
 install(TARGETS mission_manager_node

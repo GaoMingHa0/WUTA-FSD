@@ -1,5 +1,6 @@
 #include "can_interface/can_interface.hpp"
 #include <algorithm>
+#include <cmath>
 
 namespace can_interface
 {
@@ -89,6 +90,19 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
   mode_repeat_period_sec_ = declare_parameter<double>(
     "mode_repeat_period_sec", mode_repeat_period_sec_);
 
+  mode_cache_enabled_ = declare_parameter<bool>("mode_cache.enabled", true);
+  mode_cache_directory_ = declare_parameter<std::string>(
+    "mode_cache.directory", "/run/zlgcan_bridge");
+  mode_cache_wait_sec_ = declare_parameter<double>("mode_cache.bootstrap_wait_sec", 2.0);
+  mode_cache_max_age_sec_ = declare_parameter<double>("mode_cache.max_age_sec", 0.0);
+  if (!std::isfinite(mode_cache_wait_sec_) || mode_cache_wait_sec_ < 0 ||
+      !std::isfinite(mode_cache_max_age_sec_) || mode_cache_max_age_sec_ < 0) {
+    throw std::invalid_argument("mode_cache timing parameters must be finite and nonnegative");
+  }
+  mode_cache_deadline_ = std::chrono::steady_clock::now() +
+    std::chrono::milliseconds(static_cast<int64_t>(
+      std::clamp(mode_cache_wait_sec_, 0.0, 60.0) * 1000));
+
   // 打开 CAN 接口；失败时静默降级，节点继续运行（收不到/发不出由上层兜底）
   const bool opened = can_.open(can_device_);
   if (!opened) {
@@ -97,6 +111,8 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
   } else {
     RCLCPP_INFO(get_logger(), "CAN interface opened on '%s'.", can_device_.c_str());
   }
+
+  mode_cache_done_ = !mode_cache_enabled_ || !opened;
 
   // 发送路径：ROS 订阅回调驱动
   mission_state_sub_ = create_subscription<wuta_msgs::msg::MissionState>(
@@ -223,6 +239,7 @@ void CANInterfaceNode::pollReceiver()
       parseResFrame(frame);
     }
   }
+  restoreModeCache();
 }
 
 void CANInterfaceNode::sendControlFrame()
@@ -291,7 +308,13 @@ void CANInterfaceNode::parseVcuFrame(const CanFrame & frame)
   // 只处理 VCU→工控机 模式帧
   if (frame.can_id != static_cast<uint32_t>(vcu_frame_id_)) return;
 
-  const uint8_t vcu_mission_mode = frame.data[0];  // Byte1：VCU派发的任务模式
+  if (frame.dlc < 1 || frame.dlc > 8) return;
+  mode_cache_done_ = true;  // 启动以来已收到实时模式，禁止历史缓存覆盖。
+  applyMissionMode(frame.data[0]);
+}
+
+void CANInterfaceNode::applyMissionMode(uint8_t vcu_mission_mode)
+{
 
   // ---- Byte1 测试模式 → mission_mode_cmd（变化时立即发布；同值重发由保活定时器兜底） ----
   if (vcu_mission_mode != last_vcu_mission_mode_) {
@@ -309,6 +332,33 @@ void CANInterfaceNode::parseVcuFrame(const CanFrame & frame)
       RCLCPP_WARN(get_logger(), "Unknown VCU mission mode %u.", vcu_mission_mode);
     }
     last_vcu_mission_mode_ = vcu_mission_mode;
+  }
+}
+
+void CANInterfaceNode::restoreModeCache()
+{
+  if (mode_cache_done_) return;
+  ModeSnapshot snapshot;
+  if (readModeCache(mode_cache_directory_, can_device_,
+      static_cast<uint32_t>(vcu_frame_id_), mode_cache_max_age_sec_, snapshot,
+      mode_cache_reason_)) {
+    // Close the read/receive race: drain frames queued during file validation.
+    CanFrame frame;
+    while (can_.receive(frame)) {
+      if (frame.can_id == static_cast<uint32_t>(vcu_frame_id_)) parseVcuFrame(frame);
+      else if (frame.can_id == static_cast<uint32_t>(res_frame_id_)) parseResFrame(frame);
+    }
+    if (mode_cache_done_) return;
+    mode_cache_done_ = true;
+    RCLCPP_INFO(get_logger(),
+      "Restored VCU mode %u from bridge cache (session=%s sequence=%llu age=%.3fs).",
+      static_cast<unsigned>(snapshot.mode), snapshot.session.c_str(),
+      static_cast<unsigned long long>(snapshot.sequence), snapshot.age_sec);
+    applyMissionMode(snapshot.mode);
+  } else if (std::chrono::steady_clock::now() >= mode_cache_deadline_) {
+    mode_cache_done_ = true;
+    RCLCPP_INFO(get_logger(), "Mode cache bootstrap skipped: %s; waiting for live CAN.",
+      mode_cache_reason_.c_str());
   }
 }
 
