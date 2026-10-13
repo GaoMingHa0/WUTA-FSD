@@ -100,12 +100,15 @@ PathGeneratorNode::PathGeneratorNode(const rclcpp::NodeOptions & options)
   map_origin_.y = declare_parameter("map_origin.y", map_origin_.y);
   map_origin_.yaw = declare_parameter("map_origin.yaw", map_origin_.yaw);
 
-  // 读取一组锚点（绝对 map 坐标）
+  // 读取一组锚点（所选参考系坐标）
   const auto read_anchor = [this](const std::string & prefix) {
       Anchor anchor;
       anchor.x = declare_parameter(prefix + ".x", anchor.x);
       anchor.y = declare_parameter(prefix + ".y", anchor.y);
       anchor.yaw = declare_parameter(prefix + ".yaw", anchor.yaw);
+      if (!std::isfinite(anchor.x) || !std::isfinite(anchor.y) || !std::isfinite(anchor.yaw)) {
+        throw std::invalid_argument(prefix + " must contain finite x/y/yaw");
+      }
       return anchor;
     };
 
@@ -155,12 +158,18 @@ PathGeneratorNode::PathGeneratorNode(const rclcpp::NodeOptions & options)
   record_max_mb_ = declare_parameter("record.max_mb", record_max_mb_);
   record_attach_stamps_ = declare_parameter("record.attach_stamps", record_attach_stamps_);
 
+  // 固定路径的参考系入口统一验证。
+  const auto read_frame = [this](const std::string & mission, std::string & frame) {
+      frame = declare_parameter<std::string>(mission + ".anchor_frame", frame);
+      if (frame != "start_pose" && frame != "map") {
+        throw std::invalid_argument(mission + ".anchor_frame must be start_pose or map");
+      }
+    };
+  read_frame("skidpad", skidpad_anchor_frame_);
+  read_frame("acceleration", acceleration_anchor_frame_);
+  read_frame("ebs", ebs_anchor_frame_);
+
   // ACCELERATION（直线加速）
-  acceleration_anchor_frame_ = declare_parameter<std::string>(
-    "acceleration.anchor_frame", acceleration_anchor_frame_);
-  if (acceleration_anchor_frame_ != "start_pose" && acceleration_anchor_frame_ != "map") {
-    throw std::invalid_argument("acceleration.anchor_frame must be start_pose or map");
-  }
   acceleration_entry_ = read_anchor("acceleration.anchor.entry");
   acceleration_brake_ = read_anchor("acceleration.anchor.brake");
   acceleration_stop_ = read_anchor("acceleration.anchor.stop");
@@ -381,8 +390,11 @@ void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
   const bool mission_changed = msg->mission_mode != mission_mode_;
   mission_mode_  = msg->mission_mode;
   system_state_  = msg->state;
-  if (!was_active && trackdriveStateActive() && mission_mode_ == State::MISSION_ACCELERATION) {
-    acceleration_path_ready_ = false;  // 新任务重新冻结，运行中状态广播不重锚定
+  if (!was_active && trackdriveStateActive()) {
+    // 新任务重新冻结；EXPLORE/MAPPING_DONE/RACE之间切换保持同一参考。
+    skidpad_path_ready_ = false;
+    acceleration_path_ready_ = false;
+    ebs_path_ready_ = false;
   }
 
   if (mission_changed) {
@@ -406,9 +418,12 @@ void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
 
   if (mission_mode_ == State::MISSION_SKIDPAD) {
     if (!skidpad_path_ready_) {
+      Anchor reference;
+      if (!resolvePathReference(skidpad_anchor_frame_, reference)) return;
       std::vector<PlannedRow> planned_rows;
       skidpad_path_ = skidpad_u_turn_enabled_
         ? generateUTurnTestPath(planned_rows) : generateSkidpadPath(planned_rows);
+      transformFixedPath(skidpad_path_, reference, planned_rows);
       skidpad_path_ready_ = true;
       writePlannedRecord(planned_rows);
     }
@@ -420,26 +435,13 @@ void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
   } else if (mission_mode_ == State::MISSION_ACCELERATION) {
     // 启动时只转换一次；车辆随后移动/转向不会改变终点。
     if (!acceleration_path_ready_) {
-      Anchor start_pose;
-      if (acceleration_anchor_frame_ == "start_pose") {
-        const auto & q = current_pose_.pose.orientation;
-        const double norm2 = q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w;
-        const double age = pose_ready_ ? (now() - last_pose_received_at_).seconds() : -1.0;
-        if (!pose_ready_ || !localization_ready_ || current_pose_.header.frame_id != "map" ||
-          age < 0.0 || age > 0.5 || !std::isfinite(norm2) || norm2 < 1e-12) {
-          RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000,
-            "Waiting for fresh valid map localization before anchoring acceleration path.");
-          return;
-        }
-        auto rotation = q;
-        const double norm = std::sqrt(norm2);
-        rotation.x /= norm; rotation.y /= norm; rotation.z /= norm; rotation.w /= norm;
-        start_pose = {current_pose_.pose.position.x, current_pose_.pose.position.y,
-          yawFromQuaternion(rotation)};
-      }
-      acceleration_path_ = generateAccelerationPath(start_pose);
+      Anchor reference;
+      if (!resolvePathReference(acceleration_anchor_frame_, reference)) return;
+      acceleration_path_ = generateAccelerationPath();
+      auto rows = plannedRowsFromLane(acceleration_path_, "run");
+      transformFixedPath(acceleration_path_, reference, rows);
       acceleration_path_ready_ = true;
-      writePlannedRecord(plannedRowsFromLane(acceleration_path_, "run"));
+      writePlannedRecord(rows);
     }
     auto lane = acceleration_path_;
     lane.header.stamp    = now();
@@ -449,9 +451,13 @@ void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
   } else if (mission_mode_ == State::MISSION_EBS_TEST) {
     // 固定路径（同 acceleration），避免跟随定位位姿重生成导致终点漂移
     if (!ebs_path_ready_) {
+      Anchor reference;
+      if (!resolvePathReference(ebs_anchor_frame_, reference)) return;
       ebs_path_ = generateEbsTestPath();
+      auto rows = plannedRowsFromLane(ebs_path_, "run");
+      transformFixedPath(ebs_path_, reference, rows);
       ebs_path_ready_ = true;
-      writePlannedRecord(plannedRowsFromLane(ebs_path_, "run"));
+      writePlannedRecord(rows);
     }
     auto lane = ebs_path_;
     lane.header.stamp    = now();
@@ -1320,21 +1326,65 @@ void PathGeneratorNode::appendSegment(
   }
 }
 
-autoware_msgs::msg::Lane PathGeneratorNode::generateAccelerationPath(const Anchor & start_pose) const
+bool PathGeneratorNode::resolvePathReference(const std::string & frame, Anchor & reference)
+{
+  reference = {};
+  if (frame == "map") return true;
+  const auto & q = current_pose_.pose.orientation;
+  const double norm2 = q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w;
+  const double age = pose_ready_ ? (now() - last_pose_received_at_).seconds() : -1.0;
+  if (!pose_ready_ || !localization_ready_ || current_pose_.header.frame_id != "map" ||
+    age < 0.0 || age > 0.5 || !std::isfinite(norm2) || norm2 < 1e-12) {
+    RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000,
+      "Waiting for fresh valid map localization before anchoring %s path.",
+      missionName().c_str());
+    return false;
+  }
+  auto rotation = q;
+  const double norm = std::sqrt(norm2);
+  rotation.x /= norm; rotation.y /= norm; rotation.z /= norm; rotation.w /= norm;
+  reference = {current_pose_.pose.position.x, current_pose_.pose.position.y,
+    yawFromQuaternion(rotation)};
+  return true;
+}
+
+void PathGeneratorNode::transformFixedPath(autoware_msgs::msg::Lane & lane,
+  const Anchor & reference, std::vector<PlannedRow> & rows) const
+{
+  const double c = std::cos(reference.yaw);
+  const double s = std::sin(reference.yaw);
+  for (auto & waypoint : lane.waypoints) {
+    auto & pose = waypoint.pose.pose;
+    const double x = pose.position.x;
+    const double y = pose.position.y;
+    pose.position.x = reference.x + c*x - s*y;
+    pose.position.y = reference.y + s*x + c*y;
+    const double yaw = yawFromQuaternion(pose.orientation) + reference.yaw;
+    pose.orientation.x = 0.0;
+    pose.orientation.y = 0.0;
+    pose.orientation.z = std::sin(yaw*0.5);
+    pose.orientation.w = std::cos(yaw*0.5);
+  }
+  for (auto & row : rows) {
+    const double x = row.x;
+    const double y = row.y;
+    row.x = reference.x + c*x - s*y;
+    row.y = reference.y + s*x + c*y;
+    row.yaw = std::atan2(std::sin(row.yaw + reference.yaw),
+      std::cos(row.yaw + reference.yaw));
+  }
+  RCLCPP_INFO(get_logger(),
+    "Fixed %s path anchored: reference=(%.3f, %.3f, yaw=%.3f rad), %zu map waypoints",
+    missionName().c_str(), reference.x, reference.y, reference.yaw, lane.waypoints.size());
+}
+
+autoware_msgs::msg::Lane PathGeneratorNode::generateAccelerationPath() const
 {
   autoware_msgs::msg::Lane lane;
   std::vector<PlannedRow> rows;
-  const auto to_map = [&start_pose](const Anchor & local) {
-      const double c = std::cos(start_pose.yaw);
-      const double s = std::sin(start_pose.yaw);
-      return Anchor{start_pose.x + local.x*c - local.y*s,
-        start_pose.y + local.x*s + local.y*c,
-        std::atan2(std::sin(start_pose.yaw + local.yaw),
-          std::cos(start_pose.yaw + local.yaw))};
-    };
-  const Anchor entry = to_map(acceleration_entry_);
-  const Anchor brake = to_map(acceleration_brake_);
-  const Anchor stop = to_map(acceleration_stop_);
+  const Anchor & entry = acceleration_entry_;
+  const Anchor & brake = acceleration_brake_;
+  const Anchor & stop = acceleration_stop_;
   // 发车 → 赛道终点（巡航），终点 → 停止（匀减速到 0）
   appendSegment(lane, rows, entry, brake,
     acceleration_velocity_, acceleration_velocity_, "run", 0);
@@ -1342,9 +1392,9 @@ autoware_msgs::msg::Lane PathGeneratorNode::generateAccelerationPath(const Ancho
     acceleration_velocity_, 0.0, "run", 0, true);
 
   RCLCPP_INFO(get_logger(),
-    "Fixed acceleration path generated: anchor_frame=%s start=(%.3f, %.3f, yaw=%.3f rad) "
+    "Acceleration path generated in %s coordinates: "
     "entry=(%.2f, %.2f) brake=(%.2f, %.2f) stop=(%.2f, %.2f) (%zu waypoints)",
-    acceleration_anchor_frame_.c_str(), start_pose.x, start_pose.y, start_pose.yaw,
+    acceleration_anchor_frame_.c_str(),
     entry.x, entry.y, brake.x, brake.y, stop.x, stop.y, lane.waypoints.size());
   return lane;
 }

@@ -57,38 +57,39 @@ path_generator_node:
         publish_period_sec: 0.10      # s，发布周期
 
     # ==================== 地图原点（坐标系锚点） ====================
-    # map坐标原点声明，本项不执行坐标变换；acceleration可单独选start_pose参考系。
+    # map坐标原点声明，本项不执行坐标变换；固定路径赛项可选start_pose参考系。
     map_origin:
       x: 0.0
       y: 0.0
       yaw: 0.0
 
     # ==================== 赛项：八字绕环（SKIDPAD） ====================
-    # 锚点均为绝对 map 坐标；路径朝向以两点连线方向为准（与 yaw 偏差过大会告警）。
+    # start_pose：启动位置为原点，X前、Y左；map：绝对地图坐标。
     skidpad:
+      anchor_frame: start_pose
       # 临时替代八字：直行 → 左转半圆 → 返回起点横截线并停车。
-      # 起点/朝向使用 anchor.entry（绝对 map）；关闭 enabled 恢复原八字。
+      # 起点/朝向使用 anchor.entry（所选参考系）；关闭 enabled 恢复原八字。
       u_turn_test:
         enabled: true
-        straight_distance: 15.0       # m，去程和返程直线长度
+        straight_distance: 12.0       # m，去程和返程直线长度
         radius: 9.125                 # m，回程位于起点左侧 2R
-        velocity: 1.0                 # m/s，巡航及转弯速度
-        brake_distance: 5.0           # m，返程最后此距离减速到 0，须 <= straight_distance
+        velocity: 1.5               # m/s，巡航及转弯速度
+        brake_distance: 7.0           # m，返程最后此距离减速到 0，须 <= straight_distance
       # 赛道几何锚点（交叉点，不随定位位姿变化）
       geometry:
         radius: 9.125                 # m，绕环半径
         points: 72                    # 每圈 waypoints 数（每 5°）
         crossing:
-          x: 0.0                      # m，交叉点
+          x: 15.0                     # m，发车前方--m交叉点
           y: 0.0                      # m
           yaw: 0.0                    # rad，进/出方向
       # 路径锚点：发车 → (绕环) → 减速点 → 停止点
       anchor:
-        entry: { x: -15.0, y: 0.0, yaw: 0.0 }   # 发车坐标（FSAC 起点在计时线前 15m）
-        brake: { x: 15.0,  y: 0.0, yaw: 0.0 }   # 出口减速点
-        stop:  { x: 25.0,  y: 0.0, yaw: 0.0 }   # 出口停止点
+        entry: { x: 0.0, y: 0.0, yaw: 0.0 }   # 发车坐标（FSAC 起点在计时线前 15m）
+        brake: { x: 30.0,  y: 0.0, yaw: 0.0 }   # 出口减速点
+        stop:  { x: 40.0,  y: 0.0, yaw: 0.0 }   # 出口停止点
       speed:
-        velocity: 5.0                 # m/s，绕环目标速度
+        velocity: 1.5                 # m/s，绕环目标速度
 
     # ==================== 赛项：直线加速（ACCELERATION） ====================
     # 通过终点线后才制动，并在标记的 100m 出口车道内停车。
@@ -97,17 +98,18 @@ path_generator_node:
       # 转换后仍发布固定map路径；map可恢复原来的绝对地图锚点方式。
       anchor_frame: start_pose
       anchor:
-        entry: { x: 0.0, y: 0.0, yaw: 0.0 }   # 发车位置后方0.30m
-        brake: { x: 5.0, y: 0.0, yaw: 0.0 }   # 发车位置前方15m开始制动
-        stop:  { x: 10.0, y: 0.0, yaw: 0.0 }   # 发车位置前方20m停车
+        entry: { x: 0.0, y: 0.0, yaw: 0.0 }   # 发车位置（局部原点）
+        brake: { x: 10.0, y: 0.0, yaw: 0.0 }   # 发车位置前方--m开始制动
+        stop:  { x: 20.0, y: 0.0, yaw: 0.0 }   # 发车位置前方--m停车
       speed:
-        velocity: 1.0                # m/s，加速目标速度
+        velocity: 1.5                # m/s，加速目标速度
 
     # ==================== 赛项：EBS 测试（EBS） ====================
     # 7.5：起点后 0.3m，25m 测速点 ≥40km/h(11.11m/s)，急停后 ≤10m 内停车。
     ebs:
+      anchor_frame: start_pose  # X前、Y左，yaw=0沿启动车头；map可使用绝对坐标
       anchor:
-        entry: { x: 0.3,  y: 0.0, yaw: 0.0 }    # 发车坐标（起点线后 0.3m）
+        entry: { x: 0.3,  y: 0.0, yaw: 0.0 }    # 启动位置前方0.3m的路径入口
         brake: { x: 25.0, y: 0.0, yaw: 0.0 }    # 25m 测速/急停标记
         stop:  { x: 35.0, y: 0.0, yaw: 0.0 }    # 停止坐标（制动段 ≤10m）
       speed:

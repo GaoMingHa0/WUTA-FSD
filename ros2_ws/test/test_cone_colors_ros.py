@@ -318,7 +318,8 @@ def test_debug_filters_red_and_orange_independently(ros, debug_color):
     ros.wait(lambda: any(len(m.cones) == 1 and m.cones[0].color == expected for m in output), send)
 
 
-def test_closed_red_blue_map_produces_counterclockwise_global_centerline(ros):
+@pytest.mark.parametrize("rotation_deg", [0, -173, 90, 180, -90])
+def test_closed_red_blue_map_produces_counterclockwise_global_centerline(ros, rotation_deg):
     ros.start('boundary_detector', 'boundary_detector_node', remaps={
         '/mapping/cone_map': 'input', '/localization/pose': 'pose', '/system/mission_state': 'mission',
         '/planning/centerline': 'lane', '/planning/global_centerline_ready': 'ready'})
@@ -327,11 +328,15 @@ def test_closed_red_blue_map_produces_counterclockwise_global_centerline(ros):
     lanes, ready = ros.received(Lane, 'lane'), ros.received(Bool, 'ready')
     ros.wait(lambda: all(p.get_subscription_count() for p in (maps, poses, missions)))
 
+    rotation = math.radians(rotation_deg)
+    c, sn = math.cos(rotation), math.sin(rotation)
+    ox, oy = 3.0, -4.0
+
     def send():
         p = pose(ros)
-        p.pose.position.x = 10.
-        p.pose.orientation.z = math.sin(math.pi / 4)
-        p.pose.orientation.w = math.cos(math.pi / 4)
+        p.pose.position.x, p.pose.position.y = ox + 10*c, oy + 10*sn
+        p.pose.orientation.z = math.sin((math.pi/2 + rotation)/2)
+        p.pose.orientation.w = math.cos((math.pi/2 + rotation)/2)
         poses.publish(p)
         mission = MissionState()
         mission.mission_mode, mission.state = MissionState.MISSION_TRACKDRIVE, MissionState.MAPPING_DONE
@@ -340,16 +345,16 @@ def test_closed_red_blue_map_produces_counterclockwise_global_centerline(ros):
         m.header.frame_id, m.header.stamp, m.is_closed = 'map', ros.stamp(), True
         for index in range(40):
             theta = index * 2 * math.pi / 40
-            m.red_cones.append(cone(8 * math.cos(theta), 8 * math.sin(theta), Cone.COLOR_RED))
-            m.blue_cones.append(cone(12 * math.cos(theta), 12 * math.sin(theta), Cone.COLOR_BLUE))
+            m.red_cones.append(cone(ox + 8 * math.cos(theta+rotation), oy + 8 * math.sin(theta+rotation), Cone.COLOR_RED))
+            m.blue_cones.append(cone(ox + 12 * math.cos(theta+rotation), oy + 12 * math.sin(theta+rotation), Cone.COLOR_BLUE))
         maps.publish(m)
 
     ros.wait(lambda: ready and ready[-1].data and lanes and len(lanes[-1].waypoints) >= 20, send)
     for waypoint in lanes[-1].waypoints:
         p, q = waypoint.pose.pose.position, waypoint.pose.pose.orientation
-        assert math.hypot(p.x, p.y) == pytest.approx(10., abs=.3)
+        assert math.hypot(p.x-ox, p.y-oy) == pytest.approx(10., abs=.3)
         yaw = math.atan2(2 * q.w * q.z, 1 - 2 * q.z * q.z)
-        assert -p.y * math.cos(yaw) + p.x * math.sin(yaw) > 0
+        assert -(p.y-oy) * math.cos(yaw) + (p.x-ox) * math.sin(yaw) > 0
 
 
 @pytest.mark.parametrize('left_color,expected_quality', [('red', 'PASS'), ('yellow', 'FAIL')])
@@ -425,3 +430,61 @@ def test_mission_lidar_heartbeat_ready_and_timeout(ros, check_lidar):
         assert states[-1].state == MissionState.READY
         cloud.publish(PointCloud2())
         ros.wait(lambda: states[-1].state == MissionState.EXPLORE)
+
+
+@pytest.mark.parametrize('rotation_deg', [0, -173, 90, 180, -90])
+def test_trackdrive_lap_line_uses_start_heading(ros, rotation_deg):
+    from msg_interfaces.msg import Hcinspvatzcb
+    from std_msgs.msg import UInt32
+    ros.start('mission_manager', 'mission_manager_node', {
+        'check_lidar': False, 'check_imu': False, 'check_camera': False,
+        'sensor_timeout_sec': 10.0, 'lap_arm_distance': 2.0,
+        'lap_min_distance': 5.0, 'lap_min_duration_sec': 0.0,
+        'lap_line_half_width': 1.0, 'trackdrive_finish_laps': 3,
+    }, {
+        '/system/mission_state': 'mission', '/system/lap_count': 'lap',
+        '/system/mission_mode_cmd': 'mode', '/system/start_command': 'go',
+        '/system/localization_ready': 'ready', '/localization/pose': 'pose',
+        '/rslidar_points': 'cloud', '/chcnav/devpvt': 'ins',
+        '/system/emergency': 'emergency',
+    })
+    mode_pub = ros.publisher(String, 'mode')
+    go = ros.publisher(Bool, 'go')
+    ready = ros.publisher(Bool, 'ready')
+    poses = ros.publisher(PoseStamped, 'pose')
+    cloud = ros.publisher(PointCloud2, 'cloud')
+    ins = ros.publisher(Hcinspvatzcb, 'ins')
+    states, laps = ros.received(MissionState, 'mission'), ros.received(UInt32, 'lap')
+    ros.wait(lambda: all(p.get_subscription_count() for p in (mode_pub, go, ready, poses, cloud, ins)))
+
+    def begin():
+        measurement = Hcinspvatzcb()
+        measurement.stat = [2, 4]
+        ins.publish(measurement)
+        cloud.publish(PointCloud2())
+        ready.publish(Bool(data=True))
+        mode_pub.publish(String(data='trackdrive'))
+        go.publish(Bool(data=True))
+
+    ros.wait(lambda: states and states[-1].state == MissionState.EXPLORE, begin)
+    yaw = math.radians(rotation_deg)
+    def move(x, y, heading=0.0):
+        p = pose(ros)
+        p.pose.position.x = 3 + math.cos(yaw)*x - math.sin(yaw)*y
+        p.pose.position.y = -4 + math.sin(yaw)*x + math.cos(yaw)*y
+        p.pose.orientation.z = math.sin((yaw+heading)/2)
+        p.pose.orientation.w = math.cos((yaw+heading)/2)
+        poses.publish(p)
+        ros.spin(.08)
+
+    move(0, 0)
+    # Arm, complete a loop and cross the local X=0 start line forwards.
+    for x, y in [(3, 0), (3, 3), (0, 3), (-3, 3), (-3, 0), (-.5, 0), (.5, 0)]:
+        move(x, y)
+    ros.wait(lambda: laps and laps[-1].data == 1)
+    # A second loop crossing the line in the wrong heading must not count.
+    for x, y in [(3, 0), (3, 3), (0, 3), (-3, 3), (-3, 0), (-.5, 0)]:
+        move(x, y)
+    move(.5, 0, math.pi)
+    ros.spin(.15)
+    assert laps[-1].data == 1

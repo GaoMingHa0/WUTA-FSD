@@ -60,6 +60,11 @@ private:
   void onChcnavVelocity(const geometry_msgs::msg::TwistStamped::SharedPtr msg);
   void onControlCommand(const autoware_msgs::msg::Command::SharedPtr msg);
 
+  // 固定路径共用启动参考；输出和记录仍为 map。
+  bool resolvePathReference(const std::string & frame, Anchor & reference);
+  void transformFixedPath(autoware_msgs::msg::Lane & lane,
+    const Anchor & reference, std::vector<PlannedRow> & rows) const;
+
   // Mode-specific path generators
   autoware_msgs::msg::Lane generateSkidpadPath(std::vector<PlannedRow> & rows) const;
   autoware_msgs::msg::Lane generateUTurnTestPath(std::vector<PlannedRow> & rows) const;
@@ -69,7 +74,7 @@ private:
     const Anchor & from, const Anchor & to,
     double v_start, double v_end, const std::string & phase, int lap,
     bool skip_first = false) const;
-  autoware_msgs::msg::Lane generateAccelerationPath(const Anchor & start_pose) const;
+  autoware_msgs::msg::Lane generateAccelerationPath() const;
   autoware_msgs::msg::Lane generateEbsTestPath() const;
   autoware_msgs::msg::Lane resampleTrackdriveLane(const autoware_msgs::msg::Lane & lane) const;
   autoware_msgs::msg::Lane extractGlobalTrackdriveHorizon();
@@ -178,19 +183,20 @@ private:
   int trackdrive_global_min_points_{20};
   double trackdrive_global_publish_period_sec_{0.10};
 
-  // 地图原点（坐标系锚点）：路径锚点均用绝对 map 坐标，本项仅作声明/校验。
+  // 地图原点（坐标系锚点）：本项仅作声明；固定路径锚点参考系由各赛项anchor_frame选择。
   Anchor map_origin_{0.0, 0.0, 0.0};
 
-  // Skidpad（绝对 map 坐标）：crossing 为八字几何锚点，anchor 为发车/减速/停止点。
+  // Skidpad（所选参考系坐标）：crossing 为八字几何锚点，anchor 为发车/减速/停止点。
+  std::string skidpad_anchor_frame_{"start_pose"};
   double skidpad_radius_{9.125};       // m
   double skidpad_velocity_{5.0};       // m/s
   int    skidpad_points_{72};          // waypoints per circle (every 5 deg)
-  Anchor skidpad_crossing_{0.0, 0.0, 0.0};  // 交叉点 / 进-出方向
-  Anchor skidpad_entry_{-15.0, 0.0, 0.0};   // 发车坐标
-  Anchor skidpad_brake_{15.0, 0.0, 0.0};    // 出口减速点
-  Anchor skidpad_stop_{25.0, 0.0, 0.0};     // 出口停止点
+  Anchor skidpad_crossing_{15.0, 0.0, 0.0};  // 交叉点 / 进-出方向
+  Anchor skidpad_entry_{0.0, 0.0, 0.0};   // 发车坐标
+  Anchor skidpad_brake_{30.0, 0.0, 0.0};    // 出口减速点
+  Anchor skidpad_stop_{40.0, 0.0, 0.0};     // 出口停止点
 
-  // 临时无人测试：以 skidpad.anchor.entry 为固定 map 起点及初始朝向。
+  // 临时无人测试：以所选参考系的 skidpad.anchor.entry 为起点及初始朝向。
   bool skidpad_u_turn_enabled_{false};
   double skidpad_u_turn_straight_{15.0};
   double skidpad_u_turn_radius_{9.125};
@@ -244,8 +250,9 @@ private:
   Anchor acceleration_stop_{175.0, 0.0, 0.0};   // 停止坐标
   double acceleration_velocity_{15.0};          // m/s
 
-  // EBS 测试（绝对 map 坐标），满足赛规 7.5：起点后 0.3m，25m 测速点 ≥40km/h(11.11)，
+  // EBS 测试（所选参考系坐标），满足赛规 7.5：起点后 0.3m，25m 测速点 ≥40km/h(11.11)，
   // RES 急停后 ≤10m 内停车。
+  std::string ebs_anchor_frame_{"start_pose"};
   Anchor ebs_entry_{0.3, 0.0, 0.0};             // 发车坐标
   Anchor ebs_brake_{25.0, 0.0, 0.0};            // 25m 测速/急停标记
   Anchor ebs_stop_{35.0, 0.0, 0.0};             // 停止坐标（制动段 ≤10m）

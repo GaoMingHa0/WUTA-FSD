@@ -9,15 +9,15 @@ controller_node:
     # ---------- 控制回路与安全滤波（所有赛项共用）----------
     control:
       rate_hz: 50  # Hz，控制回路频率
-      max_steering_rate_deg_s: 180.0  # deg/s，转向变化率上限；越小越平滑
+      max_steering_rate_deg_s: 100.0  # deg/s，转向变化率上限；越小越平滑
       accel_alpha: 0.1  # 加速平滑系数(0~1)；越大加速越跟手
       decel_alpha: 0.7  # 减速响应系数(0~1)；越大减速越跟手
 
     # ---------- 赛项：直线加速 ----------
     acceleration:
       pure_pursuit:
-        lookahead_ratio: 2.0  # 前视 = 车速 × 该系数
-        min_lookahead: 2.0  # m，低速前视下限
+        lookahead_ratio: 1.3  # 前视 = 车速 × 该系数
+        min_lookahead: 1.5  # m，低速前视下限
         max_lookahead: 20.0  # m，高速前视上限
         max_progress_advance: 4  # 单周期最多推进的路径点数
         terminal_progress_distance: 0.75  # m，终点进度点触发距离
@@ -31,7 +31,7 @@ controller_node:
         stop_clear_speed: 0.5  # m/s，车速低于此值才允许消积分
         integral_limit: 1.0  # 积分项钳位
       throttle:
-        max_opening: 0.07  # 最大驱动开度，范围0～1
+        max_opening: 0.20  # 最大驱动开度，范围0～1
       brake:
         max_opening: 1.0  # 最大制动开度，范围0～1
       finish:
@@ -79,12 +79,12 @@ controller_node:
         stop_clear_speed: 0.5  # m/s，车速低于此值才允许消积分
         integral_limit: 1.0  # 积分项钳位
       throttle:
-        max_opening: 1.0  # 最大驱动开度，范围0～1
+        max_opening: 0.12  # 最大驱动开度，范围0～1
       brake:
         max_opening: 1.0  # 最大制动开度，范围0～1
       finish:
         position_tolerance: 0.75  # m，距终点位置容差
-        speed_threshold: 0.2  # m/s，判定停稳的车速阈值
+        speed_threshold: 0.1  # m/s，判定停稳的车速阈值
 
     # ---------- 赛项：高速循迹 ----------
     trackdrive:

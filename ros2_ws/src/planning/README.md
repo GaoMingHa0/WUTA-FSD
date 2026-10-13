@@ -90,11 +90,11 @@ planning/
 
 #### SKIDPAD（八字绕桩）
 - **临时无人 U 弯测试已启用**：`skidpad.u_turn_test.enabled: true`，沿用 SKIDPAD 任务、发布话题和控制参数。设置为 `false` 恢复下述原八字。
-- 测试以 `skidpad.anchor.entry` 的绝对 map 位置/朝向为起点，直行 `straight_distance` → 左转半圆（`radius`）→ 反向直行同样距离，终点回到起点横截线，左侧偏移 `2*radius`。路径缓存后不随定位移动。
-- 当前直行 15 m、半径 9.125 m、速度 1 m/s；返程最后 `brake_distance=5 m` 按速度平方插值减速到 0。默认起点 `(-15,0,0)`，转弯入口 `(0,0)`、出口 `(0,18.25)`，停车点 `(-15,18.25)`。测试不使用 `geometry.crossing` 或 `anchor.brake/stop`。
+- 测试以所选参考系的 `skidpad.anchor.entry` 为起点，默认 `skidpad.anchor_frame=start_pose`，启动位置为原点、X前Y左，直行 `straight_distance` → 左转半圆（`radius`）→ 反向直行同样距离，终点回到起点横截线，左侧偏移 `2*radius`。路径缓存后不随定位移动。
+- 当前直行 12 m、半径 9.125 m、速度 1.5 m/s；返程最后 `brake_distance=7 m` 按速度平方插值减速到 0。默认局部起点 `(0,0,0)`，转弯入口 `(12,0)`、出口 `(12,18.25)`，停车点 `(0,18.25)`。测试不使用 `geometry.crossing` 或 `anchor.brake/stop`。
 
-- 使用 `skidpad.geometry.crossing` 固定 map 参考（交叉点），与 `tracks/skidpad.yaml` 对齐，不随定位位姿重建
-- 车辆从 `skidpad.anchor.entry`（默认 `(-15, 0)`，计时线前 15 m）发车，直行至交叉点后生成下方右圆两圈（第一圈建立转向、第二圈计时）→ 上方左圈两圈（第三圈过渡、第四圈计时）→ 出口 `brake`→`stop` 停车
+- 使用所选参考系的 `skidpad.geometry.crossing`（默认局部 `(15,0)`）为交叉点；整条路径启动时统一转换到 map 后冻结
+- 车辆从 `skidpad.anchor.entry`（默认局部 `(0, 0)`，交叉点前 15 m）发车，直行至交叉点后生成下方右圆两圈（第一圈建立转向、第二圈计时）→ 上方左圈两圈（第三圈过渡、第四圈计时）→ 出口 `brake`→`stop` 停车
 - 出口减速段按匀减速剖面 `v²=2aΔs` 从 `skidpad.speed.velocity` 降到 0
 - 圆半径：9.125m（FSG 规定）
 - 路径几何只生成一次；在有效任务状态下重复发布缓存路径，确保晚启动的控制器能够接收
@@ -106,7 +106,7 @@ planning/
 - 启动锚定需要有效、新鲜（接收不超过0.5s）的 map 定位及定位 ready；生成后缓存，不随车辆移动重建。同一赛项新任务重新锚定。
 
 #### EBS TEST
-- 用绝对 map 坐标锚点描述：`ebs.anchor.entry`（发车，默认 `x=0.3 m`）→ `brake`（25 m 测速/急停点）→ `stop`（默认 `x=35 m`，制动段 ≤10 m）
+- 默认 `ebs.anchor_frame=start_pose`，用启动参考系锚点描述：`ebs.anchor.entry`（发车，默认 `x=0.3 m`）→ `brake`（25 m 测速/急停点）→ `stop`（默认 `x=35 m`，制动段 ≤10 m）
 - 满足赛规 7.5：25 m 测速点 ≥40 km/h(11.11 m/s)，急停后 ≤10 m 内停车；结构与 acceleration 相同
 
 ### Topics
@@ -141,13 +141,13 @@ planning/
 | `trackdrive.path.min_forward_target` | 0.5 m | Trackdrive 新局部路径至少需要包含一个车头前方目标点，否则保持上一条有效路径 |
 | `trackdrive.speed.degraded_velocity` | 3.0 m/s | 短中心线或低置信度时的降级速度帽，主要保护 2-3 点 Delaunay 兜底 |
 | `trackdrive.path.short_centerline_points` | 3 | 源中心线点数小于等于该值时启用短中心线降速 |
-| `map_origin.x/y/yaw` | 0.0 | 地图坐标系原点；路径锚点均用绝对 map 坐标，本项仅作声明/校验 |
+| `map_origin.x/y/yaw` | 0.0 | 地图原点声明，不执行坐标变换；固定路径参考系由anchor_frame选择 |
 | `skidpad.geometry.radius` | 9.125m | FSG 标准圆半径 |
-| `skidpad.geometry.crossing.x/y/yaw` | 0.0 | 八字交叉点（几何锚点，进/出方向） |
-| `skidpad.anchor.entry.x/y/yaw` | -15.0 / 0 / 0 | 发车坐标（计时线前 15 m） |
-| `skidpad.anchor.brake.x/y/yaw` | 15.0 / 0 / 0 | 出口减速点 |
-| `skidpad.anchor.stop.x/y/yaw` | 25.0 / 0 / 0 | 出口停止点 |
-| `skidpad.speed.velocity` | 5.0 m/s | 八字速度 |
+| `skidpad.geometry.crossing.x/y/yaw` | 15.0 / 0 / 0 | 八字交叉点（几何锚点，进/出方向） |
+| `skidpad.anchor.entry.x/y/yaw` | 0 / 0 / 0 | 发车坐标（计时线前 15 m） |
+| `skidpad.anchor.brake.x/y/yaw` | 30.0 / 0 / 0 | 出口减速点 |
+| `skidpad.anchor.stop.x/y/yaw` | 40.0 / 0 / 0 | 出口停止点 |
+| `skidpad.speed.velocity` | 1.5 m/s | 八字速度 |
 | `driven_trajectory.smoothing_alpha` | 0.20 | 仅用于 RViz 实际轨迹的一阶平滑；不改变定位、建图或控制输入 |
 | `driven_trajectory.min_distance` | 0.10 m | 平滑后轨迹点的最小空间间隔，抑制静止时的噪声折线 |
 | `driven_trajectory.max_step` | 2.0 m | 单帧跳变门限，超过视为定位跳变（显示与记录共用） |
@@ -178,3 +178,7 @@ planning/
 
 - [ ] Delaunay PathSearch 的起点初始化逻辑（`SetStartPoint`）
 - [ ] Trackdrive 局部中心线分支选择和平滑，重点降低紧凑外部图上的瞬时大偏差
+
+
+固定路径坐标（2026-10-13）：acceleration/skidpad/ebs 均支持 `anchor_frame: start_pose | map`，当前默认start_pose；局部X前、Y左、yaw=0沿启动车头。任务激活后等待接收年龄≤0.5s、ready且有效的map定位，整条路径和planned记录一次旋转平移到map。运行中冻结，同赛项新任务重新锚定；活动状态之间切换不重新锚定。`map`模式需要自行提供绝对地图锚点，切换开关不会恢复旧锚点数值。速度字段为沿路径的目标速度，不旋转为地图向量。
+Trackdrive的ConeMap/centerline已经在map中，不经过固定路径变换；前向选择和计圈使用真实车位姿/航向。隔离验证沿用根 `tools/check_acceleration_start_pose.py`，覆盖固定路径和Trackdrive局部/全局旋转等价。
