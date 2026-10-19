@@ -11,11 +11,12 @@ path_generator_node:
 
     # ==================== 轨迹/路径记录（落盘） ====================
     # 每次运行一个目录包裹：{mission}/{stamp}/planned.csv + driven.csv
+    # {stamp} 为秒级本地时间 YYYYmmdd_HHMMSS；分段追加 _<序号>。
     # 记录内容仅用于离线分析，不影响规划/控制输出。
     record:
       enabled: true
-      run_dir: ""  # 启动入口传入绝对运行目录，轨迹写入 jrajectory/
-      dir: logs/{mission}/{stamp}/jrajectory  # 独立启动时相对项目根目录解析
+      run_dir: ""  # 启动入口传入绝对运行目录，轨迹写入 trajectory/
+      dir: wuta_logs/{mission}/{stamp}/trajectory  # 独立启动时相对项目根目录解析
       planned_file: planned.csv   # 规划轨迹逐点（含 phase/lap/target_speed）
       driven_file: driven.csv     # 实际位姿 + 车速 + 控制指令
       flush_interval_sec: 1.0     # s，落盘刷新周期
@@ -70,7 +71,7 @@ path_generator_node:
       # 临时替代八字：直行 → 左转半圆 → 返回起点横截线并停车。
       # 起点/朝向使用 anchor.entry（所选参考系）；关闭 enabled 恢复原八字。
       u_turn_test:
-        enabled: true
+        enabled: false
         straight_distance: 12.0       # m，去程和返程直线长度
         radius: 9.125                 # m，回程位于起点左侧 2R
         velocity: 1.5               # m/s，巡航及转弯速度

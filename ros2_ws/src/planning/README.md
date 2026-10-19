@@ -153,8 +153,8 @@ planning/
 | `driven_trajectory.max_step` | 2.0 m | 单帧跳变门限，超过视为定位跳变（显示与记录共用） |
 | `driven_trajectory.display_window_m` | 200.0 m | RViz 显示只保留最近该长度的历史，避免内存无界增长 |
 | `record.enabled` | true | 是否记录规划轨迹与实际行驶位姿 |
-| `record.run_dir` | 空 | 启动入口提供的绝对运行目录；轨迹写入 jrajectory/，优先于 record.dir |
-| `record.dir` | `logs/{mission}/{stamp}/jrajectory` | 独立启动目录模板；相对项目根目录解析；全栈由 record.run_dir 指定 |
+| `record.run_dir` | 空 | 启动入口提供的绝对运行目录；轨迹写入 trajectory/，优先于 record.dir |
+| `record.dir` | `wuta_logs/{mission}/{stamp}/trajectory` | 独立启动目录模板；相对项目根目录解析；全栈由 record.run_dir 指定 |
 | `record.planned_file` / `record.driven_file` | `planned.csv` / `driven.csv` | 规划轨迹 / 实际位姿文件名 |
 | `record.flush_interval_sec` | 1.0 s | 落盘刷新周期 |
 | `record.max_mb` | 50.0 | 单文件超过则切分 `_partNNN` |

@@ -213,7 +213,7 @@ private:
 
   // 记录器参数（落盘，仅离线分析用，不影响规划/控制输出）
   bool record_enabled_{true};
-  std::string record_dir_template_{"logs/{mission}/{stamp}/jrajectory"};
+  std::string record_dir_template_{"wuta_logs/{mission}/{stamp}/trajectory"};
   std::string record_run_dir_;
   std::size_t record_segment_{0};
   std::string record_planned_file_{"planned.csv"};

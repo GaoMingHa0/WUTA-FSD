@@ -64,15 +64,20 @@ def setup(context):
              parameters=[{'config_path': str(paths['rslidar'])}],
              condition=IfCondition(LaunchConfiguration('start_drivers')), output='screen'),
         Node(package='tf2_ros', executable='static_transform_publisher',
-             name='camera_lidar_extrinsics', arguments=tf_args, output='screen'),
+             name='camera_lidar_extrinsics', arguments=tf_args, output='screen',
+             condition=IfCondition(LaunchConfiguration('start_drivers'))),
         Node(package='camera_detection', executable='lwdetr_tensorrt_node' if backend == 'cpp' else 'yolov8_node',
-             parameters=[str(paths['camera']), {'model_path': str(model)}], output='screen'),
+             parameters=[str(paths['camera']), {'model_path': str(model)}], output='screen',
+             condition=IfCondition(LaunchConfiguration('start_algorithms'))),
         Node(package='camera_detection', executable='stereo_detection_adapter_cpp' if arg('adapter_backend') == 'cpp'
-             else 'stereo_detection_adapter', parameters=[str(paths['adapter'])], output='screen'),
+             else 'stereo_detection_adapter', parameters=[str(paths['adapter'])], output='screen',
+             condition=IfCondition(LaunchConfiguration('start_algorithms'))),
         Node(package='lidar_detection', executable='lidar_detection_node',
-             parameters=[str(paths['lidar'])], output='screen'),
+             parameters=[str(paths['lidar'])], output='screen',
+             condition=IfCondition(LaunchConfiguration('start_algorithms'))),
         Node(package='detection_fusion', executable='detection_fusion_node_cpp' if arg('fusion_backend') == 'cpp'
-             else 'detection_fusion_node', parameters=[str(paths['fusion'])], output='screen'),
+             else 'detection_fusion_node', parameters=[str(paths['fusion'])], output='screen',
+             condition=IfCondition(LaunchConfiguration('start_algorithms'))),
     ]
 
 
@@ -85,6 +90,7 @@ def generate_launch_description():
         DeclareLaunchArgument('adapter_backend', default_value='cpp', choices=['cpp', 'python']),
         DeclareLaunchArgument('fusion_backend', default_value='cpp', choices=['cpp', 'python']),
         DeclareLaunchArgument('start_drivers', default_value='true', choices=['true', 'false']),
+        DeclareLaunchArgument('start_algorithms', default_value='true', choices=['true', 'false']),
         DeclareLaunchArgument('zed_publish_tf', default_value='false', choices=['true', 'false']),
         DeclareLaunchArgument('zed_publish_map_tf', default_value='false', choices=['true', 'false']),
         OpaqueFunction(function=setup),

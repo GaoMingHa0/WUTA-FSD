@@ -925,15 +925,12 @@ void PathGeneratorNode::ensureRecordFiles()
   closeRecordFiles();
   record_mission_ = mission;
 
-  // stamp = 本次运行首次打开的时间（本地时间）
+  // stamp = 本次运行首次打开的时间（本地时间，秒级）
   const std::time_t now_t = std::time(nullptr);
   std::tm tm_buf{};
   localtime_r(&now_t, &tm_buf);
   std::ostringstream stamp;
-  stamp << std::put_time(&tm_buf, "%Y%m%d_%H%M%S") << "_"
-        << std::setw(6) << std::setfill('0')
-        << (std::chrono::duration_cast<std::chrono::microseconds>(
-              std::chrono::system_clock::now().time_since_epoch()).count() % 1000000);
+  stamp << std::put_time(&tm_buf, "%Y%m%d_%H%M%S");
   record_stamp_ = stamp.str();
 
   const auto replace_all = [](std::string text, const std::string & from,
@@ -950,7 +947,7 @@ void PathGeneratorNode::ensureRecordFiles()
 
   std::filesystem::path path(dir);
   if (!record_run_dir_.empty()) {
-    path = std::filesystem::path(record_run_dir_) / "jrajectory";
+    path = std::filesystem::path(record_run_dir_) / "trajectory";
     if (record_segment_ > 0) {
       path /= "segments";
       path /= mission;
