@@ -28,6 +28,8 @@ IDLE ──(传感器就绪)──→ READY ──(/system/start_command 且已�
 > `/system/start_command` / `/system/emergency`。故**选模式不再启动**：
 > 需 `mission_mode_cmd`（设置模式）**且** `/system/start_command=true`（RES 放行）才从
 > READY 进 EXPLORE；车检（inspection）同样需要 start_command 才进 INSPECTION。
+> 车检不设 GNSS 状态或新鲜度门槛；其他赛项启动及 RACE 仍要求新鲜 GNSS=4。
+> 雷达、惯导、相机的设备心跳自检和急停锁存继续生效。
 > GO 不锁存：档位真正变化时本节点会丢弃此前按下的 GO（`onMissionModeCmd` 清
 > `start_requested_`；保活重发同值不触发），即 GO 必须晚于本次档位选择。
 

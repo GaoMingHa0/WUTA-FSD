@@ -168,13 +168,9 @@ bool MissionManager::gnssReady() const
 
 bool MissionManager::startupGnssReady() const
 {
-  // 台架车检允许状态0；其他模式及RACE继续要求状态4。
-  if (mission_mode_ != State::MISSION_INSPECTION || gnss_status_ != 0) {
-    return gnssReady();
-  }
-  const double age = imu_last_seen_.nanoseconds() == 0
-    ? -1.0 : (now() - imu_last_seen_).seconds();
-  return age >= 0.0 && age <= sensor_timeout_sec_;
+  // 车检不设GNSS门槛；设备在线仍由selfCheckTick独立检查。
+  // 其他模式的启动及RACE继续要求新鲜状态4。
+  return mission_mode_ == State::MISSION_INSPECTION || gnssReady();
 }
 
 void MissionManager::refreshLidarReady()

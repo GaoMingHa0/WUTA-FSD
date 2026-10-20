@@ -72,9 +72,9 @@ path_generator_node:
       # 起点/朝向使用 anchor.entry（所选参考系）；关闭 enabled 恢复原八字。
       u_turn_test:
         enabled: false
-        straight_distance: 12.0       # m，去程和返程直线长度
-        radius: 9.125                 # m，回程位于起点左侧 2R
-        velocity: 1.5               # m/s，巡航及转弯速度
+        straight_distance: 9.0       # m，去程和返程直线长度
+        radius: 6.3                 # m，回程位于起点左侧 2R
+        velocity: 0.9               # m/s，巡航及转弯速度
         brake_distance: 7.0           # m，返程最后此距离减速到 0，须 <= straight_distance
       # 赛道几何锚点（交叉点，不随定位位姿变化）
       geometry:

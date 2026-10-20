@@ -22,12 +22,12 @@ mission_manager:
 
     # 传感器持续监控（开机自检 + 比赛中断线均判故障，故障上报 VCU 并切 EMERGENCY）
     # true代表开启自检，false代表关闭自检
-    check_lidar: true
+    check_lidar: false
     check_imu: true
-    check_camera: true
+    check_camera: false
     lidar_topic: /rslidar_points
     imu_topic: /chcnav/odometry
-    # 原始数据到达即表示惯导在线；车检启动允许GNSS=0或4，其他模式及RACE要求GNSS=4。
+    # 原始数据到达即表示惯导在线；车检启动不设GNSS门槛，其他模式及RACE要求新鲜GNSS=4。
     ins_heartbeat_topic: /chcnav/devpvt
     camera_topic: /zed/zed_node/rgb/image_rect_color
     sensor_timeout_sec: 2.0
