@@ -47,6 +47,8 @@ private:
   bool lidarReady() const;
   bool gnssReady() const;
   bool startupGnssReady() const;
+  bool brake_bench_mode_{false};
+  bool manual_record_mode_{false};
   void refreshLidarReady();
   struct RaceGates {
     bool pose_fresh;

@@ -79,3 +79,10 @@ IDLE ──(传感器就绪)──→ READY ──(/system/start_command 且已�
 雷达就绪通过只读 `lidarReady()` 计算，`publishState()` 不更新就绪标志。
 RACE 判断和诊断复用 `raceGates()`，保留原有门槛、GO消费和急停行为。
 只读监控退出不停止车辆模块，状态变化事件归入运行目录的 `manager.log`。
+
+
+## CLI运行配置（2026-10-23）
+
+正常全车仍按原传感器/GNSS/定位门控推进，普通acceleration发车要求新鲜GNSS状态4。`brake_bench_mode=true`只允许真实acceleration选档及之后的RES GO放行，豁免传感器持续检查及GNSS/雷达/定位发车门槛；原始诊断不伪造在线，DevicesInspection.ok表示台架豁免后的检查结论。MissionState.brake_bench_mode由本节点唯一发布，description增加brake_bench/sensor_checks_exempt诊断；controller负责定时制动，任务机消费原完成事件进入FINISH，不生成Command。当前GO前不再要求0x603前置发送成功。
+
+`manual_record_mode=true`与台架互斥，自动任务保持未激活，忽略模式/GO/完成输入但保留真实自检及急停；供现有定位和轨迹记录链使用。description的manual_record与wait=manual_record向只读显示解释用途，不代表驾驶许可。正式圈数仍由本节点拥有，无活动赛项时不计圈。完整部署见宿主`docs/DEPLOYMENT.md`。

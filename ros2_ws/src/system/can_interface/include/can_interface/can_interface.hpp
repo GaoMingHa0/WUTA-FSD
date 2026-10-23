@@ -24,6 +24,7 @@ class CANInterfaceNode : public rclcpp::Node
 {
 public:
   CANInterfaceNode(const rclcpp::NodeOptions & options);
+  ~CANInterfaceNode() override;
 
 private:
   // 发送路径入口（ROS 订阅回调）
@@ -55,6 +56,7 @@ private:
   // 0x11 遥控器上线 / 0x13 发车按钮被按下 / 0x10 按下急停
   // 发车严格边沿：0x13 变化沿发布一次 /system/start_command，不做窗口重放
   void parseResFrame(const CanFrame & frame);  // 状态 → start_command / emergency
+  bool prepareBrakeBench();  // 台架GO放行前发送制动电机前置报文
   void publishStartCommand(bool start);
   void publishEmergency(bool emergency);
 
@@ -87,6 +89,14 @@ private:
   // 发送门控：收到首份自检结论（devices_inspection）前控制帧都不发，
   // 避免开机默认 Signal3=0 被 VCU 当作自检故障。
   bool tx_armed_{false};
+  bool receive_only_{false};
+  bool brake_bench_mode_{false};
+  bool bench_mission_active_{false};
+  bool bench_mission_ready_{false};
+  bool bench_prepare_attempted_{false};
+  bool bench_command_seen_{false};
+  std::chrono::steady_clock::time_point bench_command_at_;
+  std::chrono::steady_clock::time_point bench_mission_at_;
 
   // 0x501 帧缓存（仅模式变化时发布，去重）
   bool mode_cache_enabled_{true};

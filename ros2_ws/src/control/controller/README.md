@@ -263,3 +263,12 @@ skidpad 5 m/s；acceleration 15 m/s；EBS 12 m/s。
 - [x] `/control/command` → VCU CAN 帧：由 `system/can_interface` 封装为 0x210（Signal1 `throttle_brake` / Signal2 `angle`）
 
 旧赛项 `pid.output_limit` 已移除，启动时若仍传入会明确报错。迁移时把旧值同时填入两个新开度参数，保持行为一致；车检配置不变。
+
+
+## 静态制动台架（2026-10-23）
+
+根入口由CLI M键选择制动台架后统一设置`brake_bench_mode=true`，默认false；不修改普通直线加速路径或速度PID。controller核对MissionState.brake_bench_mode，并且只在观察到IDLE/READY后首次进入acceleration/EXPLORE时启动。无pose、waypoints或车速反馈也可执行；活动中重启不补做动作。
+
+参数唯一来源为本包`config/controller.yaml`的`acceleration.bench_brake`：delay_sec=5.0、hold_sec=10.0、opening=0.5。等待时严格中性，随后纵向-0.5保持10秒，结束持续中性并回报原mission_complete；speed/angle全程0，不经过零速PID。模式不一致、锁存急停或活动任务状态超过0.5秒未更新时中止，恢复输入也不续做。CAN台架分支进一步禁止正驱动/转向并处理命令超时。
+
+当前0x603前置发送已临时停用；电机初始化归现场车端控制器，本节点不直接配置电机对象字典。完成/中止后通过CLI停止清理再开始下一次运行；切回正常模式并重新启动恢复原控制链。扩展的消息为`wuta_msgs/MissionState`，所有消费者须使用同版消息绑定。详细启动、恢复和硬件验证边界见宿主`docs/DEPLOYMENT.md`。

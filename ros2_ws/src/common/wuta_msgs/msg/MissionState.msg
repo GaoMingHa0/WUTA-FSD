@@ -26,3 +26,4 @@ uint8 state
 uint8 mission_mode
 uint8 localization_mode
 string description
+bool brake_bench_mode   # 本次运行仅允许直线加速档位的静态制动台架动作

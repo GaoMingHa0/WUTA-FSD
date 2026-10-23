@@ -68,6 +68,9 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
 : Node("can_interface", options)
 {
   // 通信接口
+  brake_bench_mode_ = declare_parameter("brake_bench_mode", false);
+  receive_only_ = declare_parameter("receive_only", false);
+  if (receive_only_ && brake_bench_mode_) throw std::invalid_argument("receive_only conflicts with brake_bench_mode");
   can_device_ = declare_parameter<std::string>("can.device", can_device_);
   poll_interval_sec_ = declare_parameter<double>("can.poll_interval_sec", poll_interval_sec_);
 
@@ -80,6 +83,10 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
   // 发送周期
   control_period_sec_ = declare_parameter<double>(
     "frames.control.period_sec", control_period_sec_);
+  if (brake_bench_mode_) {
+    // 台架模式始终维持至多100ms的发送周期，使500ms命令超时可执行。
+    control_period_sec_ = 0.1;
+  }
   heartbeat_period_sec_ = declare_parameter<double>(
     "frames.heartbeat.period_sec", heartbeat_period_sec_);
 
@@ -131,7 +138,7 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
   // 控制帧周期发送：无控制指令时也按周期持续上报（Signal3/4 状态随帧携带）。
   // tx_armed_ 未置位（首份自检结论未到）时 sendControlFrame() 直接返回：本定时器同样静默。
   // control_period_sec <= 0 关闭周期发送（控制帧仍随 /control/command 回调即时发出）。
-  if (control_period_sec_ > 0.0) {
+  if (!receive_only_ && control_period_sec_ > 0.0) {
     keepalive_timer_ = create_wall_timer(
       std::chrono::milliseconds(
         static_cast<int64_t>(std::max(0.001, control_period_sec_) * 1000.0)),
@@ -141,7 +148,7 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
   // 上线心跳：标准帧 / DLC=1。**不并入控制帧的 tx_armed_ 门控**：
   // 本帧从节点启动即发，首份 /system/devices_inspection 到达前 Data[0]=0x00，
   // 之后随自检结论翻转（0x01=在线 / 0x00=异常）。period<=0 关闭。
-  if (heartbeat_period_sec_ > 0.0) {
+  if (!receive_only_ && heartbeat_period_sec_ > 0.0) {
     heartbeat_timer_ = create_wall_timer(
       std::chrono::milliseconds(static_cast<int64_t>(
         std::max(0.001, heartbeat_period_sec_) * 1000.0)),
@@ -180,6 +187,10 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
 
   // GO **不重放/不锁存**。重启实例需重按 GO。
 
+  if (receive_only_) {
+    RCLCPP_WARN(get_logger(), "RECEIVE ONLY: control, heartbeat and shutdown transmission disabled.");
+    return;
+  }
   RCLCPP_INFO(get_logger(), "CAN Interface initialized (tx/rx separated).");
   RCLCPP_INFO(get_logger(),
     "Tx control frame 0x%X gated until first /system/devices_inspection; "
@@ -194,6 +205,13 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
 
 void CANInterfaceNode::onMissionState(const wuta_msgs::msg::MissionState::SharedPtr msg)
 {
+  bench_mission_ready_ = msg->brake_bench_mode &&
+    msg->mission_mode == wuta_msgs::msg::MissionState::MISSION_ACCELERATION &&
+    msg->state == wuta_msgs::msg::MissionState::READY;
+  bench_mission_active_ = msg->brake_bench_mode &&
+    msg->mission_mode == wuta_msgs::msg::MissionState::MISSION_ACCELERATION &&
+    msg->state == wuta_msgs::msg::MissionState::EXPLORE;
+  bench_mission_at_ = std::chrono::steady_clock::now();
   // Signal4：任务 FINISH 后上报 VCU（急停归零由 controller 负责，本节点不参与判定）
   can_finished_ = (msg->state == wuta_msgs::msg::MissionState::FINISH);
   sendControlFrame();
@@ -202,6 +220,7 @@ void CANInterfaceNode::onMissionState(const wuta_msgs::msg::MissionState::Shared
 void CANInterfaceNode::onDevicesInspection(
   const wuta_msgs::msg::DevicesInspection::SharedPtr msg)
 {
+  if (receive_only_) return;
   // Signal3：设备自检通过 → 上线=1；失败 → 0（mission_manager 已切 EMERGENCY）
   can_online_ = msg->ok;
   if (!tx_armed_) {
@@ -223,6 +242,8 @@ void CANInterfaceNode::onDevicesInspection(
 
 void CANInterfaceNode::onControlCommand(const autoware_msgs::msg::Command::SharedPtr msg)
 {
+  bench_command_seen_ = true;
+  bench_command_at_ = std::chrono::steady_clock::now();
   throttle_brake_ = msg->throttle_brake;  // 纵向开度 [-1,1]，Signal1 数据源
   cmd_angle_ = msg->angle;                // 转向角（deg），Signal2 数据源
   sendControlFrame();
@@ -244,13 +265,31 @@ void CANInterfaceNode::pollReceiver()
 
 void CANInterfaceNode::sendControlFrame()
 {
+  if (receive_only_) return;
   // 门控：首份自检结论到达前不上总线——开机默认 Signal3=0 会被 VCU 当作自检故障
   if (!tx_armed_) return;
+  if (brake_bench_mode_) {
+    const auto t = std::chrono::steady_clock::now();
+    if (!can_online_ || !bench_command_seen_ || !bench_mission_active_ ||
+      std::chrono::duration<double>(t - bench_command_at_).count() > 0.5 ||
+      std::chrono::duration<double>(t - bench_mission_at_).count() > 0.5 ||
+      !std::isfinite(throttle_brake_)) throttle_brake_ = 0.0;
+    // CAN仅限制台架协议边界，不生成制动动作；禁止正驱动和转向。
+    throttle_brake_ = std::clamp(throttle_brake_, -1.0, 0.0);
+    cmd_angle_ = 0.0;
+  }
   const CanFrame frame = packControlFrame(
     throttle_brake_, cmd_angle_, can_online_, can_finished_);
   if (!can_.send(frame)) {
     RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000,
       "Failed to send control frame to the VCU on CAN bus.");
+  }
+}
+
+CANInterfaceNode::~CANInterfaceNode()
+{
+  if (!receive_only_ && brake_bench_mode_ && tx_armed_) {
+    can_.send(packControlFrame(0.0, 0.0, can_online_, can_finished_));
   }
 }
 
@@ -283,6 +322,7 @@ CanFrame CANInterfaceNode::packControlFrame(
 
 void CANInterfaceNode::sendHeartbeatFrame()
 {
+  if (receive_only_) return;
   const CanFrame frame = packHeartbeatFrame();
   if (!can_.send(frame)) {
     // 降级模式（can_.open 失败）或总线异常下会持续失败：节流告警，不刷屏
@@ -385,6 +425,9 @@ void CANInterfaceNode::parseResFrame(const CanFrame & frame)
     case kResStartButton:
       // 发车：只在变化沿发布一次（严格边沿，不重放不锁存）。
       if (changed) {
+        // 2026-10-23：暂时停用0x603前置帧，恢复GO直接交给原任务机。
+        // 原controller的5秒中性等待、10秒50%制动与释放逻辑保持。
+        // if (brake_bench_mode_ && !prepareBrakeBench()) break;
         publishStartCommand(true);
         RCLCPP_INFO(get_logger(), "RES start button pressed -> start command.");
       }
@@ -414,6 +457,37 @@ void CANInterfaceNode::parseResFrame(const CanFrame & frame)
   last_res_state_ = res_state;
 }
 
+bool CANInterfaceNode::prepareBrakeBench()
+{
+  if (receive_only_ || bench_prepare_attempted_) return false;
+  const double state_age = std::chrono::duration<double>(
+    std::chrono::steady_clock::now() - bench_mission_at_).count();
+  if (!bench_mission_ready_ || state_age > 0.5 || !can_online_ || !tx_armed_) {
+    RCLCPP_WARN(get_logger(),
+      "Brake bench GO ignored: waiting for fresh acceleration READY and inspection; press GO again when ready.");
+    return false;
+  }
+  bench_prepare_attempted_ = true;  // 每次运行仅一组；失败不自动重试或延后重放GO。
+  CanFrame frame;
+  frame.can_id = 0x603;
+  frame.dlc = 8;
+  const std::array<uint8_t, 8> payloads[2] = {
+    {0x2B, 0x71, 0x60, 0x00, 0x18, 0xFC, 0xFF, 0xFF},
+    {0x2B, 0x40, 0x60, 0x00, 0x1F, 0x00, 0x00, 0x00}};
+  for (int i = 0; i < 6; ++i) {
+    frame.data = payloads[i % 2];  // A/B交替三组，第一帧始终为A。
+    if (!can_.send(frame)) {
+      RCLCPP_ERROR(get_logger(),
+        "Brake bench preparation 0x603 failed on frame %d/6; GO not forwarded, EMERGENCY latched.", i + 1);
+      publishEmergency(true);
+      return false;
+    }
+  }
+  RCLCPP_INFO(get_logger(),
+    "Brake bench preparation sent: 0x603 DLC8 A=[2B 71 60 00 18 FC FF FF] B=[2B 40 60 00 1F 00 00 00], A/B x3; forwarding GO for configured delay.");
+  return true;
+}
+
 void CANInterfaceNode::publishStartCommand(bool start)
 {
   std_msgs::msg::Bool msg;
@@ -430,6 +504,7 @@ void CANInterfaceNode::publishEmergency(bool emergency)
 
 }  // namespace can_interface
 
+#ifndef CAN_INTERFACE_NO_MAIN
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
@@ -437,3 +512,4 @@ int main(int argc, char * argv[])
   rclcpp::shutdown();
   return 0;
 }
+#endif

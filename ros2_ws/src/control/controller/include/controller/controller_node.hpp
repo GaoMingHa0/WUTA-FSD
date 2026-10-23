@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rclcpp/rclcpp.hpp>
+#include <chrono>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <std_msgs/msg/bool.hpp>
@@ -47,6 +48,8 @@ private:
   void onEmergency(const std_msgs::msg::Bool::SharedPtr msg);
   void controlLoop();
   void runInspection();
+  void runBrakeBench();
+  void publishBenchCommand(double opening = 0.0);
   void finishInspection();
   bool isSamePath(const std::vector<autoware_msgs::msg::Waypoint> & candidate) const;
   double trackdriveLookahead(const rclcpp::Time & loop_time);
@@ -108,6 +111,17 @@ private:
   uint8_t mission_mode_{wuta_msgs::msg::MissionState::MISSION_TRACKDRIVE};
   uint8_t state_{wuta_msgs::msg::MissionState::IDLE};
   bool mission_complete_{false};
+  bool brake_bench_mode_{false};
+  bool bench_state_matches_{true};
+  bool bench_armed_{false};
+  bool bench_started_{false};
+  bool bench_done_{false};
+  bool bench_aborted_{false};
+  double bench_delay_sec_{5.0};
+  double bench_hold_sec_{10.0};
+  double bench_opening_{0.5};
+  std::chrono::steady_clock::time_point bench_started_at_;
+  std::chrono::steady_clock::time_point bench_state_received_at_;
   ControlCommand last_valid_trackdrive_cmd_;
   rclcpp::Time last_valid_trackdrive_cmd_time_;
   bool last_valid_trackdrive_cmd_ready_{false};

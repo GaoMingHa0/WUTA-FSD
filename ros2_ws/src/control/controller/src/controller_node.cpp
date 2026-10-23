@@ -47,6 +47,16 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
 
   // 各赛项独立调参
   loadMissionConfig();
+  brake_bench_mode_ = declare_parameter("brake_bench_mode", false);
+  bench_delay_sec_ = declare_parameter("acceleration.bench_brake.delay_sec", 5.0);
+  bench_hold_sec_ = declare_parameter("acceleration.bench_brake.hold_sec", 10.0);
+  bench_opening_ = declare_parameter("acceleration.bench_brake.opening", 0.5);
+  if (!std::isfinite(bench_delay_sec_) || bench_delay_sec_ < 0 ||
+    !std::isfinite(bench_hold_sec_) || bench_hold_sec_ <= 0 ||
+    !std::isfinite(bench_opening_) || bench_opening_ <= 0 || bench_opening_ > 1 ||
+    (brake_bench_mode_ && bench_opening_ > accel_cfg_.brake_max_opening)) {
+    throw std::invalid_argument("Invalid acceleration.bench_brake timing/opening or brake limit");
+  }
 
   // 车检参数
   inspection_throttle_ = std::clamp(
@@ -80,7 +90,7 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
     "/system/mission_state", 10,
     std::bind(&ControllerNode::onMissionState, this, std::placeholders::_1));
   emergency_sub_ = create_subscription<std_msgs::msg::Bool>(
-    "/system/emergency", 10,
+    "/system/emergency", rclcpp::QoS(1).reliable().transient_local(),
     std::bind(&ControllerNode::onEmergency, this, std::placeholders::_1));
 
   // 发布
@@ -373,6 +383,38 @@ void ControllerNode::onMissionState(const MissionState::SharedPtr msg)
   const uint8_t prev_mission = mission_mode_;
   state_ = msg->state;
   mission_mode_ = msg->mission_mode;
+  bench_state_matches_ = msg->brake_bench_mode == brake_bench_mode_;
+  bench_state_received_at_ = std::chrono::steady_clock::now();
+  // 双向核对运行模式；任何一端为台架时都禁止落入正常驾驶。
+  if (brake_bench_mode_ || msg->brake_bench_mode) {
+    enabled_ = false;
+    resetSpeedPid();
+    resetControlPipeline();
+    if (!bench_state_matches_) {
+      bench_aborted_ = true;
+      publishBenchCommand();
+      return;
+    }
+    if (!bench_started_ && !bench_aborted_ &&
+      (state_ == MissionState::IDLE || state_ == MissionState::READY)) {
+      bench_armed_ = true;
+    }
+    if (state_ == MissionState::EXPLORE &&
+      mission_mode_ == MissionState::MISSION_ACCELERATION && !bench_started_ &&
+      !bench_aborted_ && bench_armed_ &&
+      (prev_state == MissionState::IDLE || prev_state == MissionState::READY)) {
+      bench_started_ = true;
+      bench_started_at_ = std::chrono::steady_clock::now();
+      RCLCPP_INFO(get_logger(), "Brake bench started: delay=%.2fs hold=%.2fs opening=%.2f",
+        bench_delay_sec_, bench_hold_sec_, bench_opening_);
+    }
+    if (bench_started_ && (state_ != MissionState::EXPLORE ||
+      mission_mode_ != MissionState::MISSION_ACCELERATION)) {
+      bench_aborted_ = true;
+    }
+    if (state_ != MissionState::EXPLORE) publishBenchCommand();
+    return;
+  }
   enabled_ = (
     msg->state == MissionState::EXPLORE ||
     msg->state == MissionState::MAPPING_DONE ||
@@ -418,6 +460,10 @@ void ControllerNode::onEmergency(const std_msgs::msg::Bool::SharedPtr msg)
 
 void ControllerNode::controlLoop()
 {
+  if (brake_bench_mode_ || bench_aborted_) {
+    runBrakeBench();
+    return;
+  }
   // 急停：持续输出全零
   if (emergency_) {
     resetControlPipeline();
@@ -528,6 +574,43 @@ void ControllerNode::controlLoop()
     publishVisualization(
       wp.pose.pose.position.x,
       wp.pose.pose.position.y);
+  }
+}
+
+void ControllerNode::publishBenchCommand(double opening)
+{
+  autoware_msgs::msg::Command cmd;
+  cmd.header.stamp = now();
+  cmd.header.frame_id = "base_link";
+  cmd.speed = 0.0;
+  cmd.angle = 0.0;
+  cmd.throttle_brake = -opening;
+  cmd_pub_->publish(cmd);
+}
+
+void ControllerNode::runBrakeBench()
+{
+  const auto t = std::chrono::steady_clock::now();
+  const double state_age = std::chrono::duration<double>(t - bench_state_received_at_).count();
+  if (emergency_ || state_ == MissionState::EMERGENCY || !bench_state_matches_ ||
+    (bench_started_ && state_age > 0.5)) bench_aborted_ = true;
+  if (!bench_started_ || bench_aborted_ || bench_done_ ||
+    state_ != MissionState::EXPLORE || mission_mode_ != MissionState::MISSION_ACCELERATION) {
+    publishBenchCommand();
+    return;
+  }
+  const double elapsed = std::chrono::duration<double>(t - bench_started_at_).count();
+  if (elapsed < bench_delay_sec_) {
+    publishBenchCommand();
+  } else if (elapsed < bench_delay_sec_ + bench_hold_sec_) {
+    publishBenchCommand(bench_opening_);
+  } else {
+    bench_done_ = true;
+    publishBenchCommand();
+    std_msgs::msg::Bool complete;
+    complete.data = true;
+    mission_complete_pub_->publish(complete);
+    RCLCPP_INFO(get_logger(), "Brake bench complete: neutral hold, mission_complete published.");
   }
 }
 
@@ -704,6 +787,10 @@ void ControllerNode::publishVisualization(double target_x, double target_y)
 
 void ControllerNode::publishZeroCommand(const char * tag)
 {
+  if (brake_bench_mode_ || bench_aborted_) {
+    publishBenchCommand();
+    return;
+  }
   autoware_msgs::msg::Command cmd;
   cmd.header.stamp = now();
   cmd.header.frame_id = "base_link";

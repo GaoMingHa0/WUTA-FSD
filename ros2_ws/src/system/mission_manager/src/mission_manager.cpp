@@ -14,6 +14,9 @@ MissionManager::MissionManager(const rclcpp::NodeOptions & options)
 : Node("mission_manager", options)
 {
   // 任务模式由上游 /system/mission_mode_cmd 派发（见 onMissionModeCmd），此处无参数默认值
+  brake_bench_mode_ = declare_parameter("brake_bench_mode", false);
+  manual_record_mode_ = declare_parameter("manual_record_mode", false);
+  if (manual_record_mode_ && brake_bench_mode_) throw std::invalid_argument("manual record conflicts with brake bench");
   min_red_cones_ = declare_parameter("min_red_cones", min_red_cones_);
   min_blue_cones_ = declare_parameter("min_blue_cones", min_blue_cones_);
   min_map_average_confidence_ = declare_parameter(
@@ -195,18 +198,24 @@ MissionManager::RaceGates MissionManager::raceGates() const
 
 std::string MissionManager::waitingReasons() const
 {
+  if (manual_record_mode_ && current_state_ != State::EMERGENCY) return "manual_record";
   std::vector<std::string> reasons;
   const auto require = [&reasons](bool passed, const char *name) {
       if (!passed) reasons.emplace_back(name);
     };
   if (current_state_ == State::IDLE || current_state_ == State::READY) {
-    require(startupGnssReady(), "gnss");
-    if (mission_mode_ != State::MISSION_INSPECTION) {
-      require(lidarReady(), "lidar");
-      require(localization_ready_, "localization");
+    if (brake_bench_mode_) {
+      require(mode_selected_ && mission_mode_ == State::MISSION_ACCELERATION, "acceleration_mode");
+      require(start_requested_, "go");
+    } else {
+      require(startupGnssReady(), "gnss");
+      if (mission_mode_ != State::MISSION_INSPECTION) {
+        require(lidarReady(), "lidar");
+        require(localization_ready_, "localization");
+      }
+      require(mode_selected_, "mode");
+      require(start_requested_, "go");
     }
-    require(mode_selected_, "mode");
-    require(start_requested_, "go");
   } else if (current_state_ == State::MAPPING_DONE) {
     require(gnssReady(), "gnss");
     const auto gates = raceGates();
@@ -233,6 +242,17 @@ std::string MissionManager::waitingReasons() const
 
 void MissionManager::advanceWhenReady()
 {
+  if (manual_record_mode_) return;
+  if (brake_bench_mode_) {
+    if (current_state_ != State::IDLE && current_state_ != State::READY) return;
+    if (!mode_selected_ || mission_mode_ != State::MISSION_ACCELERATION) return;
+    if (current_state_ == State::IDLE) transitionTo(State::READY);
+    if (start_requested_) {
+      start_requested_ = false;
+      transitionTo(State::EXPLORE);
+    }
+    return;
+  }
   refreshLidarReady();
   if (!startupGnssReady()) return;
   if (lidar_ready_ && localization_ready_ && current_state_ == State::IDLE) {
@@ -266,6 +286,7 @@ void MissionManager::advanceWhenReady()
 
 void MissionManager::advanceRaceWhenReady()
 {
+  if (manual_record_mode_) return;
   if (!gnssReady()) return;
   if (current_state_ != State::MAPPING_DONE) return;
 
@@ -331,6 +352,7 @@ void MissionManager::publishState()
   msg.state           = current_state_;
   msg.mission_mode    = mission_mode_;
   msg.localization_mode = localization_mode_;
+  msg.brake_bench_mode = brake_bench_mode_;
   const auto gates = raceGates();
   msg.description = "lap=" + std::to_string(lap_count_) +
     " mode_selected=" + std::to_string(mode_selected_) +
@@ -347,6 +369,9 @@ void MissionManager::publishState()
     " confidence_ok=" + std::to_string(gates.confidence_ok) +
     " ndt_required=" + std::to_string(use_ndt_race_localization_) +
     " ndt_ready=" + std::to_string(ndt_map_ready_) +
+    " manual_record=" + std::to_string(manual_record_mode_) +
+    " brake_bench=" + std::to_string(brake_bench_mode_) +
+    " sensor_checks_exempt=" + std::to_string(brake_bench_mode_) +
     " diag_version=2 wait=" + waitingReasons();
   state_pub_->publish(msg);
 }
@@ -576,6 +601,7 @@ void MissionManager::onEmergency(const std_msgs::msg::Bool::SharedPtr msg)
 
 void MissionManager::onStartCommand(const std_msgs::msg::Bool::SharedPtr msg)
 {
+  if (manual_record_mode_) return;
   if (!msg->data) return;
   ++go_received_count_;
   start_requested_ = true;
@@ -584,6 +610,7 @@ void MissionManager::onStartCommand(const std_msgs::msg::Bool::SharedPtr msg)
 
 void MissionManager::onMissionModeCmd(const std_msgs::msg::String::SharedPtr msg)
 {
+  if (manual_record_mode_) return;
   if (current_state_ != State::IDLE && current_state_ != State::READY) {
     // 节流：can_interface 会对当前档位做保活重发（默认 1Hz），非 IDLE/READY 期间
     // 每次重发都会走到这里，不节流会按 1Hz 刷屏。
@@ -618,6 +645,7 @@ void MissionManager::onMissionModeCmd(const std_msgs::msg::String::SharedPtr msg
 
 void MissionManager::onMissionComplete(const std_msgs::msg::Bool::SharedPtr msg)
 {
+  if (manual_record_mode_) return;
   if (!msg->data) return;
   // 车检动作演示完成 → FINISH（与正常项目一致，由 controller 回报）
   if (current_state_ == State::INSPECTION) {
@@ -639,6 +667,11 @@ void MissionManager::onMissionComplete(const std_msgs::msg::Bool::SharedPtr msg)
 
 void MissionManager::selfCheckTick()
 {
+  if (brake_bench_mode_) {
+    // 这是台架运行检查结论，不代表真实传感器在线；实际状态由原诊断保留。
+    publishDevicesInspection(current_state_ != State::EMERGENCY, {});
+    return;
+  }
   refreshLidarReady();
   if (sensor_fault_) return;  // 故障已锁存，保持 EMERGENCY
   const bool any_checked = check_lidar_ || check_imu_ || check_camera_;
