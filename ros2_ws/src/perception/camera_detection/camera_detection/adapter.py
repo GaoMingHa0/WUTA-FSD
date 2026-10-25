@@ -4,7 +4,7 @@ from copy import deepcopy
 import time
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import qos_profile_sensor_data
+from rclpy.qos import QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import CameraInfo, Image
 from wuta_msgs.msg import CameraConeDetectionArray
 from camera_detection.stereo import depth_image, estimate_position
@@ -23,14 +23,15 @@ class StereoAdapter(Node):
         self.depths = deque(maxlen=20)
         self.boxes = deque(maxlen=20)
         self.info = None
+        camera_qos = QoSProfile(depth=5, reliability=ReliabilityPolicy.RELIABLE)
         self.pub = self.create_publisher(CameraConeDetectionArray, '/perception/camera/cones', 10)
         self.info_pub = self.create_publisher(CameraInfo, '/perception/camera/camera_info', 10)
         self.create_subscription(CameraConeDetectionArray, self.get_parameter('boxes_topic').value,
-                                 self.on_boxes, qos_profile_sensor_data)
+                                 self.on_boxes, camera_qos)
         self.create_subscription(Image, self.get_parameter('depth_topic').value,
-                                 self.on_depth, qos_profile_sensor_data)
+                                 self.on_depth, camera_qos)
         self.create_subscription(CameraInfo, self.get_parameter('info_topic').value,
-                                 self.on_info, qos_profile_sensor_data)
+                                 self.on_info, camera_qos)
         self.create_timer(0.01, self.process)
 
     def on_boxes(self, msg):

@@ -389,10 +389,10 @@ public:
                                                   expected_height);
         results_ = create_publisher<wuta_msgs::msg::CameraConeDetectionArray>(output_topic, 10);
         annotated_ = create_publisher<sensor_msgs::msg::Image>(
-            annotated_topic, rclcpp::SensorDataQoS());
+            annotated_topic, rclcpp::QoS(rclcpp::KeepLast(5)).reliable().durability_volatile());
         status_ = create_publisher<std_msgs::msg::String>("/perception/camera/yolo/status", 10);
         subscription_ = create_subscription<sensor_msgs::msg::Image>(
-            image_topic, rclcpp::SensorDataQoS(),
+            image_topic, rclcpp::QoS(rclcpp::KeepLast(5)).reliable().durability_volatile(),
             [this](sensor_msgs::msg::Image::ConstSharedPtr image) {
                 {
                     std::lock_guard<std::mutex> lock(mutex_);

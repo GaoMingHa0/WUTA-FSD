@@ -9,7 +9,7 @@ import numpy as np
 import rclpy
 from rclpy.duration import Duration
 from rclpy.node import Node
-from rclpy.qos import qos_profile_sensor_data
+from rclpy.qos import QoSProfile, ReliabilityPolicy
 from rclpy.time import Time
 from sensor_msgs.msg import CameraInfo
 from sensor_msgs.msg import PointCloud2
@@ -65,14 +65,16 @@ class DetectionFusion(Node):
         self.listener = TransformListener(self.tf, self)
         self.pub = self.create_publisher(ConeArray, self.cfg['output_topic'], 10)
         self.status = self.create_publisher(String, '/perception/fusion/status', 10)
+        camera_qos = QoSProfile(depth=5, reliability=ReliabilityPolicy.RELIABLE)
         self.create_subscription(CameraInfo, self.cfg['camera_info_topic'],
-                                 self.on_info, qos_profile_sensor_data)
+                                 self.on_info, camera_qos)
         self.create_subscription(CameraConeDetectionArray, self.cfg['camera_topic'],
-                                 self.on_camera, qos_profile_sensor_data)
+                                 self.on_camera, camera_qos)
+        lidar_qos = QoSProfile(depth=5, reliability=ReliabilityPolicy.RELIABLE)
         self.create_subscription(ConeArray, self.cfg['lidar_topic'],
-                                 self.on_lidar, qos_profile_sensor_data)
+                                 self.on_lidar, lidar_qos)
         self.create_subscription(PointCloud2, self.cfg['pointcloud_topic'],
-                                 self.on_cloud, qos_profile_sensor_data)
+                                 self.on_cloud, lidar_qos)
         self.create_timer(0.01, self.process)
 
     def on_info(self, msg):

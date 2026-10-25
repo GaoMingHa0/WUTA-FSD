@@ -146,17 +146,17 @@ public:
             "output_info_topic", "/perception/camera/camera_info");
         results_ = create_publisher<DetectionArray>(output_topic, 10);
         info_publisher_ = create_publisher<CameraInfo>(output_info_topic, 10);
-        boxes_sub_ = create_subscription<DetectionArray>(boxes_topic, rclcpp::SensorDataQoS(),
+        boxes_sub_ = create_subscription<DetectionArray>(boxes_topic, rclcpp::QoS(rclcpp::KeepLast(5)).reliable().durability_volatile(),
             [this](DetectionArray::ConstSharedPtr message) {
                 boxes_.push_back({std::move(message), std::chrono::steady_clock::now()});
                 if (boxes_.size() > 20) boxes_.pop_front();
             });
-        depth_sub_ = create_subscription<Image>(depth_topic, rclcpp::SensorDataQoS(),
+        depth_sub_ = create_subscription<Image>(depth_topic, rclcpp::QoS(rclcpp::KeepLast(5)).reliable().durability_volatile(),
             [this](Image::ConstSharedPtr message) {
                 depths_.push_back(std::move(message));
                 if (depths_.size() > 20) depths_.pop_front();
             });
-        info_sub_ = create_subscription<CameraInfo>(info_topic, rclcpp::SensorDataQoS(),
+        info_sub_ = create_subscription<CameraInfo>(info_topic, rclcpp::QoS(rclcpp::KeepLast(5)).reliable().durability_volatile(),
             [this](CameraInfo::ConstSharedPtr message) {
                 info_ = std::move(message);
                 info_publisher_->publish(*info_);

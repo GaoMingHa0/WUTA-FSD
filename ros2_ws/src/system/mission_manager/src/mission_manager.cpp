@@ -117,7 +117,8 @@ MissionManager::MissionManager(const rclcpp::NodeOptions & options)
   // 开机传感器自检：订阅设备数据流，心跳超时即判故障
   // ---------------------------------------------------------------------------
   lidar_data_sub_ = create_subscription<sensor_msgs::msg::PointCloud2>(
-    declare_parameter("lidar_topic", "/rslidar_points"), rclcpp::SensorDataQoS(),
+    declare_parameter("lidar_topic", "/rslidar_points"),
+    rclcpp::QoS(rclcpp::KeepLast(5)).reliable().durability_volatile(),
     [this](const sensor_msgs::msg::PointCloud2::SharedPtr msg) {
       (void)msg;
       lidar_last_seen_ = now();
@@ -133,7 +134,8 @@ MissionManager::MissionManager(const rclcpp::NodeOptions & options)
       advanceRaceWhenReady();
     });
   camera_data_sub_ = create_subscription<sensor_msgs::msg::Image>(
-    declare_parameter("camera_topic", "/zed/zed_node/rgb/image_rect_color"), rclcpp::SensorDataQoS(),
+    declare_parameter("camera_topic", "/zed/zed_node/rgb/image_rect_color"),
+    rclcpp::QoS(rclcpp::KeepLast(5)).reliable().durability_volatile(),
     [this](const sensor_msgs::msg::Image::SharedPtr msg) {
       (void)msg;
       camera_last_seen_ = now();

@@ -8,7 +8,7 @@ import time
 import rclpy
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
-from rclpy.qos import qos_profile_sensor_data
+from rclpy.qos import QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
 from wuta_msgs.msg import CameraConeDetection, CameraConeDetectionArray
@@ -40,13 +40,14 @@ class YoloNode(Node):
         self.get_logger().info('Loaded model classes: ' + str(self.model.names))
         self.get_logger().info('Detector device: ' + str(getattr(self.model, 'device', 'cuda')) +
                                '; backend: ' + self.model.backend + '; providers: ' + str(self.model.providers))
+        camera_qos = QoSProfile(depth=5, reliability=ReliabilityPolicy.RELIABLE)
         self.pub = self.create_publisher(CameraConeDetectionArray, self.cfg['output_topic'], 10)
-        self.image_pub = self.create_publisher(Image, self.cfg['annotated_topic'], qos_profile_sensor_data)
+        self.image_pub = self.create_publisher(Image, self.cfg['annotated_topic'], camera_qos)
         self.status = self.create_publisher(String, '/perception/camera/yolo/status', 10)
         self.lock = threading.Lock()
         self.latest = None
         self.stopping = threading.Event()
-        self.create_subscription(Image, self.cfg['image_topic'], self.on_image, qos_profile_sensor_data)
+        self.create_subscription(Image, self.cfg['image_topic'], self.on_image, camera_qos)
         self.worker = threading.Thread(target=self.run, daemon=True)
         self.worker.start()
 

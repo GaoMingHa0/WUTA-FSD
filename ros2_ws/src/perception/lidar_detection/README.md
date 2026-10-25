@@ -47,7 +47,7 @@ LidarDetectionNode
 
 ## 线程模型
 
-单线程。硬件链路使用最新点云 QoS（深度 1），避免检测慢于扫描时堆积旧帧。
+单线程。点云输入使用 Reliable / Volatile / KeepLast(1)，减少已观察到的 M1 大消息 Best Effort 丢样，同时限制待处理旧帧。发布者必须提供 Reliable；若处理持续慢于输入，深度 1 仍可能淘汰旧帧，不保证所有扫描都被检测。
 
 ## RoboSense M1 硬件配置与实测
 

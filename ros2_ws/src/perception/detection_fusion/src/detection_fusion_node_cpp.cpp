@@ -574,7 +574,7 @@ public:
             debug_status_ = create_publisher<std_msgs::msg::String>(debug_status_topic, 10);
             debug_markers_ = create_publisher<visualization_msgs::msg::MarkerArray>(debug_marker_topic, 10);
         }
-        info_sub_ = create_subscription<CameraInfo>(info_topic, rclcpp::SensorDataQoS(),
+        info_sub_ = create_subscription<CameraInfo>(info_topic, rclcpp::QoS(rclcpp::KeepLast(5)).reliable().durability_volatile(),
             [this](CameraInfo::ConstSharedPtr message) {
                 if (message->header.frame_id.empty() || !std::all_of(message->p.begin(), message->p.end(),
                     [](double value) { return std::isfinite(value); }) ||
@@ -582,7 +582,7 @@ public:
                 info_ = std::move(message);
                 process();
             });
-        camera_sub_ = create_subscription<CameraArray>(camera_topic, rclcpp::SensorDataQoS(),
+        camera_sub_ = create_subscription<CameraArray>(camera_topic, rclcpp::QoS(rclcpp::KeepLast(5)).reliable().durability_volatile(),
             [this](CameraArray::ConstSharedPtr message) {
                 const auto stamp = stamp_ns(message->header.stamp);
                 if (message->header.frame_id.empty() || stamp <= last_camera_stamp_) return;
@@ -597,7 +597,7 @@ public:
                 // immediately instead of waiting for the 10 ms timer tick.
                 process();
             });
-        lidar_sub_ = create_subscription<ConeArray>(lidar_topic, rclcpp::SensorDataQoS(),
+        lidar_sub_ = create_subscription<ConeArray>(lidar_topic, rclcpp::QoS(rclcpp::KeepLast(5)).reliable().durability_volatile(),
             [this](ConeArray::ConstSharedPtr message) {
                 const auto stamp = stamp_ns(message->header.stamp);
                 if (message->header.frame_id.empty() || stamp <= last_lidar_stamp_) return;
@@ -609,7 +609,7 @@ public:
                 pending_.push_back({std::move(message), Clock::now()});
                 process();
             });
-        cloud_sub_ = create_subscription<PointCloud>(cloud_topic, rclcpp::SensorDataQoS(),
+        cloud_sub_ = create_subscription<PointCloud>(cloud_topic, rclcpp::QoS(rclcpp::KeepLast(5)).reliable().durability_volatile(),
             [this](PointCloud::ConstSharedPtr message) {
                 if (message->header.frame_id.empty()) return;
                 clouds_.push_back(std::move(message));

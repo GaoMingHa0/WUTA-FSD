@@ -64,11 +64,9 @@ LidarDetectionNode::LidarDetectionNode(const rclcpp::NodeOptions & options)
   tf_buffer_ = std::make_shared<tf2_ros::Buffer>(get_clock());
   tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
-  // Detection is heavier than the incoming scan cadence on this M1 host.
-  // Keep only the newest waiting scan so a slow callback cannot build a
-  // several-frame backlog and publish stale cone positions.
-  auto pointcloud_qos = rclcpp::SensorDataQoS();
-  pointcloud_qos.keep_last(1);
+  // Reliable delivery avoids observed Best Effort losses for large M1 clouds.
+  // Keep only the newest waiting scan to bound backlog if detection slows down.
+  auto pointcloud_qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().durability_volatile();
   pointcloud_sub_ = create_subscription<sensor_msgs::msg::PointCloud2>(
     input_topic, pointcloud_qos,
     std::bind(&LidarDetectionNode::onPointCloud, this, std::placeholders::_1));
