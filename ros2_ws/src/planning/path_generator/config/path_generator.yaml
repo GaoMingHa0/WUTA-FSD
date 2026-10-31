@@ -28,18 +28,18 @@ path_generator_node:
       # ---------- 速度规划 ----------
       speed:
         explore:                      # 第1圈：探索/建图圈
-          max_velocity: 7.0           # m/s，目标速度上限（也是重采样默认速度）
-          min_velocity: 3.0           # m/s，曲率限速下限
+          max_velocity: 1.5          # m/s，目标速度上限（也是重采样默认速度）
+          min_velocity: 1.0           # m/s，曲率限速下限
           lateral_accel_limit: 4.0    # m/s^2，曲率限速 a=κv²
         race:                         # 第2/3圈：比赛圈（冻结中心线确认后生效）
-          lap2_max_velocity: 9.0      # m/s，第2圈（lap_count≤1）
-          lap3_max_velocity: 10.0     # m/s，第3圈起（lap_count>1）
-          min_velocity: 4.0           # m/s，曲率限速下限（第2/3圈共用）
+          lap2_max_velocity: 1.5     # m/s，第2圈（lap_count≤1）
+          lap3_max_velocity: 1.5     # m/s，第3圈起（lap_count>1）
+          min_velocity: 1.0           # m/s，曲率限速下限（第2/3圈共用）
           lateral_accel_limit: 6.0    # m/s^2，曲率限速（第2/3圈共用）
         launch:                       # 起步限速：进入循迹后前段距离的速度上限
-          velocity: 3.0               # m/s，起步阶段速度上限
-          distance: 12.0              # m，起步限速持续距离（原 4s@3m/s 换算）
-        degraded_velocity: 3.0        # m/s，短中心线或低置信度时的速度帽
+          velocity: 1.5               # m/s，起步阶段速度上限
+          distance: 5.0              # m，起步限速持续距离（原 4s@3m/s 换算）
+        degraded_velocity: 1.0        # m/s，短中心线或低置信度时的速度帽
         confidence:                   # 置信度 → 速度映射
           slow_threshold: 0.45        # 低于此置信度按 degraded_velocity 行驶
           full_threshold: 0.75        # 高于此置信度按 max_velocity 行驶
@@ -95,15 +95,18 @@ path_generator_node:
     # ==================== 赛项：直线加速（ACCELERATION） ====================
     # 通过终点线后才制动，并在标记的 100m 出口车道内停车。
     acceleration:
-      # start_pose：启动时冻结一次定位位姿；X前、Y左、yaw=0沿发车车头。
-      # 转换后仍发布固定map路径；map可恢复原来的绝对地图锚点方式。
+      # Direction from stable red/blue cone boundaries; distances below still use localization.
+      # false restores the legacy configured-anchor direction (explicit opt-out).
+      use_cone_direction: true
+      # start_pose：启动时冻结一次定位参考；启用锥桶方向时X沿拟合切线，Y须为0。
+      # use_cone_direction=false时恢复车头方向，并可选择map绝对锚点。
       anchor_frame: start_pose
       anchor:
         entry: { x: 0.0, y: 0.0, yaw: 0.0 }   # 发车位置（局部原点）
         brake: { x: 10.0, y: 0.0, yaw: 0.0 }   # 发车位置前方--m开始制动
-        stop:  { x: 20.0, y: 0.0, yaw: 0.0 }   # 发车位置前方--m停车
+        stop:  { x: 11.0, y: 0.0, yaw: 0.0 }   # 发车位置前方--m停车
       speed:
-        velocity: 1.5                # m/s，加速目标速度
+        velocity: 2.0               # m/s，加速目标速度
 
     # ==================== 赛项：EBS 测试（EBS） ====================
     # 7.5：起点后 0.3m，25m 测速点 ≥40km/h(11.11m/s)，急停后 ≤10m 内停车。

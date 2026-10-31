@@ -176,6 +176,20 @@ PathGeneratorNode::PathGeneratorNode(const rclcpp::NodeOptions & options)
   acceleration_velocity_ = declare_parameter(
     "acceleration.speed.velocity", acceleration_velocity_);
 
+  acceleration_use_cone_direction_ = declare_parameter(
+    "acceleration.use_cone_direction", acceleration_use_cone_direction_);
+  if (acceleration_use_cone_direction_ && (acceleration_anchor_frame_ != "start_pose" ||
+    !std::isfinite(acceleration_entry_.x) || !std::isfinite(acceleration_brake_.x) ||
+    !std::isfinite(acceleration_stop_.x) ||
+    std::abs(acceleration_entry_.y) > 1e-6 || std::abs(acceleration_brake_.y) > 1e-6 ||
+    std::abs(acceleration_stop_.y) > 1e-6 ||
+    !std::isfinite(acceleration_entry_.y) || !std::isfinite(acceleration_brake_.y) ||
+    !std::isfinite(acceleration_stop_.y) ||
+    acceleration_brake_.x <= acceleration_entry_.x || acceleration_stop_.x <= acceleration_brake_.x)) {
+    throw std::invalid_argument(
+      "cone-directed acceleration requires start_pose and increasing collinear X anchors (Y=0)");
+  }
+
   // EBS 测试参数（赛规 7.5），结构复用 acceleration
   ebs_entry_ = read_anchor("ebs.anchor.entry");
   ebs_brake_ = read_anchor("ebs.anchor.brake");
@@ -387,6 +401,7 @@ void PathGeneratorNode::onLapCount(
 void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
 {
   const bool was_active = trackdriveStateActive();
+  const bool entering_idle = msg->state == State::IDLE && system_state_ != State::IDLE;
   const bool mission_changed = msg->mission_mode != mission_mode_;
   mission_mode_  = msg->mission_mode;
   system_state_  = msg->state;
@@ -397,6 +412,9 @@ void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
     ebs_path_ready_ = false;
   }
 
+  if (mission_changed || entering_idle) {
+    acceleration_direction_.waypoints.clear();
+  }
   if (mission_changed) {
     skidpad_path_ready_ = false;
     acceleration_path_ready_ = false;
@@ -435,8 +453,41 @@ void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
   } else if (mission_mode_ == State::MISSION_ACCELERATION) {
     // 启动时只转换一次；车辆随后移动/转向不会改变终点。
     if (!acceleration_path_ready_) {
+      if (acceleration_use_cone_direction_) {
+        // Clear any cached path from the previous mission while waiting for this fit.
+        autoware_msgs::msg::Lane pending;
+        pending.header.frame_id = "map";
+        pending.header.stamp = now();
+        waypoints_pub_->publish(pending);
+      }
       Anchor reference;
       if (!resolvePathReference(acceleration_anchor_frame_, reference)) return;
+      if (acceleration_use_cone_direction_) {
+        const double age = acceleration_direction_.waypoints.size() == 2 ?
+          (now() - acceleration_direction_received_at_).seconds() : -1.0;
+        const double source_age = acceleration_direction_.waypoints.size() == 2 ?
+          (now() - rclcpp::Time(acceleration_direction_.header.stamp)).seconds() : -1.0;
+        if (age < 0.0 || age > 1.0 || source_age < -0.1 || source_age > 1.0) {
+          RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000,
+            "Acceleration: waiting for stable bilateral cone direction; no heading-only fallback.");
+          return;
+        }
+        const auto & a = acceleration_direction_.waypoints.front().pose.pose.position;
+        const auto & b = acceleration_direction_.waypoints.back().pose.pose.position;
+        const double yaw = std::atan2(b.y-a.y, b.x-a.x);
+        const double delta = std::atan2(std::sin(yaw-reference.yaw), std::cos(yaw-reference.yaw));
+        const double lateral = -std::sin(yaw)*(reference.x-a.x) + std::cos(yaw)*(reference.y-a.y);
+        if (!std::isfinite(reference.x) || !std::isfinite(reference.y) ||
+          !std::isfinite(lateral) || std::abs(delta) > 0.60 || std::abs(lateral) > 1.0) {
+          RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000,
+            "Acceleration direction rejected: heading delta=%.3f rad, start offset=%.3f m.", delta, lateral);
+          return;
+        }
+        // Project the launch position onto the fitted centerline; retain configured distances.
+        reference.x += std::sin(yaw)*lateral;
+        reference.y -= std::cos(yaw)*lateral;
+        reference.yaw = yaw;
+      }
       acceleration_path_ = generateAccelerationPath();
       auto rows = plannedRowsFromLane(acceleration_path_, "run");
       transformFixedPath(acceleration_path_, reference, rows);
@@ -470,6 +521,17 @@ void PathGeneratorNode::onMissionState(const State::SharedPtr msg)
 
 void PathGeneratorNode::onCenterline(const autoware_msgs::msg::Lane::SharedPtr msg)
 {
+  if (mission_mode_ == State::MISSION_ACCELERATION) {
+    acceleration_direction_.waypoints.clear();
+    if (msg->header.frame_id != "map" || msg->waypoints.size() != 2) return;
+    const auto & a = msg->waypoints.front().pose.pose.position;
+    const auto & b = msg->waypoints.back().pose.pose.position;
+    if (!std::isfinite(a.x) || !std::isfinite(a.y) || !std::isfinite(b.x) || !std::isfinite(b.y) ||
+      std::hypot(b.x-a.x, b.y-a.y) < 1.0) return;
+    acceleration_direction_ = *msg;
+    acceleration_direction_received_at_ = now();
+    return;
+  }
   // Only forward trackdrive centerline
   if (mission_mode_ != State::MISSION_TRACKDRIVE) return;
   if (!trackdriveStateActive()) return;

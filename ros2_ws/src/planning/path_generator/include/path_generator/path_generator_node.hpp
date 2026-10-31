@@ -127,6 +127,10 @@ private:
   bool skidpad_path_ready_{false};
   autoware_msgs::msg::Lane acceleration_path_;
   bool acceleration_path_ready_{false};
+  bool acceleration_use_cone_direction_{true};
+  autoware_msgs::msg::Lane acceleration_direction_;
+  rclcpp::Time acceleration_direction_received_at_;
+
   autoware_msgs::msg::Lane ebs_path_;
   bool ebs_path_ready_{false};
   autoware_msgs::msg::Lane last_trackdrive_lane_;

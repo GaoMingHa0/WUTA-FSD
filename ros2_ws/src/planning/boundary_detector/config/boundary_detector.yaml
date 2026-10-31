@@ -22,3 +22,17 @@ boundary_detector_node:
     global_max_closure_distance: 8.0
     global_min_waypoints: 20
     global_min_coverage_ratio: 0.60
+
+    # Straight acceleration: red=left / blue=right, map coordinates; radians/metres.
+    acceleration:
+      min_cones_per_side: 3
+      inlier_distance: 0.25
+      min_inlier_ratio: 0.65
+      min_span: 4.0             # shared longitudinal observation span, not finish distance
+      min_width: 1.5
+      max_width: 7.5
+      max_heading_angle: 0.60  # initial vehicle heading disambiguates forward/backward
+      max_parallel_angle: 0.14
+      forward_range: 40.0
+      lateral_range: 8.0
+      stable_frames: 3

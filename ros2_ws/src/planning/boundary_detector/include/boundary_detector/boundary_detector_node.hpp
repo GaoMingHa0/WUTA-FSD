@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rclcpp/rclcpp.hpp>
+#include "boundary_detector/acceleration_lines.hpp"
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/float32.hpp>
@@ -43,6 +44,17 @@ private:
     const wuta_msgs::msg::ConeMap & map, double & confidence) const;
   bool hasSevereColorImbalance(const wuta_msgs::msg::ConeMap & map) const;
   void publishPlanningStatus(bool global_ready, double confidence);
+  void processAccelerationMap(const wuta_msgs::msg::ConeMap & map);
+  AccelerationLineConfig acceleration_config_;
+  AccelerationLines acceleration_fit_;
+  geometry_msgs::msg::PoseStamped acceleration_reference_;
+  bool acceleration_reference_ready_{false};
+  bool acceleration_frozen_{false};
+  int acceleration_streak_{0};
+  int acceleration_stable_frames_{3};
+  int64_t acceleration_last_stamp_{0};
+  rclcpp::Time last_pose_received_at_;
+
 
   void publishVisualization(const autoware_msgs::msg::Lane & lane);
 

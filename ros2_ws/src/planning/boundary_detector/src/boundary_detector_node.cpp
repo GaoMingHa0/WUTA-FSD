@@ -4,6 +4,7 @@
 #include <cmath>
 #include <limits>
 #include <vector>
+#include <stdexcept>
 
 namespace boundary_detector
 {
@@ -100,6 +101,32 @@ BoundaryDetectorNode::BoundaryDetectorNode(const rclcpp::NodeOptions & options)
   global_min_coverage_ratio_ = declare_parameter(
     "global_min_coverage_ratio", global_min_coverage_ratio_);
 
+
+  auto & a = acceleration_config_;
+  a.min_cones = declare_parameter("acceleration.min_cones_per_side", a.min_cones);
+  a.inlier_distance = declare_parameter("acceleration.inlier_distance", a.inlier_distance);
+  a.min_inlier_ratio = declare_parameter("acceleration.min_inlier_ratio", a.min_inlier_ratio);
+  a.min_span = declare_parameter("acceleration.min_span", a.min_span);
+  a.min_width = declare_parameter("acceleration.min_width", a.min_width);
+  a.max_width = declare_parameter("acceleration.max_width", a.max_width);
+  a.max_heading_angle = declare_parameter("acceleration.max_heading_angle", a.max_heading_angle);
+  a.max_parallel_angle = declare_parameter("acceleration.max_parallel_angle", a.max_parallel_angle);
+  a.forward_range = declare_parameter("acceleration.forward_range", a.forward_range);
+  a.lateral_range = declare_parameter("acceleration.lateral_range", a.lateral_range);
+  acceleration_stable_frames_ = declare_parameter("acceleration.stable_frames", acceleration_stable_frames_);
+  for (double value : {a.inlier_distance, a.min_inlier_ratio, a.min_span, a.min_width,
+    a.max_width, a.max_heading_angle, a.max_parallel_angle, a.forward_range, a.lateral_range}) {
+    if (!std::isfinite(value) || value <= 0.0) {
+      throw std::invalid_argument("acceleration fit parameters must be finite and positive");
+    }
+  }
+  if (a.min_cones < 3 || a.min_cones > 64 || acceleration_stable_frames_ < 1 ||
+    a.min_width >= a.max_width || a.min_inlier_ratio > 1.0 ||
+    a.max_heading_angle >= 1.57 || a.max_parallel_angle >= 1.57 ||
+    !std::isfinite(lookahead_distance_) || lookahead_distance_ <= 0.0) {
+    throw std::invalid_argument("invalid acceleration fit limits");
+  }
+
   // Subscribers
   cone_map_sub_ = create_subscription<wuta_msgs::msg::ConeMap>(
     "/mapping/cone_map", 10,
@@ -129,22 +156,153 @@ BoundaryDetectorNode::BoundaryDetectorNode(const rclcpp::NodeOptions & options)
 
 void BoundaryDetectorNode::onPose(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
 {
+  last_pose_received_at_ = now();
   current_pose_ = *msg;
   pose_ready_ = true;
 }
 
 void BoundaryDetectorNode::onMissionState(const wuta_msgs::msg::MissionState::SharedPtr msg)
 {
+  if (mission_mode_ != msg->mission_mode ||
+    (msg->state == wuta_msgs::msg::MissionState::IDLE && system_state_ != msg->state)) {
+    acceleration_reference_ready_ = false;
+    acceleration_frozen_ = false;
+    acceleration_streak_ = 0;
+    acceleration_last_stamp_ = 0;
+    acceleration_fit_ = {};
+  }
   mission_mode_ = msg->mission_mode;
   system_state_ = msg->state;
+  using State = wuta_msgs::msg::MissionState;
+  const double fit_age = (now().nanoseconds() - acceleration_last_stamp_) * 1e-9;
+  if (mission_mode_ == State::MISSION_ACCELERATION && acceleration_fit_.valid &&
+    fit_age >= 0.0 && fit_age <= 1.0 &&
+    acceleration_streak_ >= acceleration_stable_frames_ &&
+    (system_state_ == State::EXPLORE || system_state_ == State::MAPPING_DONE ||
+    system_state_ == State::RACE)) {
+    // Freeze the same accepted direction already delivered to path_generator before GO.
+    acceleration_frozen_ = true;
+  }
+}
+
+void BoundaryDetectorNode::processAccelerationMap(const wuta_msgs::msg::ConeMap & map)
+{
+  autoware_msgs::msg::Lane lane;
+  lane.header = map.header;
+  const auto reject = [&]() {
+      if (!acceleration_frozen_) {
+        acceleration_streak_ = 0;
+        acceleration_fit_ = {};
+      }
+      publishPlanningStatus(false, 0.0);
+      centerline_pub_->publish(lane); // Explicitly invalidate any pre-GO cached direction.
+      publishVisualization(lane);
+    };
+  const double map_age = (now() - rclcpp::Time(map.header.stamp)).seconds();
+  if (map.header.frame_id != "map" || map_age < -0.1 || map_age > 1.0) {
+    reject();
+    RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000,
+      "Acceleration: waiting for fresh map-frame cone map (age=%.2f s).", map_age);
+    return;
+  }
+  if (!acceleration_reference_ready_) {
+    const auto & p = current_pose_.pose.position;
+    const auto & q = current_pose_.pose.orientation;
+    const double norm2 = q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w;
+    const double age = (now() - last_pose_received_at_).seconds();
+    if (current_pose_.header.frame_id != "map" || age < 0 || age > 0.5 ||
+      !std::isfinite(p.x) || !std::isfinite(p.y) || !std::isfinite(norm2) || norm2 < 1e-12) {
+      reject();
+      return;
+    }
+    acceleration_reference_ = current_pose_;
+    auto & rotation = acceleration_reference_.pose.orientation;
+    const double norm = std::sqrt(norm2);
+    rotation.x /= norm; rotation.y /= norm; rotation.z /= norm; rotation.w /= norm;
+    acceleration_reference_ready_ = true;
+  }
+  const auto & origin = acceleration_reference_.pose.position;
+  const double heading = yawFromPose(acceleration_reference_);
+  if (!acceleration_frozen_) {
+    const auto stamp = rclcpp::Time(map.header.stamp).nanoseconds();
+    if (stamp <= acceleration_last_stamp_) return; // Count distinct, ordered map updates only.
+    acceleration_last_stamp_ = stamp;
+    const auto collect = [&](const auto & cones) {
+        std::vector<LinePoint> candidates, points;
+        for (const auto & cone : cones) {
+          const double dx = cone.position.x-origin.x, dy = cone.position.y-origin.y;
+          const double x = std::cos(heading)*dx + std::sin(heading)*dy;
+          const double y = -std::sin(heading)*dx + std::cos(heading)*dy;
+          if (std::isfinite(x) && std::isfinite(y) && x >= -2.0 &&
+            x <= acceleration_config_.forward_range && std::abs(y) <= acceleration_config_.lateral_range) {
+            candidates.push_back({dx, dy});
+          }
+        }
+        std::sort(candidates.begin(), candidates.end(), [](const auto & a, const auto & b) {
+          return a.x*a.x+a.y*a.y < b.x*b.x+b.y*b.y;
+        });
+        for (const auto & p : candidates) {
+          if (std::none_of(points.begin(), points.end(), [&](const auto & q) {
+            return std::hypot(p.x-q.x, p.y-q.y) < 0.2;
+          })) points.push_back(p);
+          if (points.size() == 64) break;
+        }
+        return points;
+      };
+    const auto red = collect(map.red_cones), blue = collect(map.blue_cones);
+    const auto fit = fitAccelerationLines(red, blue, heading, acceleration_config_);
+    if (!fit.valid) {
+      reject();
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000,
+        "Acceleration fit rejected: red=%zu blue=%zu; need bilateral span, parallelism and width.",
+        red.size(), blue.size());
+      return;
+    }
+    const bool stable = acceleration_fit_.valid &&
+      std::abs(lineAngle(fit.yaw-acceleration_fit_.yaw)) <= 0.035 &&
+      std::abs(fit.left-acceleration_fit_.left) <= 0.20 &&
+      std::abs(fit.right-acceleration_fit_.right) <= 0.20;
+    acceleration_streak_ = stable ? acceleration_streak_ + 1 : 1;
+    acceleration_fit_ = fit;
+    if (acceleration_streak_ < acceleration_stable_frames_) {
+      publishPlanningStatus(false, 0.0);
+      centerline_pub_->publish(lane);
+      publishVisualization(lane);
+      return;
+    }
+    using State = wuta_msgs::msg::MissionState;
+    acceleration_frozen_ = system_state_ == State::EXPLORE ||
+      system_state_ == State::MAPPING_DONE || system_state_ == State::RACE;
+    RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 2000,
+      "Acceleration lines: heading=%.3f rad width=%.2f m confidence=%.2f frozen=%s",
+      fit.yaw, fit.left-fit.right, fit.confidence, acceleration_frozen_ ? "true" : "false");
+  }
+  const auto & f = acceleration_fit_;
+  if (!f.valid) return;
+  const double center = (f.left+f.right)*0.5;
+  for (double s : {0.0, lookahead_distance_}) {
+    autoware_msgs::msg::Waypoint wp;
+    wp.pose.header = lane.header;
+    wp.pose.pose.position.x = origin.x-std::sin(f.yaw)*center+std::cos(f.yaw)*s;
+    wp.pose.pose.position.y = origin.y+std::cos(f.yaw)*center+std::sin(f.yaw)*s;
+    wp.pose.pose.orientation.z = std::sin(f.yaw*0.5);
+    wp.pose.pose.orientation.w = std::cos(f.yaw*0.5);
+    lane.waypoints.push_back(wp);
+  }
+  publishPlanningStatus(false, f.confidence); // Never advertise a closed Trackdrive lap.
+  centerline_pub_->publish(lane);
+  publishVisualization(lane);
 }
 
 void BoundaryDetectorNode::onConeMap(const wuta_msgs::msg::ConeMap::SharedPtr msg)
 {
   if (!pose_ready_) return;
 
-  // Only TRACKDRIVE uses online boundary detection
-  // SKIDPAD and ACCELERATION handle their own path in path_generator
+  if (mission_mode_ == wuta_msgs::msg::MissionState::MISSION_ACCELERATION) {
+    processAccelerationMap(*msg);
+    return;
+  }
+  // Trackdrive retains its local/global centerline algorithms.
   if (mission_mode_ != wuta_msgs::msg::MissionState::MISSION_TRACKDRIVE) return;
 
   if (msg->is_closed) {
@@ -1264,6 +1422,30 @@ void BoundaryDetectorNode::publishVisualization(const autoware_msgs::msg::Lane &
     line.points.push_back(p);
   }
   arr.markers.push_back(line);
+  if (mission_mode_ == wuta_msgs::msg::MissionState::MISSION_ACCELERATION &&
+    lane.waypoints.size() == 2 && acceleration_fit_.valid) {
+    const double yaw = acceleration_fit_.yaw;
+    const double half_width = (acceleration_fit_.left-acceleration_fit_.right)*0.5;
+    for (int side : {-1, 1}) {
+      auto boundary = line;
+      boundary.ns = side > 0 ? "acceleration_left" : "acceleration_right";
+      boundary.color.r = side > 0 ? 0.95f : 0.2f;
+      boundary.color.g = 0.25f;
+      boundary.color.b = side > 0 ? 0.25f : 0.95f;
+      for (auto & p : boundary.points) {
+        p.x -= side*half_width*std::sin(yaw);
+        p.y += side*half_width*std::cos(yaw);
+      }
+      arr.markers.push_back(boundary);
+    }
+    auto direction = line;
+    direction.ns = "acceleration_direction";
+    direction.type = visualization_msgs::msg::Marker::ARROW;
+    direction.scale.x = 0.10; direction.scale.y = 0.30; direction.scale.z = 0.40;
+    direction.points.back().x = direction.points.front().x + 3.0*std::cos(yaw);
+    direction.points.back().y = direction.points.front().y + 3.0*std::sin(yaw);
+    arr.markers.push_back(direction);
+  }
   marker_pub_->publish(arr);
 }
 
