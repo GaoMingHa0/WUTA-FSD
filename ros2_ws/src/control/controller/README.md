@@ -1,5 +1,7 @@
 # controller
 
+> 当前临时状态（2026-11-01）：按用户要求，工控机直接发送给制动电机的全部路径已用`WUTA_DIRECT_BRAKE_PAUSED`标记注释停用，包括NMT 0x000、0x603初始化/参数/启动/正常停止/异常和析构发送，以及初始化请求、应答解析和推进。原实现完整保留供恢复；target=2按中性处理。当前台架为真实GO→仅通过0x210请求5%微驱动5秒（可配置0～5%，0恢复中性等待）→50%制动10秒→中性/FINISH，不再等待直接初始化或3秒间隔；0x301心跳和台架超时/按路由限幅/转向归中保护保留。此限制只约束FSD自身，VCU或其他车端节点仍可能自行向电机发送报文。下文直控、双路流程为停用方案记录，以本条为准。未启动硬件。
+
 Pure Pursuit 横向控制 + 速度跟踪纵向控制节点。算法来自 HRT-D Control，去掉 HPL 抽象层，
 改用直接 rclcpp。
 
@@ -269,6 +271,23 @@ skidpad 5 m/s；acceleration 15 m/s；EBS 12 m/s。
 
 根入口由CLI M键选择制动台架后统一设置`brake_bench_mode=true`，默认false；不修改普通直线加速路径或速度PID。controller核对MissionState.brake_bench_mode，并且只在观察到IDLE/READY后首次进入acceleration/EXPLORE时启动。无pose、waypoints或车速反馈也可执行；活动中重启不补做动作。
 
-参数唯一来源为本包`config/controller.yaml`的`acceleration.bench_brake`：delay_sec=5.0、hold_sec=10.0、opening=0.5。等待时严格中性，随后纵向-0.5保持10秒，结束持续中性并回报原mission_complete；speed/angle全程0，不经过零速PID。模式不一致、锁存急停或活动任务状态超过0.5秒未更新时中止，恢复输入也不续做。CAN台架分支进一步禁止正驱动/转向并处理命令超时。
+参数唯一来源为本包`config/controller.yaml`的`acceleration.bench_brake`：pre_drive_opening=0.05、delay_sec=5.0、hold_sec=10.0、opening=0.5。当前先输出5%正驱动请求5秒，再以纵向-0.5请求VCU制动10秒，结束持续中性并回报原mission_complete；speed/angle全程0，不经过速度PID。模式不一致、锁存急停或活动任务状态超过0.5秒未更新时中止，恢复输入也不续做。CAN按目标3限制微驱动、目标1限制负制动，并处理路由及命令超时。
 
-当前0x603前置发送已临时停用；电机初始化归现场车端控制器，本节点不直接配置电机对象字典。完成/中止后通过CLI停止清理再开始下一次运行；切回正常模式并重新启动恢复原控制链。扩展的消息为`wuta_msgs/MissionState`，所有消费者须使用同版消息绑定。详细启动、恢复和硬件验证边界见宿主`docs/DEPLOYMENT.md`。
+初始化请求/结果接口、初始化等待和直接电机制动阶段均由`WUTA_DIRECT_BRAKE_PAUSED`编译排除，当前不创建对应ROS接口；inter_stage_delay_sec保留校验但不参与当前时序。完成/中止后通过CLI停止清理再开始下一次运行；切回正常模式并重新启动恢复原控制链。所有消费者须使用同版`wuta_msgs/MissionState`消息绑定。详细启动、恢复和硬件验证边界见宿主`docs/DEPLOYMENT.md`。
+
+## 台架制动前微驱动（2026-11-01）
+
+当前VCU-only台架在真实GO后，按`acceleration.bench_brake.pre_drive_opening`输出恒定小正开度，持续`delay_sec`，随后以`-opening`制动`hold_sec`，最后中性并回报完成。默认5%/5秒、50%制动/10秒。`pre_drive_opening`须为0～0.05的有限数值，配置0.0恢复原中性等待；不走速度PID，Command.speed/angle仍为0。`publishBenchCommand`参数采用带符号throttle_brake（正驱动、负制动），不再内部取负。GO前、任务异常/超时和结束持续中性；一次进程只执行一次。`WUTA_DIRECT_BRAKE_PAUSED`各处保持停用。
+
+台架路由3仅表示VCU微驱动请求，不能用5%开度推断5%实际转矩或指定车速。修改后重建controller和can_interface并重启进程，参数不会在线自动生效。
+
+## 普通驾驶参数快照（2026-11-05核对）
+
+以下调整独立于制动台架，正常启动读取本包源码YAML，重启后生效；不代表已完成实车调参验收。
+
+| 参数 | 调整前 | 当前值 | 影响 |
+| --- | --- | --- | --- |
+| acceleration.pure_pursuit.min_lookahead | 1.5 m | 2.5 m | 增大低速前视下限 |
+| acceleration.pure_pursuit.terminal_progress_distance | 0.75 m | 0.5 m | 收紧终点进度触发距离 |
+| acceleration.finish.position_tolerance | 0.75 m | 0.5 m | 收紧完成位置容差 |
+| trackdrive.throttle.max_opening | 0.12 | 0.15 | 提高驱动请求上限；不等于实际速度提高25% |

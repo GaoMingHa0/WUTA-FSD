@@ -14,6 +14,7 @@ namespace
 constexpr double kLongitudinalCenter = 32767.0;
 constexpr double kLongitudinalBrakeSpan = kLongitudinalCenter;            // 32767 → 0
 constexpr double kLongitudinalDriveSpan = 65535.0 - kLongitudinalCenter;  // 32767 → 65535
+constexpr double kBenchPreDriveLimit = 0.05;  // Target 3 only: at most 5% drive.
 
 uint16_t scaleLongitudinal(double x)
 {
@@ -73,6 +74,7 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
   if (receive_only_ && brake_bench_mode_) throw std::invalid_argument("receive_only conflicts with brake_bench_mode");
   can_device_ = declare_parameter<std::string>("can.device", can_device_);
   poll_interval_sec_ = declare_parameter<double>("can.poll_interval_sec", poll_interval_sec_);
+  // WUTA_DIRECT_BRAKE_PAUSED: if (brake_bench_mode_) poll_interval_sec_ = std::min(poll_interval_sec_, 0.002);
 
   // 报文 ID
   control_frame_id_ = declare_parameter<int>("frames.control.id", control_frame_id_);
@@ -134,6 +136,32 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
   control_command_sub_ = create_subscription<autoware_msgs::msg::Command>(
     "/control/command", 10,
     std::bind(&CANInterfaceNode::onControlCommand, this, std::placeholders::_1));
+
+  if (brake_bench_mode_) {
+    bench_target_sub_ = create_subscription<std_msgs::msg::UInt8>(
+      "/control/brake_bench/target", 10,
+      [this](const std_msgs::msg::UInt8::SharedPtr msg) {
+        // 1=VCU brake, 3=VCU pre-drive; disabled direct target 2/unknown remain neutral.
+        const uint8_t target = (msg->data == 1 || msg->data == 3) ? msg->data : 0;
+        if (target != bench_target_) {
+          // 切换出口先丢弃旧Command，收到新Command前保持中性。
+          throttle_brake_ = 0.0;
+          bench_command_seen_ = false;
+        }
+        bench_target_ = target;
+        bench_target_seen_ = true;
+        bench_target_at_ = std::chrono::steady_clock::now();
+        sendControlFrame();
+      });
+#if 0  // WUTA_DIRECT_BRAKE_PAUSED: 按用户要求停用工控机直发，保留源码供恢复。
+    bench_initialized_pub_ = create_publisher<std_msgs::msg::Bool>(
+      "/can/brake_bench/initialized", 10);
+    bench_initialize_sub_ = create_subscription<std_msgs::msg::Bool>(
+      "/control/brake_bench/initialize", 10,
+      std::bind(&CANInterfaceNode::startBrakeBenchInitialization, this, std::placeholders::_1));
+#endif
+
+  }
 
   // 控制帧周期发送：无控制指令时也按周期持续上报（Signal3/4 状态随帧携带）。
   // tx_armed_ 未置位（首份自检结论未到）时 sendControlFrame() 直接返回：本定时器同样静默。
@@ -205,9 +233,6 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
 
 void CANInterfaceNode::onMissionState(const wuta_msgs::msg::MissionState::SharedPtr msg)
 {
-  bench_mission_ready_ = msg->brake_bench_mode &&
-    msg->mission_mode == wuta_msgs::msg::MissionState::MISSION_ACCELERATION &&
-    msg->state == wuta_msgs::msg::MissionState::READY;
   bench_mission_active_ = msg->brake_bench_mode &&
     msg->mission_mode == wuta_msgs::msg::MissionState::MISSION_ACCELERATION &&
     msg->state == wuta_msgs::msg::MissionState::EXPLORE;
@@ -259,7 +284,13 @@ void CANInterfaceNode::pollReceiver()
     } else if (frame.can_id == static_cast<uint32_t>(res_frame_id_)) {
       parseResFrame(frame);
     }
+#if 0  // WUTA_DIRECT_BRAKE_PAUSED: 停用SDO应答解析。
+    else if (brake_bench_mode_ && frame.can_id == 0x583) {
+      parseBrakeBenchSdo(frame);
+    }
+#endif
   }
+  // WUTA_DIRECT_BRAKE_PAUSED: tickBrakeBenchInitialization();
   restoreModeCache();
 }
 
@@ -270,16 +301,24 @@ void CANInterfaceNode::sendControlFrame()
   if (!tx_armed_) return;
   if (brake_bench_mode_) {
     const auto t = std::chrono::steady_clock::now();
-    if (!can_online_ || !bench_command_seen_ || !bench_mission_active_ ||
+    if (!bench_target_seen_ || bench_target_ == 0 ||
+      // WUTA_DIRECT_BRAKE_PAUSED: (bench_target_ == 1 && bench_init_attempted_) ||
+      std::chrono::duration<double>(t - bench_target_at_).count() > 0.5 ||
+      // WUTA_DIRECT_BRAKE_PAUSED: (bench_target_ == 2 && !bench_initialized_) ||
+      last_res_state_ == kResEmergency || !can_online_ || !bench_command_seen_ || !bench_mission_active_ ||
       std::chrono::duration<double>(t - bench_command_at_).count() > 0.5 ||
       std::chrono::duration<double>(t - bench_mission_at_).count() > 0.5 ||
       !std::isfinite(throttle_brake_)) throttle_brake_ = 0.0;
-    // CAN仅限制台架协议边界，不生成制动动作；禁止正驱动和转向。
-    throttle_brake_ = std::clamp(throttle_brake_, -1.0, 0.0);
+    // Only target 3 admits a small positive request; target 1 remains brake-only.
+    throttle_brake_ = bench_target_ == 3 ?
+      std::clamp(throttle_brake_, 0.0, kBenchPreDriveLimit) :
+      std::clamp(throttle_brake_, -1.0, 0.0);
     cmd_angle_ = 0.0;
+    // WUTA_DIRECT_BRAKE_PAUSED: updateBrakeBenchMotor(bench_target_ == 2 ? -throttle_brake_ : 0.0);
   }
   const CanFrame frame = packControlFrame(
-    throttle_brake_, cmd_angle_, can_online_, can_finished_);
+    brake_bench_mode_ && bench_target_ != 1 && bench_target_ != 3 ? 0.0 : throttle_brake_,
+    cmd_angle_, can_online_, can_finished_);
   if (!can_.send(frame)) {
     RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000,
       "Failed to send control frame to the VCU on CAN bus.");
@@ -289,6 +328,7 @@ void CANInterfaceNode::sendControlFrame()
 CANInterfaceNode::~CANInterfaceNode()
 {
   if (!receive_only_ && brake_bench_mode_ && tx_armed_) {
+    // WUTA_DIRECT_BRAKE_PAUSED: stopBrakeBenchMotorBestEffort();
     can_.send(packControlFrame(0.0, 0.0, can_online_, can_finished_));
   }
 }
@@ -425,9 +465,7 @@ void CANInterfaceNode::parseResFrame(const CanFrame & frame)
     case kResStartButton:
       // 发车：只在变化沿发布一次（严格边沿，不重放不锁存）。
       if (changed) {
-        // 2026-10-23：暂时停用0x603前置帧，恢复GO直接交给原任务机。
-        // 原controller的5秒中性等待、10秒50%制动与释放逻辑保持。
-        // if (brake_bench_mode_ && !prepareBrakeBench()) break;
+        // 当前仅VCU台架：GO后微驱动5秒、VCU制动10秒，随后中性/FINISH。
         publishStartCommand(true);
         RCLCPP_INFO(get_logger(), "RES start button pressed -> start command.");
       }
@@ -457,37 +495,180 @@ void CANInterfaceNode::parseResFrame(const CanFrame & frame)
   last_res_state_ = res_state;
 }
 
-bool CANInterfaceNode::prepareBrakeBench()
+#if 0  // WUTA_DIRECT_BRAKE_PAUSED: 按用户要求停用工控机直发，保留源码供恢复。
+void CANInterfaceNode::publishBrakeBenchInitialized(bool success)
 {
-  if (receive_only_ || bench_prepare_attempted_) return false;
-  const double state_age = std::chrono::duration<double>(
-    std::chrono::steady_clock::now() - bench_mission_at_).count();
-  if (!bench_mission_ready_ || state_age > 0.5 || !can_online_ || !tx_armed_) {
-    RCLCPP_WARN(get_logger(),
-      "Brake bench GO ignored: waiting for fresh acceleration READY and inspection; press GO again when ready.");
-    return false;
+  if (!bench_initialized_pub_) return;
+  std_msgs::msg::Bool result;
+  result.data = success;
+  bench_initialized_pub_->publish(result);
+}
+
+void CANInterfaceNode::failBrakeBenchInitialization(const std::string & reason)
+{
+  bench_init_running_ = false;
+  bench_init_waiting_ = false;
+  bench_initialized_ = false;
+  stopBrakeBenchMotorBestEffort();
+  throttle_brake_ = 0.0;
+  publishBrakeBenchInitialized(false);
+  sendControlFrame();
+  publishEmergency(true);
+  RCLCPP_ERROR(get_logger(), "Brake motor initialization failed: %s; neutral and EMERGENCY.",
+    reason.c_str());
+}
+
+void CANInterfaceNode::startBrakeBenchInitialization(const std_msgs::msg::Bool::SharedPtr msg)
+{
+  if (!brake_bench_mode_ || receive_only_ || !msg->data) return;
+  if (bench_init_attempted_) {
+    if (!bench_init_running_) publishBrakeBenchInitialized(bench_initialized_);
+    return;
   }
-  bench_prepare_attempted_ = true;  // 每次运行仅一组；失败不自动重试或延后重放GO。
+  bench_init_attempted_ = true;
+  const auto t = std::chrono::steady_clock::now();
+  if (!bench_mission_active_ || !can_online_ || !tx_armed_ ||
+    !bench_command_seen_ || std::chrono::duration<double>(t - bench_mission_at_).count() > 0.5 ||
+    std::chrono::duration<double>(t - bench_command_at_).count() > 0.5 ||
+    last_res_state_ == kResEmergency) {
+    failBrakeBenchInitialization("missing fresh active bench state/command or inspection");
+    return;
+  }
+  throttle_brake_ = 0.0;
+  sendControlFrame();
+  CanFrame nmt;
+  nmt.can_id = 0x000;
+  nmt.dlc = 2;
+  nmt.data[0] = 0x01;
+  nmt.data[1] = 0x00;  // 严格保留最小代码的01 00广播。
+  if (!can_.send(nmt)) {
+    failBrakeBenchInitialization("NMT 01 00 write failed");
+    return;
+  }
+  bench_device_touched_ = true;
+  bench_init_step_ = 0;
+  bench_init_running_ = true;
+  bench_init_waiting_ = false;
+  bench_init_send_at_ = t + std::chrono::milliseconds(20);
+  RCLCPP_INFO(get_logger(), "Brake motor setup started: exact minimal-code sequence; final EF deferred to controller request.");
+}
+
+CanFrame CANInterfaceNode::brakeBenchInitFrame() const
+{
+  // 保留最小代码的顺序及内容，按用户修正：目标转矩+1000（E8 03），最后启动使用EF。
+  // NMT 01 00由入口发送；最后EF由controller在配置完成后等待3秒触发。
+  static const std::array<uint8_t, 8> steps[] = {
+    {0x2B, 0x40, 0x60, 0x00, 0x01, 0x00, 0x00, 0x00},
+    {0x2B, 0x40, 0x60, 0x00, 0x03, 0x00, 0x00, 0x00},
+    {0x2B, 0x40, 0x60, 0x00, 0x0F, 0x00, 0x00, 0x00},
+    {0x2F, 0x60, 0x60, 0x00, 0x04, 0x00, 0x00, 0x00},
+    {0x23, 0x81, 0x60, 0x00, 0x02, 0x00, 0x00, 0x00},
+    {0x2B, 0x71, 0x60, 0x00, 0xE8, 0x03, 0x00, 0x00},
+    {0x2B, 0x87, 0x60, 0x00, 0xE8, 0x03, 0x00, 0x00},
+    {0x2B, 0x40, 0x60, 0x00, 0xEF, 0x00, 0x00, 0x00},
+    // 以下仅为测试结束/异常释放，不插入初始化序列。
+    {0x2B, 0x71, 0x60, 0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x2B, 0x40, 0x60, 0x00, 0x1F, 0x01, 0x00, 0x00}};
   CanFrame frame;
   frame.can_id = 0x603;
   frame.dlc = 8;
-  const std::array<uint8_t, 8> payloads[2] = {
-    {0x2B, 0x71, 0x60, 0x00, 0x18, 0xFC, 0xFF, 0xFF},
-    {0x2B, 0x40, 0x60, 0x00, 0x1F, 0x00, 0x00, 0x00}};
-  for (int i = 0; i < 6; ++i) {
-    frame.data = payloads[i % 2];  // A/B交替三组，第一帧始终为A。
-    if (!can_.send(frame)) {
-      RCLCPP_ERROR(get_logger(),
-        "Brake bench preparation 0x603 failed on frame %d/6; GO not forwarded, EMERGENCY latched.", i + 1);
-      publishEmergency(true);
-      return false;
-    }
-  }
-  RCLCPP_INFO(get_logger(),
-    "Brake bench preparation sent: 0x603 DLC8 A=[2B 71 60 00 18 FC FF FF] B=[2B 40 60 00 1F 00 00 00], A/B x3; forwarding GO for configured delay.");
-  return true;
+  frame.data = steps[bench_init_step_];
+  return frame;
 }
 
+void CANInterfaceNode::tickBrakeBenchInitialization()
+{
+  if (!bench_init_running_) return;
+  const auto t = std::chrono::steady_clock::now();
+  // 释放事务即使任务已FINISH/急停/输入失联也须继续，不能被活动状态门控挡住。
+  if (bench_init_step_ < 8 && (!bench_target_seen_ ||
+    std::chrono::duration<double>(t - bench_target_at_).count() > 0.5 ||
+    !bench_mission_active_ || !can_online_ || last_res_state_ == kResEmergency ||
+    std::chrono::duration<double>(t - bench_mission_at_).count() > 0.5 ||
+    std::chrono::duration<double>(t - bench_command_at_).count() > 0.5)) {
+    failBrakeBenchInitialization("bench state/input lost or emergency during initialization");
+    return;
+  }
+  if (bench_init_waiting_) {
+    if (t > bench_init_deadline_) failBrakeBenchInitialization("SDO response timeout");
+    return;
+  }
+  if (t < bench_init_send_at_) return;
+  const auto frame = brakeBenchInitFrame();
+  if (!can_.send(frame)) {
+    failBrakeBenchInitialization("SDO request write failed");
+    return;
+  }
+  // 原代码模式帧后2ms，其余20ms；以发送时刻计算最小间隔，SDO应答也必须到达。
+  bench_init_send_at_ = t + std::chrono::milliseconds(bench_init_step_ == 3 ? 2 : 20);
+  bench_init_waiting_ = true;
+  bench_init_deadline_ = t + std::chrono::milliseconds(500);
+  RCLCPP_INFO(get_logger(), "Brake motor SDO step %zu: index=0x%02X%02X cmd=0x%02X",
+    bench_init_step_ + 1, frame.data[2], frame.data[1], frame.data[0]);
+}
+
+void CANInterfaceNode::parseBrakeBenchSdo(const CanFrame & frame)
+{
+  if (!bench_init_running_ || !bench_init_waiting_ || frame.dlc < 4) return;
+  const auto request = brakeBenchInitFrame();
+  if (frame.data[1] != request.data[1] || frame.data[2] != request.data[2] ||
+    frame.data[3] != request.data[3]) return;
+  if (frame.dlc != 8 || frame.data[0] == 0x80) {
+    failBrakeBenchInitialization("SDO abort or invalid response length");
+    return;
+  }
+  if (frame.data[0] != 0x60) {
+    failBrakeBenchInitialization("unexpected SDO write response");
+    return;
+  }
+  bench_init_waiting_ = false;
+  ++bench_init_step_;
+  if (bench_init_step_ == 7) {
+    bench_init_running_ = false;
+    bench_initialized_ = true;
+    publishBrakeBenchInitialized(true);
+    RCLCPP_INFO(get_logger(), "Brake motor setup acknowledged: waiting for controller delay before final EF start.");
+  } else if (bench_init_step_ == 8 || bench_init_step_ == 10) {
+    bench_init_running_ = false;
+    RCLCPP_INFO(get_logger(), "Brake motor %s acknowledged.",
+      bench_init_step_ == 8 ? "EF start" : "zero torque/pause");
+  }
+}
+
+void CANInterfaceNode::updateBrakeBenchMotor(double opening)
+{
+  if (!brake_bench_mode_ || receive_only_ || !bench_initialized_) return;
+  if (last_res_state_ == kResEmergency) opening = 0.0;
+  // 目标转矩已按最小代码在配置阶段写入；负Command只触发最后EF启动帧。
+  if (opening <= 0.0) {
+    if (!bench_motor_active_) return;
+    bench_motor_active_ = false;
+    bench_init_step_ = 8;  // 立即覆盖未完成的制动事务，清零后暂停。
+  } else {
+    if (bench_init_running_ || bench_motor_active_ || bench_motor_started_once_) return;
+    bench_motor_started_once_ = true;
+    bench_motor_active_ = true;
+    bench_init_step_ = 7;
+  }
+  bench_init_running_ = true;
+  bench_init_waiting_ = false;
+  bench_init_send_at_ = std::chrono::steady_clock::now();
+}
+
+void CANInterfaceNode::stopBrakeBenchMotorBestEffort()
+{
+  if (receive_only_ || !brake_bench_mode_ || !bench_device_touched_) return;
+  CanFrame zero;
+  zero.can_id = 0x603; zero.dlc = 8;
+  zero.data = {0x2B, 0x71, 0x60, 0x00, 0x00, 0x00, 0x00, 0x00};
+  const bool zero_ok = can_.send(zero);
+  zero.data = {0x2B, 0x40, 0x60, 0x00, 0x1F, 0x01, 0x00, 0x00};
+  const bool pause_ok = can_.send(zero);
+  bench_motor_active_ = false;
+  if (!zero_ok || !pause_ok) RCLCPP_ERROR(get_logger(), "Brake motor stop write failed.");
+}
+
+#endif
 void CANInterfaceNode::publishStartCommand(bool start)
 {
   std_msgs::msg::Bool msg;

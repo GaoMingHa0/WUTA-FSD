@@ -5,6 +5,7 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <std_msgs/msg/bool.hpp>
+#include <std_msgs/msg/u_int8.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 #include <autoware_msgs/msg/lane.hpp>
 #include <autoware_msgs/msg/command.hpp>
@@ -49,7 +50,8 @@ private:
   void controlLoop();
   void runInspection();
   void runBrakeBench();
-  void publishBenchCommand(double opening = 0.0);
+  // Signed opening: positive drive, negative brake. Target 3 is VCU pre-drive only.
+  void publishBenchCommand(double throttle_brake = 0.0, uint8_t target = 0);
   void finishInspection();
   bool isSamePath(const std::vector<autoware_msgs::msg::Waypoint> & candidate) const;
   double trackdriveLookahead(const rclcpp::Time & loop_time);
@@ -117,7 +119,21 @@ private:
   bool bench_started_{false};
   bool bench_done_{false};
   bool bench_aborted_{false};
+#if 0  // WUTA_DIRECT_BRAKE_PAUSED: 按用户要求停用工控机直发，保留源码供恢复。
+  bool bench_init_requested_{false};
+  bool bench_initialized_{false};
+  bool bench_motor_requested_{false};
+  std::chrono::steady_clock::time_point bench_init_requested_at_;
+  std::chrono::steady_clock::time_point bench_braking_at_;
+#endif
+  rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr bench_target_pub_;
+#if 0  // WUTA_DIRECT_BRAKE_PAUSED: 按用户要求停用工控机直发，保留源码供恢复。
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr bench_initialize_pub_;
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr bench_initialized_sub_;
+#endif
   double bench_delay_sec_{5.0};
+  double bench_pre_drive_opening_{0.05};
+  double bench_inter_stage_delay_sec_{3.0};
   double bench_hold_sec_{10.0};
   double bench_opening_{0.5};
   std::chrono::steady_clock::time_point bench_started_at_;

@@ -3,6 +3,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <std_msgs/msg/bool.hpp>
+#include <std_msgs/msg/u_int8.hpp>
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <autoware_msgs/msg/command.hpp>
@@ -56,7 +57,16 @@ private:
   // 0x11 遥控器上线 / 0x13 发车按钮被按下 / 0x10 按下急停
   // 发车严格边沿：0x13 变化沿发布一次 /system/start_command，不做窗口重放
   void parseResFrame(const CanFrame & frame);  // 状态 → start_command / emergency
-  bool prepareBrakeBench();  // 台架GO放行前发送制动电机前置报文
+#if 0  // WUTA_DIRECT_BRAKE_PAUSED: 按用户要求停用工控机直发，保留源码供恢复。
+  void startBrakeBenchInitialization(const std_msgs::msg::Bool::SharedPtr msg);
+  void tickBrakeBenchInitialization();
+  void parseBrakeBenchSdo(const CanFrame & frame);
+  void failBrakeBenchInitialization(const std::string & reason);
+  void publishBrakeBenchInitialized(bool success);
+  CanFrame brakeBenchInitFrame() const;
+  void updateBrakeBenchMotor(double opening);
+  void stopBrakeBenchMotorBestEffort();
+#endif
   void publishStartCommand(bool start);
   void publishEmergency(bool emergency);
 
@@ -92,8 +102,24 @@ private:
   bool receive_only_{false};
   bool brake_bench_mode_{false};
   bool bench_mission_active_{false};
-  bool bench_mission_ready_{false};
-  bool bench_prepare_attempted_{false};
+  uint8_t bench_target_{0};  // 0中性，1仅VCU制动，3仅VCU微驱动；2直接电机当前停用。
+  bool bench_target_seen_{false};
+  std::chrono::steady_clock::time_point bench_target_at_;
+  rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr bench_target_sub_;
+#if 0  // WUTA_DIRECT_BRAKE_PAUSED: 按用户要求停用工控机直发，保留源码供恢复。
+  bool bench_init_attempted_{false};
+  bool bench_init_running_{false};
+  bool bench_init_waiting_{false};
+  bool bench_initialized_{false};
+  bool bench_motor_active_{false};
+  bool bench_motor_started_once_{false};
+  bool bench_device_touched_{false};
+  size_t bench_init_step_{0};
+  std::chrono::steady_clock::time_point bench_init_deadline_;
+  std::chrono::steady_clock::time_point bench_init_send_at_;
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr bench_initialize_sub_;
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr bench_initialized_pub_;
+#endif
   bool bench_command_seen_{false};
   std::chrono::steady_clock::time_point bench_command_at_;
   std::chrono::steady_clock::time_point bench_mission_at_;

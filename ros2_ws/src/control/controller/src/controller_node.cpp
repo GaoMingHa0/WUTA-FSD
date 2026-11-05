@@ -49,9 +49,14 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
   loadMissionConfig();
   brake_bench_mode_ = declare_parameter("brake_bench_mode", false);
   bench_delay_sec_ = declare_parameter("acceleration.bench_brake.delay_sec", 5.0);
+  bench_pre_drive_opening_ = declare_parameter("acceleration.bench_brake.pre_drive_opening", 0.05);
+  bench_inter_stage_delay_sec_ = declare_parameter("acceleration.bench_brake.inter_stage_delay_sec", 3.0);
   bench_hold_sec_ = declare_parameter("acceleration.bench_brake.hold_sec", 10.0);
   bench_opening_ = declare_parameter("acceleration.bench_brake.opening", 0.5);
   if (!std::isfinite(bench_delay_sec_) || bench_delay_sec_ < 0 ||
+    !std::isfinite(bench_pre_drive_opening_) || bench_pre_drive_opening_ < 0 ||
+    bench_pre_drive_opening_ > 0.05 ||
+    !std::isfinite(bench_inter_stage_delay_sec_) || bench_inter_stage_delay_sec_ < 0 ||
     !std::isfinite(bench_hold_sec_) || bench_hold_sec_ <= 0 ||
     !std::isfinite(bench_opening_) || bench_opening_ <= 0 || bench_opening_ > 1 ||
     (brake_bench_mode_ && bench_opening_ > accel_cfg_.brake_max_opening)) {
@@ -95,6 +100,28 @@ ControllerNode::ControllerNode(const rclcpp::NodeOptions & options)
 
   // 发布
   cmd_pub_ = create_publisher<autoware_msgs::msg::Command>("/control/command", 10);
+  if (brake_bench_mode_) {
+    bench_target_pub_ = create_publisher<std_msgs::msg::UInt8>("/control/brake_bench/target", 10);
+#if 0  // WUTA_DIRECT_BRAKE_PAUSED: 按用户要求停用工控机直发，保留源码供恢复。
+    bench_initialize_pub_ = create_publisher<std_msgs::msg::Bool>(
+      "/control/brake_bench/initialize", 10);
+    bench_initialized_sub_ = create_subscription<std_msgs::msg::Bool>(
+      "/can/brake_bench/initialized", 10,
+      [this](const std_msgs::msg::Bool::SharedPtr msg) {
+        if (!bench_init_requested_ || bench_aborted_ || bench_done_ || bench_initialized_) return;
+        if (!msg->data) {
+          bench_aborted_ = true;
+          RCLCPP_ERROR(get_logger(), "Brake bench initialization failed; holding neutral.");
+          publishBenchCommand();
+          return;
+        }
+        bench_initialized_ = true;
+        RCLCPP_INFO(get_logger(), "Brake motor setup acknowledged; final EF gated by %.2fs gap from VCU release, then %.2fs hold.",
+          bench_inter_stage_delay_sec_, bench_hold_sec_);
+      });
+#endif
+
+  }
   mission_complete_pub_ = create_publisher<std_msgs::msg::Bool>(
     "/system/mission_complete", 10);
   target_viz_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>(
@@ -405,8 +432,8 @@ void ControllerNode::onMissionState(const MissionState::SharedPtr msg)
       (prev_state == MissionState::IDLE || prev_state == MissionState::READY)) {
       bench_started_ = true;
       bench_started_at_ = std::chrono::steady_clock::now();
-      RCLCPP_INFO(get_logger(), "Brake bench started: delay=%.2fs hold=%.2fs opening=%.2f",
-        bench_delay_sec_, bench_hold_sec_, bench_opening_);
+      RCLCPP_INFO(get_logger(), "Brake bench started: pre-drive=%.4f for %.2fs, brake=%.2f for %.2fs",
+        bench_pre_drive_opening_, bench_delay_sec_, bench_opening_, bench_hold_sec_);
     }
     if (bench_started_ && (state_ != MissionState::EXPLORE ||
       mission_mode_ != MissionState::MISSION_ACCELERATION)) {
@@ -577,14 +604,19 @@ void ControllerNode::controlLoop()
   }
 }
 
-void ControllerNode::publishBenchCommand(double opening)
+void ControllerNode::publishBenchCommand(double throttle_brake, uint8_t target)
 {
+  if (bench_target_pub_) {
+    std_msgs::msg::UInt8 route;
+    route.data = target;
+    bench_target_pub_->publish(route);
+  }
   autoware_msgs::msg::Command cmd;
   cmd.header.stamp = now();
   cmd.header.frame_id = "base_link";
   cmd.speed = 0.0;
   cmd.angle = 0.0;
-  cmd.throttle_brake = -opening;
+  cmd.throttle_brake = throttle_brake;
   cmd_pub_->publish(cmd);
 }
 
@@ -601,9 +633,44 @@ void ControllerNode::runBrakeBench()
   }
   const double elapsed = std::chrono::duration<double>(t - bench_started_at_).count();
   if (elapsed < bench_delay_sec_) {
+    publishBenchCommand(bench_pre_drive_opening_, 3);
+    return;
+  }
+  // 当前仅保留VCU制动，直接电机阶段已按用户要求停用。
+  if (elapsed - bench_delay_sec_ < bench_hold_sec_) {
+    publishBenchCommand(-bench_opening_, 1);
+    return;
+  }
+#if 0  // WUTA_DIRECT_BRAKE_PAUSED: 停用初始化、3秒间隔及直接电机阶段，VCU释放后直接完成。
+  if (!bench_init_requested_) {
     publishBenchCommand();
-  } else if (elapsed < bench_delay_sec_ + bench_hold_sec_) {
-    publishBenchCommand(bench_opening_);
+    bench_init_requested_ = true;
+    bench_init_requested_at_ = t;
+    std_msgs::msg::Bool request;
+    request.data = true;
+    bench_initialize_pub_->publish(request);
+    RCLCPP_INFO(get_logger(), "Brake bench delay complete; requesting brake motor initialization.");
+    return;
+  }
+  if (!bench_initialized_) {
+    publishBenchCommand();
+    if (std::chrono::duration<double>(t - bench_init_requested_at_).count() > 8.0) {
+      bench_aborted_ = true;
+      RCLCPP_ERROR(get_logger(), "Brake motor initialization result timed out; holding neutral.");
+    }
+    return;
+  }
+  const double since_release = std::chrono::duration<double>(t - bench_init_requested_at_).count();
+  if (since_release < bench_inter_stage_delay_sec_) {
+    publishBenchCommand();
+    return;
+  }
+  if (!bench_motor_requested_) {
+    bench_motor_requested_ = true;
+    bench_braking_at_ = t;
+  }
+  if (std::chrono::duration<double>(t - bench_braking_at_).count() < bench_hold_sec_) {
+    publishBenchCommand(-bench_opening_, 2);
   } else {
     bench_done_ = true;
     publishBenchCommand();
@@ -612,6 +679,14 @@ void ControllerNode::runBrakeBench()
     mission_complete_pub_->publish(complete);
     RCLCPP_INFO(get_logger(), "Brake bench complete: neutral hold, mission_complete published.");
   }
+#else
+  bench_done_ = true;
+  publishBenchCommand();
+  std_msgs::msg::Bool complete;
+  complete.data = true;
+  mission_complete_pub_->publish(complete);
+  RCLCPP_INFO(get_logger(), "VCU-only brake bench complete: neutral hold, direct motor transmission disabled.");
+#endif
 }
 
 double ControllerNode::trackdriveLookahead(const rclcpp::Time & loop_time)

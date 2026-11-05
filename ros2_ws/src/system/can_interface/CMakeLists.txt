@@ -56,7 +56,7 @@ if(BUILD_TESTING)
   ament_target_dependencies(test_brake_bench_prepare rclcpp std_msgs geometry_msgs autoware_msgs wuta_msgs)
   add_test(NAME brake_bench_prepare COMMAND test_brake_bench_prepare)
   set_tests_properties(brake_bench_prepare PROPERTIES ENVIRONMENT "ROS_DOMAIN_ID=214;ROS_LOCALHOST_ONLY=1")
-  # 前置0x603发送入口已暂时注释，保留其历史测试但不作为当前启用行为执行。
+  # 历史六帧GO前置和直接初始化均不启用，保留历史测试但不执行。
   set_tests_properties(brake_bench_prepare PROPERTIES DISABLED TRUE)
   add_test(NAME brake_bench_can COMMAND test_brake_bench_can)
   set_tests_properties(brake_bench_can PROPERTIES ENVIRONMENT "ROS_DOMAIN_ID=215;ROS_LOCALHOST_ONLY=1")
