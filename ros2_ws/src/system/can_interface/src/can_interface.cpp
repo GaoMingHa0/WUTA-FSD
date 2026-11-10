@@ -80,7 +80,18 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
   control_frame_id_ = declare_parameter<int>("frames.control.id", control_frame_id_);
   heartbeat_frame_id_ = declare_parameter<int>("frames.heartbeat.id", heartbeat_frame_id_);
   vcu_frame_id_ = declare_parameter<int>("frames.vcu.id", vcu_frame_id_);
+  vcu_state_frame_id_ = declare_parameter<int>(
+    "frames.vcu_state.id", vcu_state_frame_id_);
   res_frame_id_ = declare_parameter<int>("frames.res.id", res_frame_id_);
+
+  // 发车保险：0x211 无人自检 7→8 后等待 5 秒才转发 RES GO
+  go_gate_enabled_ = declare_parameter<bool>("go_gate.enabled", go_gate_enabled_);
+  go_gate_wait_sec_ = declare_parameter<double>("go_gate.wait_sec", go_gate_wait_sec_);
+  go_gate_stale_sec_ = declare_parameter<double>("go_gate.stale_sec", go_gate_stale_sec_);
+  if (!std::isfinite(go_gate_wait_sec_) || go_gate_wait_sec_ < 0.0 ||
+      !std::isfinite(go_gate_stale_sec_) || go_gate_stale_sec_ < 0.0) {
+    throw std::invalid_argument("go_gate timing parameters must be finite and nonnegative");
+  }
 
   // 发送周期
   control_period_sec_ = declare_parameter<double>(
@@ -222,10 +233,15 @@ CANInterfaceNode::CANInterfaceNode(const rclcpp::NodeOptions & options)
   RCLCPP_INFO(get_logger(), "CAN Interface initialized (tx/rx separated).");
   RCLCPP_INFO(get_logger(),
     "Tx control frame 0x%X gated until first /system/devices_inspection; "
-    "Rx mode frame 0x%X + RES frame 0x%X.",
+    "Rx mode frame 0x%X + state frame 0x%X + RES frame 0x%X.",
     static_cast<unsigned>(control_frame_id_),
     static_cast<unsigned>(vcu_frame_id_),
+    static_cast<unsigned>(vcu_state_frame_id_),
     static_cast<unsigned>(res_frame_id_));
+  RCLCPP_INFO(get_logger(),
+    "GO gate %s: requires 0x%X[0] 7->8 then %.1fs (stale %.1fs).",
+    go_gate_enabled_ ? "enabled" : "DISABLED",
+    static_cast<unsigned>(vcu_state_frame_id_), go_gate_wait_sec_, go_gate_stale_sec_);
   RCLCPP_INFO(get_logger(),
     "Tx heartbeat 0x%X: dlc=1, %.0f ms, ungated from startup.",
     static_cast<unsigned>(heartbeat_frame_id_), heartbeat_period_sec_ * 1000.0);
@@ -278,9 +294,11 @@ void CANInterfaceNode::pollReceiver()
 {
   CanFrame frame;
   while (can_.receive(frame)) {
-    // 接收方向按 ID 分发：VCU 任务模式帧 / RES 遥控器帧
+    // 接收方向按 ID 分发：VCU 任务模式帧 / VCU 整车状态帧 / RES 遥控器帧
     if (frame.can_id == static_cast<uint32_t>(vcu_frame_id_)) {
       parseVcuFrame(frame);
+    } else if (frame.can_id == static_cast<uint32_t>(vcu_state_frame_id_)) {
+      parseVcuStateFrame(frame);
     } else if (frame.can_id == static_cast<uint32_t>(res_frame_id_)) {
       parseResFrame(frame);
     }
@@ -426,7 +444,9 @@ void CANInterfaceNode::restoreModeCache()
     CanFrame frame;
     while (can_.receive(frame)) {
       if (frame.can_id == static_cast<uint32_t>(vcu_frame_id_)) parseVcuFrame(frame);
-      else if (frame.can_id == static_cast<uint32_t>(res_frame_id_)) parseResFrame(frame);
+      else if (frame.can_id == static_cast<uint32_t>(vcu_state_frame_id_)) {
+        parseVcuStateFrame(frame);
+      } else if (frame.can_id == static_cast<uint32_t>(res_frame_id_)) parseResFrame(frame);
     }
     if (mode_cache_done_) return;
     mode_cache_done_ = true;
@@ -453,6 +473,48 @@ void CANInterfaceNode::repeatMissionMode()
   mission_mode_cmd_pub_->publish(msg);
 }
 
+void CANInterfaceNode::parseVcuStateFrame(const CanFrame & frame)
+{
+  // VCU→工控机整车状态帧：Byte1 = 车辆状态机 trigger。
+  // 无人分支 7（自检中）→ 8（自检完成，VCU 同时起算 5 秒）是本层发车保险的开启事件。
+  if (frame.dlc < 1) return;
+  vcu_state_at_ = std::chrono::steady_clock::now();
+  const uint8_t state = frame.data[0];
+  if (state == last_vcu_state_) return;
+
+  if (last_vcu_state_ == 7 && state == 8) {
+    vcu_selfcheck_seen_ = true;
+    vcu_selfcheck_at_ = vcu_state_at_;
+    RCLCPP_INFO(get_logger(),
+      "VCU self-check complete (7->8); GO gate opens in %.1fs.", go_gate_wait_sec_);
+  } else if (last_vcu_state_ == 0xFF && state == 8) {
+    // FSD 晚启动兜底：首次看到即已在 8，从当前时刻保守重计等待时间，不提前放行。
+    vcu_selfcheck_seen_ = true;
+    vcu_selfcheck_at_ = vcu_state_at_;
+    RCLCPP_WARN(get_logger(),
+      "VCU already in state 8 at startup; GO gate waits %.1fs from now.",
+      go_gate_wait_sec_);
+  } else if (state != 8) {
+    // 离开 8（含重新自检回到 7）即关门，下次必须重新出现 7→8。
+    vcu_selfcheck_seen_ = false;
+  }
+  last_vcu_state_ = state;
+  RCLCPP_INFO(get_logger(), "VCU vehicle state %u.", static_cast<unsigned>(state));
+}
+
+bool CANInterfaceNode::vcuGoGateOpen() const
+{
+  if (!go_gate_enabled_) return true;
+  if (last_vcu_state_ != 8 || !vcu_selfcheck_seen_) return false;
+  const auto t = std::chrono::steady_clock::now();
+  // 0x211 断流保护：VCU 状态已不可信时不再放行（stale_sec<=0 关闭）。
+  if (go_gate_stale_sec_ > 0.0 &&
+      std::chrono::duration<double>(t - vcu_state_at_).count() > go_gate_stale_sec_) {
+    return false;
+  }
+  return std::chrono::duration<double>(t - vcu_selfcheck_at_).count() >= go_gate_wait_sec_;
+}
+
 void CANInterfaceNode::parseResFrame(const CanFrame & frame)
 {
   // RES→工控机单帧（标准帧 / 500k）：Byte1 遥控器状态。
@@ -464,7 +526,15 @@ void CANInterfaceNode::parseResFrame(const CanFrame & frame)
   switch (res_state) {
     case kResStartButton:
       // 发车：只在变化沿发布一次（严格边沿，不重放不锁存）。
+      // 新保险：必须已收到 VCU 无人自检完成（0x211 Byte1 7→8）并满等待时间；
+      // 此前的 GO 边沿直接丢弃，不挂起、不补发。
       if (changed) {
+        if (!vcuGoGateOpen()) {
+          RCLCPP_WARN(get_logger(),
+            "RES GO ignored: VCU self-check gate closed (vcu_state=%u, seen=%d).",
+            static_cast<unsigned>(last_vcu_state_), vcu_selfcheck_seen_);
+          break;
+        }
         // 当前仅VCU台架：GO后微驱动5秒、VCU制动10秒，随后中性/FINISH。
         publishStartCommand(true);
         RCLCPP_INFO(get_logger(), "RES start button pressed -> start command.");

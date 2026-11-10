@@ -16,8 +16,18 @@ can_interface:
         period_sec: 0.05          # s，周期发送间隔
       vcu:                        # VCU→工控机 AMI模式帧
         id: 0x501
+      vcu_state:                  # VCU→工控机 整车状态帧（Byte1=State）
+        id: 0x211
       res:                        # RES→工控机 发车/急停帧
         id: 0x1E4
+
+    # ---------- 发车保险 ----------
+    # 仅当 0x211 Byte1 出现 7→8（无人自检完成）并等待 wait_sec 后，才转发 0x1E4 的 GO。
+    # 此前按下的 GO 直接丢弃（不挂起、不重放）；急停不受影响。
+    go_gate:
+      enabled: true               # 台架 VCU 不发 0x211 时可置 false 关闭该层
+      wait_sec: 5.0               # 7→8 跳变后的等待时间
+      stale_sec: 1.0              # 超过该时间未收到 0x211 即关门；<=0 关闭该检查
 
     # ---------- 横向定标 ----------
     steer:

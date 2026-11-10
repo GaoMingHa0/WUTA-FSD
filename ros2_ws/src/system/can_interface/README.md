@@ -6,19 +6,19 @@
 
 | 模式 | 行为 |
 | --- | --- |
-| 正常（两个开关均false） | 沿原0x210控制和0x301心跳协议发送，接收VCU模式与RES GO/急停 |
+| 正常（两个开关均false） | 沿原0x210控制和0x301心跳协议发送，接收VCU模式、VCU整车状态（0x211）与RES GO/急停；GO需0x211自检7→8满5秒后才转发 |
 | 制动台架（brake_bench_mode=true） | 原0x210控制和0x301心跳；目标3允许[0,0.05]微驱动、目标1允许[-1,0]制动，其余中性；转向强制0，路由/Command/活动任务状态超0.5秒或自检不通过时中性；100ms控制周期 |
 | 人工记录（receive_only=true） | 禁止控制、心跳、回调和析构发送，保留真实模式/RES接收；与台架互斥 |
 
 ## 台架当前行为
 
-GO仍直接交原任务机；controller按配置通过原Command和target接口请求5%微驱动5秒、50%制动10秒，之后中性并完成。当前只向VCU发送0x210及原0x301心跳，不执行直接电机初始化。初始化接口、SDO应答解析、协议推进及直接电机停止/析构发送均由`WUTA_DIRECT_BRAKE_PAUSED`编译排除，target=2中性；保留源码不代表启用。历史六帧prepare测试继续DISABLED，不能据其历史流程判断当前报文。
+GO经本包0x211保险后才交原任务机：只有`0x211[0]`出现7→8并满`go_gate.wait_sec`（默认5秒）后的`0x1E4[0]=0x13`边沿才发布`/system/start_command`；此前GO直接丢弃、不挂起不重放。启动时已在8则从首次收到8起保守计时；`go_gate.stale_sec`（默认1秒，<=0关闭）在0x211断流时关门；台架VCU不发0x211可用`go_gate.enabled=false`关闭本层。急停0x10不受影响。controller按配置通过原Command和target接口请求5%微驱动5秒、50%制动10秒，之后中性并完成。当前只向VCU发送0x210及原0x301心跳，不执行直接电机初始化。初始化接口、SDO应答解析、协议推进及直接电机停止/析构发送均由`WUTA_DIRECT_BRAKE_PAUSED`编译排除，target=2中性；保留源码不代表启用。历史六帧prepare测试继续DISABLED，不能据其历史流程判断当前报文。
 
 ## 协议和保护
 
-0x210/DLC8中Signal1/Signal2为大端，纵向中性32767(7F FF)，50%制动开度-0.5编码16383(3F FF)，转向回正为7F FF；Signal3来自DevicesInspection，Signal4来自FINISH。0x301/DLC1为上线心跳。0x1E4首字节13为真实GO变化沿，10为急停，11为RES上线；模式缓存仅恢复模式，不恢复GO或急停。
+0x210/DLC8中Signal1/Signal2为大端，纵向中性32767(7F FF)，50%制动开度-0.5编码16383(3F FF)，转向回正为7F FF；Signal3来自DevicesInspection，Signal4来自FINISH。0x301/DLC1为上线心跳。0x211 Byte1为VCU整车状态，7→8为无人自检完成事件。0x1E4首字节13为真实GO变化沿，10为急停，11为RES上线；模式缓存仅恢复模式，不恢复GO或急停。
 
-台架正常析构发送一次中性，根启动器停止时先停controller并保留CAN0.7秒；总线断开或进程强杀不能保证帧送达。电机侧对象字典、机械制动力及VCU定标不能仅由0x210开度推断。`test_brake_bench_can.cpp`和`test_receive_only_can.cpp`用内存设备验证真实回调/编码，无物理CAN操作；所有ROS测试使用独立非零ROS domain和ROS_LOCALHOST_ONLY=1。
+台架正常析构发送一次中性，根启动器停止时先停controller并保留CAN0.7秒；总线断开或进程强杀不能保证帧送达。电机侧对象字典、机械制动力及VCU定标不能仅由0x210开度推断。`test_brake_bench_can.cpp`、`test_go_gate_can.cpp`和`test_receive_only_can.cpp`用内存设备验证真实回调/编码，无物理CAN操作；所有ROS测试使用独立非零ROS domain和ROS_LOCALHOST_ONLY=1。
 
 正式协议见`docs_for_can`；部署、消息消费者重建、CLI M键及恢复流程见宿主`docs/DEPLOYMENT.md`和`docs/ROS_INTERFACE.md`。旧0x603前置的字节格式属于历史用户指定序列，不代表完整电机初始化或50%电机实际转矩。
 

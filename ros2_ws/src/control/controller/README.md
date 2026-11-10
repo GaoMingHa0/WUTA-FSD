@@ -248,9 +248,9 @@ skidpad 5 m/s；acceleration 15 m/s；EBS 12 m/s。
 | 参数 | 默认值 | 说明 |
 |------|--------|------|
 | `inspection.throttle` | 0.05 | 车检**恒定**纵向开度 [0,1]：不走 PID，驱动转速的唯一旋钮 |
-| `inspection.steer_amplitude` | 6.0° | 前轮正弦转向幅值（= 方向盘 ±30° ÷ 转向比 5） |
-| `inspection.steer_period` | 9.0 s | 正弦转向周期 |
-| `inspection.duration` | 27.0 s | 车检时长（= 9.0s × 3 个整周期；赛规 2.8.3 要求 25~30s） |
+| `inspection.steer_amplitude` | 8.0° | 前轮正弦转向幅值（= 方向盘 ±40° ÷ 转向比 5） |
+| `inspection.steer_period` | 6.0 s | 正弦转向周期 |
+| `inspection.duration` | 27.0 s | 车检时长（= 6.0s × 4.5 个周期；赛规 2.8.3 要求 25~30s） |
 
 ## 线程模型
 

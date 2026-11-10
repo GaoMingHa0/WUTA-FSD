@@ -53,6 +53,11 @@ private:
   void applyMissionMode(uint8_t mode);
   void restoreModeCache();
 
+  // ---- 报文解析（VCU→工控机 0x211：Byte1=整车状态） ----
+  // 无人分支自检完成判据：Byte1 7 → 8 跳变，5 秒后才允许转发 RES GO。
+  void parseVcuStateFrame(const CanFrame & frame);
+  bool vcuGoGateOpen() const;
+
   // ---- 报文解析（RES→工控机 0x1E4：Byte1=遥控器状态） ----
   // 0x11 遥控器上线 / 0x13 发车按钮被按下 / 0x10 按下急停
   // 发车严格边沿：0x13 变化沿发布一次 /system/start_command，不做窗口重放
@@ -78,6 +83,7 @@ private:
   int control_frame_id_{0x210};         // 工控机→VCU 控制帧
   int heartbeat_frame_id_{0x301};       // 工控机→VCU 上线心跳帧
   int vcu_frame_id_{0x501};             // VCU→工控机 模式帧（仅接收）
+  int vcu_state_frame_id_{0x211};       // VCU→工控机 整车状态帧（仅接收）
   int res_frame_id_{0x1E4};             // RES→工控机 遥控器帧（仅接收）
 
   // ---- 发送周期 ----
@@ -90,6 +96,11 @@ private:
 
   // ---- 模式保活重发 ----
   double mode_repeat_period_sec_{1.0};  // mission_mode_cmd 保活重发周期，<=0 关闭
+
+  // ---- 发车保险：VCU 无人自检 7→8 后 5 秒才转发 RES GO ----
+  bool go_gate_enabled_{true};          // false 关闭本层保险（台架无 0x211 时）
+  double go_gate_wait_sec_{5.0};        // 7→8 跳变后的等待时间
+  double go_gate_stale_sec_{1.0};       // 0x211 断流判定，<=0 关闭该检查
 
   // 0x210 帧缓存（Signal3/4 由状态回调更新，随下帧一起发出）
   double throttle_brake_{0.0};   // 纵向开度 [-1,1]（controller 速度 PID 输出）
@@ -133,6 +144,12 @@ private:
   std::chrono::steady_clock::time_point mode_cache_deadline_;
   std::string mode_cache_reason_;
   uint8_t last_vcu_mission_mode_{0xFF};   // 最近一次 VCU 任务模式（Byte1）
+
+  // 0x211 帧缓存（整车状态：7→8 边沿开启 GO 门控）
+  uint8_t last_vcu_state_{0xFF};          // 最近一次整车状态（Byte1）
+  bool vcu_selfcheck_seen_{false};        // 已观察到无人自检完成（7→8）
+  std::chrono::steady_clock::time_point vcu_selfcheck_at_;
+  std::chrono::steady_clock::time_point vcu_state_at_;
 
   // 0x1E4 帧缓存（电平信号：按当前值处理，仅变化沿触发动作/日志）
   uint8_t last_res_state_{0xFF};          // 最近一次 RES 状态（Byte1）

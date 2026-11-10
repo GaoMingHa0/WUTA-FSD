@@ -1,8 +1,8 @@
 path_generator_node:
   ros__parameters:
     # ==================== RViz 轨迹可视化 ====================
-    # 仅平滑并抽稀 RViz 中显示的定位历史；控制器与建图仍使用原始 /localization/pose
-    # /planning/final_waypoints_viz（规划轨迹）和 /planning/driven_trajectory_viz（实际轨迹）
+    # 仅平滑并抽稀 RViz 中的定位历史；控制器与建图仍使用原始 /localization/pose
+    # 话题：/planning/final_waypoints_viz（规划轨迹）、/planning/driven_trajectory_viz（实际轨迹）
     driven_trajectory:
       smoothing_alpha: 0.20     # 平滑系数(0~1)，越小越平滑
       min_distance: 0.10        # m，最小采样间距
@@ -10,20 +10,83 @@ path_generator_node:
       display_window_m: 200.0   # m，仅保留最近该长度的历史，避免内存无界增长
 
     # ==================== 轨迹/路径记录（落盘） ====================
-    # 每次运行一个目录包裹：{mission}/{stamp}/planned.csv + driven.csv
+    # 每次运行一个目录：{mission}/{stamp}/planned.csv + driven.csv
     # {stamp} 为秒级本地时间 YYYYmmdd_HHMMSS；分段追加 _<序号>。
-    # 记录内容仅用于离线分析，不影响规划/控制输出。
     record:
       enabled: true
-      run_dir: ""  # 启动入口传入绝对运行目录，轨迹写入 trajectory/
+      run_dir: ""  # 启动入口传入的绝对运行目录，轨迹写入 trajectory/
       dir: wuta_logs/{mission}/{stamp}/trajectory  # 独立启动时相对项目根目录解析
       planned_file: planned.csv   # 规划轨迹逐点（含 phase/lap/target_speed）
       driven_file: driven.csv     # 实际位姿 + 车速 + 控制指令
       flush_interval_sec: 1.0     # s，落盘刷新周期
-      max_mb: 50.0                # MB，单文件超过则切分 _partNNN
+      max_mb: 50.0                # MB，单文件超过则分卷
       attach_stamps: true         # 是否附加车速/指令的源时间戳（判断滞后）
 
+    # ==================== 地图原点（坐标系锚点） ====================
+    # map 坐标原点声明；本项不执行坐标变换。固定路径赛项可选 start_pose 参考系。
+    map_origin:
+      x: 0.0
+      y: 0.0
+      yaw: 0.0
+
+    # ==================== 赛项：EBS 测试（EBS） ====================
+    # 赛规：赛车前端停在起点线后 0.3 m；25 m 处测速 ≥40 km/h；制动距离 ≤10 m。
+    ebs:
+      anchor_frame: start_pose  # start_pose：X 前、Y 左；map：绝对地图坐标
+      anchor:
+        entry: { x: 0.3,  y: 0.0, yaw: 0.0 }    # m，路径入口（赛规：起点线后 0.3 m）
+        brake: { x: 25.0, y: 0.0, yaw: 0.0 }    # m，测速/急停点（赛规：25 m）
+        stop:  { x: 35.0, y: 0.0, yaw: 0.0 }    # m，停车点（赛规：制动距离 ≤10 m）
+      speed:
+        velocity: 12.0                # m/s，目标速度（赛规：25 m 处 ≥11.11 m/s）
+
+    # ==================== 赛项：直线加速（ACCELERATION） ====================
+    # 赛规：起点到终点直线 75 m；穿越终点线后须在出口车道内 100 m 内停车。
+    acceleration:
+      # 方向取自稳定的红/蓝锥桶边界；下方距离仍使用定位。
+      # false 恢复原配置锚点方向（显式退选）。
+      use_cone_direction: true
+      # start_pose：启动时冻结一次定位参考；启用锥桶方向时 X 沿拟合切线，Y 须为 0。
+      # use_cone_direction=false 时恢复车头方向，并可选择 map 绝对锚点。
+      anchor_frame: start_pose
+      anchor:
+        entry: { x: 0.0,  y: 0.0, yaw: 0.0 }   # 发车位置（局部原点）
+        brake: { x: 10.0, y: 0.0, yaw: 0.0 }   # m，制动点（按赛道设置）
+        stop:  { x: 11.0, y: 0.0, yaw: 0.0 }   # m，停车点（按赛道设置）
+      speed:
+        velocity: 5.0               # m/s，加速目标速度
+
+    # ==================== 赛项：八字绕环（SKIDPAD） ====================
+    # 赛规：两圆心距 18.25 m，内圆直径 15.25 m、外圆直径 21.25 m，赛道宽 3 m；
+    # 发车点位于计时线前 15 m，完赛后计时线后 25 m 内停车。
+    skidpad:
+      anchor_frame: start_pose  # start_pose：启动位置为原点，X 前、Y 左；map：绝对地图坐标
+      # 临时替代八字：直行 → 左转半圆 → 返回起点横截线并停车。
+      # 起点/朝向使用 anchor.entry（所选参考系）；关闭 enabled 恢复原八字。
+      u_turn_test:
+        enabled: false
+        straight_distance: 9.0       # m，去程和返程直线长度
+        radius: 6.3                 # m，回程位于起点左侧 2R
+        velocity: 0.9               # m/s，巡航及转弯速度
+        brake_distance: 7.0           # m，返程最后该距离减速到 0，须 <= straight_distance
+      # 赛道几何锚点（交叉点，不随定位位姿变化）
+      geometry:
+        radius: 9.125                 # m，绕环半径（内/外圆直径的中值）
+        points: 72                    # 每圈航点数
+        crossing:
+          x: 15.0                     # m，交叉点（计时线，距发车点 15 m，赛规 6.6.6）
+          y: 0.0                      # m
+          yaw: 0.0                    # rad，进/出方向
+      # 路径锚点：发车 → 绕环 → 减速点 → 停止点
+      anchor:
+        entry: { x: 0.0, y: 0.0, yaw: 0.0 }   # 发车坐标
+        brake: { x: 30.0,  y: 0.0, yaw: 0.0 }   # 出口减速点
+        stop:  { x: 40.0,  y: 0.0, yaw: 0.0 }   # 出口停止点
+      speed:
+        velocity: 1.5                 # m/s，绕环目标速度
+
     # ==================== 赛项：高速循迹（TRACKDRIVE） ====================
+    # 赛规：闭环赛道，单圈约 200~500 m，共 3 圈；直线段 ≤80 m、最小路宽 3 m。
     trackdrive:
       # ---------- 速度规划 ----------
       speed:
@@ -38,7 +101,7 @@ path_generator_node:
           lateral_accel_limit: 6.0    # m/s^2，曲率限速（第2/3圈共用）
         launch:                       # 起步限速：进入循迹后前段距离的速度上限
           velocity: 1.5               # m/s，起步阶段速度上限
-          distance: 5.0              # m，起步限速持续距离（原 4s@3m/s 换算）
+          distance: 5.0              # m，起步限速持续距离
         degraded_velocity: 1.0        # m/s，短中心线或低置信度时的速度帽
         confidence:                   # 置信度 → 速度映射
           slow_threshold: 0.45        # 低于此置信度按 degraded_velocity 行驶
@@ -48,7 +111,7 @@ path_generator_node:
       path:
         resample_spacing: 1.0         # m，重采样间距
         min_forward_target: 0.5       # m，拒绝局部反向中心线
-        full_speed_forward_distance: 15.0  # m，路径越长允许速度越高(min→max 渐增)
+        full_speed_forward_distance: 15.0  # m，路径越长允许速度越高（min→max 渐增）
         short_centerline_points: 3    # 源中心线点数低于此值视为短路径
       # ---------- 全局冻结中心线 ----------
       global:
@@ -56,65 +119,3 @@ path_generator_node:
         search_points: 24             # 进度点有界搜索窗口
         min_points: 20                # 区分冻结闭环与局部 EXPLORE 路径
         publish_period_sec: 0.10      # s，发布周期
-
-    # ==================== 地图原点（坐标系锚点） ====================
-    # map坐标原点声明，本项不执行坐标变换；固定路径赛项可选start_pose参考系。
-    map_origin:
-      x: 0.0
-      y: 0.0
-      yaw: 0.0
-
-    # ==================== 赛项：八字绕环（SKIDPAD） ====================
-    # start_pose：启动位置为原点，X前、Y左；map：绝对地图坐标。
-    skidpad:
-      anchor_frame: start_pose
-      # 临时替代八字：直行 → 左转半圆 → 返回起点横截线并停车。
-      # 起点/朝向使用 anchor.entry（所选参考系）；关闭 enabled 恢复原八字。
-      u_turn_test:
-        enabled: false
-        straight_distance: 9.0       # m，去程和返程直线长度
-        radius: 6.3                 # m，回程位于起点左侧 2R
-        velocity: 0.9               # m/s，巡航及转弯速度
-        brake_distance: 7.0           # m，返程最后此距离减速到 0，须 <= straight_distance
-      # 赛道几何锚点（交叉点，不随定位位姿变化）
-      geometry:
-        radius: 9.125                 # m，绕环半径
-        points: 72                    # 每圈 waypoints 数（每 5°）
-        crossing:
-          x: 15.0                     # m，发车前方--m交叉点
-          y: 0.0                      # m
-          yaw: 0.0                    # rad，进/出方向
-      # 路径锚点：发车 → (绕环) → 减速点 → 停止点
-      anchor:
-        entry: { x: 0.0, y: 0.0, yaw: 0.0 }   # 发车坐标（FSAC 起点在计时线前 15m）
-        brake: { x: 30.0,  y: 0.0, yaw: 0.0 }   # 出口减速点
-        stop:  { x: 40.0,  y: 0.0, yaw: 0.0 }   # 出口停止点
-      speed:
-        velocity: 1.5                 # m/s，绕环目标速度
-
-    # ==================== 赛项：直线加速（ACCELERATION） ====================
-    # 通过终点线后才制动，并在标记的 100m 出口车道内停车。
-    acceleration:
-      # Direction from stable red/blue cone boundaries; distances below still use localization.
-      # false restores the legacy configured-anchor direction (explicit opt-out).
-      use_cone_direction: true
-      # start_pose：启动时冻结一次定位参考；启用锥桶方向时X沿拟合切线，Y须为0。
-      # use_cone_direction=false时恢复车头方向，并可选择map绝对锚点。
-      anchor_frame: start_pose
-      anchor:
-        entry: { x: 0.0, y: 0.0, yaw: 0.0 }   # 发车位置（局部原点）
-        brake: { x: 10.0, y: 0.0, yaw: 0.0 }   # 发车位置前方--m开始制动
-        stop:  { x: 11.0, y: 0.0, yaw: 0.0 }   # 发车位置前方--m停车
-      speed:
-        velocity: 2.0               # m/s，加速目标速度
-
-    # ==================== 赛项：EBS 测试（EBS） ====================
-    # 7.5：起点后 0.3m，25m 测速点 ≥40km/h(11.11m/s)，急停后 ≤10m 内停车。
-    ebs:
-      anchor_frame: start_pose  # X前、Y左，yaw=0沿启动车头；map可使用绝对坐标
-      anchor:
-        entry: { x: 0.3,  y: 0.0, yaw: 0.0 }    # 启动位置前方0.3m的路径入口
-        brake: { x: 25.0, y: 0.0, yaw: 0.0 }    # 25m 测速/急停标记
-        stop:  { x: 35.0, y: 0.0, yaw: 0.0 }    # 停止坐标（制动段 ≤10m）
-      speed:
-        velocity: 12.0                # m/s，≥40km/h(11.11m/s)，留余量

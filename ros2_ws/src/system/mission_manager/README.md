@@ -32,6 +32,9 @@ IDLE ──(传感器就绪)──→ READY ──(/system/start_command 且已�
 > 雷达、惯导、相机的设备心跳自检和急停锁存继续生效。
 > GO 不锁存：档位真正变化时本节点会丢弃此前按下的 GO（`onMissionModeCmd` 清
 > `start_requested_`；保活重发同值不触发），即 GO 必须晚于本次档位选择。
+> 上游另有发车保险：`can_interface` 收到 `0x211` Byte1 由 7→8（无人自检完成）并满
+> 5 秒后，才会把 `0x1E4` 的 GO 边沿转发到 `/system/start_command`；此前的 GO 在 CAN
+> 层直接丢弃。本节点无需感知该状态，仍按原有 READY + 模式 + GO 判定。
 
 ## Topics
 
@@ -46,7 +49,7 @@ IDLE ──(传感器就绪)──→ READY ──(/system/start_command 且已�
 | 订阅 | `/rslidar_points`（可配置） | `sensor_msgs/PointCloud2` | 真实点云心跳，收到且未超时才判定 LiDAR ready |
 | 订阅 | `/system/localization_ready` | `std_msgs/Bool` | 定位就绪 |
 | 订阅 | `/system/mission_mode_cmd` | `std_msgs/String` | 设置任务模式（trackdrive/skidpad/acceleration/inspection/ebs_test）；**仅设模式、不启动** |
-| 订阅 | `/system/start_command` | `std_msgs/Bool` | RES 发车放行（来自 0x1E4 Byte1=0x13）；与已选模式共同满足才启动 |
+| 订阅 | `/system/start_command` | `std_msgs/Bool` | RES 发车放行（来自 0x1E4 Byte1=0x13，经 0x211 自检 7→8 满 5 秒保险）；与已选模式共同满足才启动 |
 | 订阅 | `/system/emergency` | `std_msgs/Bool` | RES 急停（来自 0x1E4 Byte1=0x10）或设备自检失败；**Transient Local 锁存**，收到即切 EMERGENCY |
 | 订阅 | `/system/mission_complete` | `std_msgs/Bool` | 控制器完成停车后进入 FINISH（含车检演示完成 → FINISH） |
 | 订阅 | `/ndt/map_ready` | `std_msgs/Bool` | 仅在 `use_ndt_race_localization=true` 时作为 RACE 门槛 |
