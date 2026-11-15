@@ -45,16 +45,16 @@ path_generator_node:
     acceleration:
       # 方向取自稳定的红/蓝锥桶边界；下方距离仍使用定位。
       # false 恢复原配置锚点方向（显式退选）。
-      use_cone_direction: true
+      use_cone_direction: false
       # start_pose：启动时冻结一次定位参考；启用锥桶方向时 X 沿拟合切线，Y 须为 0。
       # use_cone_direction=false 时恢复车头方向，并可选择 map 绝对锚点。
       anchor_frame: start_pose
       anchor:
         entry: { x: 0.0,  y: 0.0, yaw: 0.0 }   # 发车位置（局部原点）
-        brake: { x: 10.0, y: 0.0, yaw: 0.0 }   # m，制动点（按赛道设置）
-        stop:  { x: 11.0, y: 0.0, yaw: 0.0 }   # m，停车点（按赛道设置）
+        brake: { x: 20.0, y: 0.0, yaw: 0.0 }   # m，制动点（按赛道设置）
+        stop:  { x: 20.0, y: 0.0, yaw: 0.0 }   # m，停车点（按赛道设置）
       speed:
-        velocity: 5.0               # m/s，加速目标速度
+        velocity: 10.0               # m/s，加速目标速度
 
     # ==================== 赛项：八字绕环（SKIDPAD） ====================
     # 赛规：两圆心距 18.25 m，内圆直径 15.25 m、外圆直径 21.25 m，赛道宽 3 m；
